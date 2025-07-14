@@ -1,1 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PAU-MOVS Monitoring System</title>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-firestore-compat.js"></script>
+
+  <!-- Excel and PDF Export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+  <style>
+    body { font-family: Arial; background: #f7fafc; padding: 20px; }
+    h1 { text-align: center; }
+    .container { max-width: 1100px; margin: auto; }
+    .form-container, .dashboard, .table-container {
+      background: white; padding: 20px; border-radius: 10px;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.1); margin-bottom: 30px;
+    }
+    label { display: block; margin-top: 10px; }
+    input, select, textarea {
+      width: 100%; padding: 8px; margin-top: 4px; margin-bottom: 10px;
+      border: 1px solid #ccc; border-radius: 6px;
+    }
+    button {
+      padding: 8px 15px; background: #2563eb; color: white;
+      border: none; border-radius: 6px; cursor: pointer; margin-right: 5px;
+    }
+    .card {
+      display: inline-block; width: 220px; padding: 15px; margin: 10px;
+      background-color: #e5e7eb; border-radius: 10px; text-align: center;
+    }
+    .search-export { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+    th { background-color: #f3f4f6; }
+    a { color: #2563eb; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>PAU-MOVS Monitoring System</h1>
+
+    <!-- Form -->
+    <div class="form-container">
+      <h2 id="form-title">Add Entry</h2>
+      <input type="hidden" id="editId" />
+      <label>Date: <input type="date" id="date" /></label>
+      <label>Type:
+        <select id="type">
+          <option>IEC Videos</option>
+          <option>News Release</option>
+          <option>Photo Release</option>
+          <option>PILU EduAksyon</option>
+          <option>Social Cards (others)</option>
+          <option>Social Cards (PAU)</option>
+        </select>
+      </label>
+      <label>Title/Details: <input type="text" id="details" /></label>
+      <label>Responsible: <input type="text" id="responsible" /></label>
+      <label>Link: <input type="text" id="link" /></label>
+      <label>Remarks: <textarea id="remarks"></textarea></label>
+      <button onclick="saveEntry()">Submit</button>
+      <button onclick="clearForm()">Cancel</button>
+    </div>
+
+    <!-- Dashboard -->
+    <div class="dashboard">
+      <h2>Dashboard</h2>
+      <div id="monthlyCards"></div>
+      <div id="typeCards"></div>
+    </div>
+
+    <!-- Table -->
+    <div class="table-container">
+      <h2>Entries</h2>
+      <div class="search-export">
+        <input type="text" id="searchInput" placeholder="Search..." onkeyup="renderTable()" />
+        <div>
+          <button onclick="exportToExcel()">Export to Excel</button>
+          <button onclick="exportToPDF()">Export to PDF</button>
+        </div>
+      </div>
+      <table id="entryTable">
+        <thead>
+          <tr>
+            <th>Date</th><th>Type</th><th>Details</th><th>Responsible</th><th>Link</th><th>Remarks</th><th>Actions</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Firebase & Logic -->
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBTMtGna6DHyqdSxvmEsIRL-ffWEbR-Cmk",
+      authDomain: "pau-movs.firebaseapp.com",
+      projectId: "pau-movs",
+      storageBucket: "pau-movs.firebasestorage.app",
+      messagingSenderId: "502537936923",
+      appId: "1:502537936923:web:5f7c97f1469efc9a9b18be",
+      measurementId: "G-SCJBGH476G"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    let entries = [];
+
+    db.collection("pau_movs").onSnapshot(snapshot => {
+      entries = [];
+      snapshot.forEach(doc => entries.push({ id: doc.id, ...doc.data() }));
+      renderDashboard();
+      renderTable();
+    });
+
+    function saveEntry() {
+      const entry = {
+        date: document.getElementById('date').value,
+        type: document.getElementById('type').value,
+        details: document.getElementById('details').value,
+        responsible: document.getElementById('responsible').value,
+        link: document.getElementById('link').value,
+        remarks: document.getElementById('remarks').value
+      };
+      const editId = document.getElementById('editId').value;
+
+      if (!entry.date || !entry.details) return alert("Date and Details are required.");
+
+      if (editId) {
+        db.collection("pau_movs").doc(editId).update(entry);
+        document.getElementById('form-title').innerText = "Add Entry";
+      } else {
+        db.collection("pau_movs").add(entry);
+      }
+      clearForm();
+    }
+
+    function clearForm() {
+      document.getElementById('date').value = "";
+      document.getElementById('type').value = "IEC Videos";
+      document.getElementById('details').value = "";
+      document.getElementById('responsible').value = "";
+      document.getElementById('link').value = "";
+      document.getElementById('remarks').value = "";
+      document.getElementById('editId').value = "";
+      document.getElementById('form-title').innerText = "Add Entry";
+    }
+
+    function editEntry(id) {
+      const entry = entries.find(e => e.id === id);
+      document.getElementById('editId').value = entry.id;
+      document.getElementById('form-title').innerText = "Edit Entry";
+      document.getElementById('date').value = entry.date;
+      document.getElementById('type').value = entry.type;
+      document.getElementById('details').value = entry.details;
+      document.getElementById('responsible').value = entry.responsible;
+      document.getElementById('link').value = entry.link;
+      document.getElementById('remarks').value = entry.remarks;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function deleteEntry(id) {
+      if (confirm("Delete this entry?")) {
+        db.collection("pau_movs").doc(id).delete();
+      }
+    }
+
+    function renderTable() {
+      const search = document.getElementById('searchInput').value.toLowerCase();
+      const tbody = document.querySelector('#entryTable tbody');
+      tbody.innerHTML = '';
+
+      entries
+        .filter(e => Object.values(e).some(val => String(val).toLowerCase().includes(search)))
+        .forEach(e => {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${e.date}</td>
+            <td>${e.type}</td>
+            <td>${e.details}</td>
+            <td>${e.responsible}</td>
+            <td><a href="${e.link}" target="_blank">View</a></td>
+            <td>${e.remarks}</td>
+            <td>
+              <button onclick="editEntry('${e.id}')">✏️</button>
+              <button onclick="deleteEntry('${e.id}')">🗑️</button>
+            </td>
+          `;
+          tbody.appendChild(row);
+        });
+    }
+
+    function renderDashboard() {
+      const typeCount = {}, monthlyCount = {};
+      entries.forEach(e => {
+        const month = e.date?.slice(0, 7);
+        monthlyCount[month] = (monthlyCount[month] || 0) + 1;
+        typeCount[e.type] = (typeCount[e.type] || 0) + 1;
+      });
+      document.getElementById("monthlyCards").innerHTML = Object.entries(monthlyCount)
+        .map(([month, count]) => `<div class="card"><strong>${month}</strong>${count} post(s)</div>`).join("");
+      document.getElementById("typeCards").innerHTML = Object.entries(typeCount)
+        .map(([type, count]) => `<div class="card"><strong>${type}</strong>${count}</div>`).join("");
+    }
+
+    function exportToExcel() {
+      const table = document.getElementById("entryTable");
+      const wb = XLSX.utils.table_to_book(table, { sheet: "PAU-MOVS" });
+      XLSX.writeFile(wb, "PAU-MOVS.xlsx");
+    }
+
+    async function exportToPDF() {
+      const table = document.querySelector(".table-container");
+      const canvas = await html2canvas(table);
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jspdf.jsPDF('l', 'pt', 'a4');
+      const imgProps = pdf.getImageProperties(imgData);
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+      pdf.addImage(imgData, 'PNG', 10, 10, pdfWidth - 20, pdfHeight);
+      pdf.save("PAU-MOVS.pdf");
+    }
+  </script>
+</body>
+</html>
 
