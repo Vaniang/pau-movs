@@ -15,10 +15,41 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
   <style>
-    body { font-family: Arial; background: #f7fafc; padding: 20px; }
-    h1 { text-align: center; }
-    .container { max-width: 1100px; margin: auto; }
-    .form-container, .dashboard, .table-container {
+    body {
+      font-family: Arial;
+      margin: 0;
+      background: #f7fafc;
+      display: flex;
+    }
+    .sidebar {
+      width: 250px;
+      background: #1e293b;
+      color: white;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .sidebar h2 {
+      margin-top: 0;
+    }
+    .sidebar ul {
+      list-style: none;
+      padding-left: 0;
+    }
+    .sidebar ul li {
+      cursor: pointer;
+      padding: 10px 0;
+    }
+    .sidebar ul li:hover {
+      text-decoration: underline;
+    }
+    .main {
+      flex: 1;
+      padding: 20px;
+    }
+    h1, h2 {
+      color: #1e293b;
+    }
+    .form-container, .table-container {
       background: white; padding: 20px; border-radius: 10px;
       box-shadow: 0 3px 6px rgba(0,0,0,0.1); margin-bottom: 30px;
     }
@@ -43,11 +74,26 @@
   </style>
 </head>
 <body>
-  <div class="container">
+  <div class="sidebar">
+    <h2>PAU-MOVS</h2>
+    <p><strong>Menu</strong></p>
+    <ul>
+      <li onclick="showSection('dashboard')">Dashboard</li>
+      <li onclick="showSection('table')">MOVs</li>
+    </ul>
+  </div>
+  <div class="main">
     <h1>PAU-MOVS Monitoring System</h1>
 
-    <!-- Form -->
-    <div class="form-container">
+    <!-- Dashboard Summary -->
+    <div class="table-container" id="dashboard-summary">
+      <h2>Summary Dashboard</h2>
+      <div id="monthlyCards"></div>
+      <div id="typeCards"></div>
+    </div>
+
+    <!-- Dashboard / Form -->
+    <div class="form-container" id="dashboard-section">
       <h2 id="form-title">Add Entry</h2>
       <input type="hidden" id="editId" />
       <label>Date: <input type="date" id="date" /></label>
@@ -65,20 +111,13 @@
       <label>Responsible: <input type="text" id="responsible" /></label>
       <label>Link: <input type="text" id="link" /></label>
       <label>Remarks: <textarea id="remarks"></textarea></label>
-      <button onclick="saveEntry()">Submit</button>
+      <button id="submitBtn">Submit</button>
       <button onclick="clearForm()">Cancel</button>
     </div>
 
-    <!-- Dashboard -->
-    <div class="dashboard">
-      <h2>Dashboard</h2>
-      <div id="monthlyCards"></div>
-      <div id="typeCards"></div>
-    </div>
-
-    <!-- Table -->
-    <div class="table-container">
-      <h2>Entries</h2>
+    <!-- Table Section -->
+    <div class="table-container" id="table-section" style="display:none">
+      <h2>Entries Table</h2>
       <div class="search-export">
         <input type="text" id="searchInput" placeholder="Search..." onkeyup="renderTable()" />
         <div>
@@ -97,13 +136,12 @@
     </div>
   </div>
 
-  <!-- Firebase & Logic -->
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyBTMtGna6DHyqdSxvmEsIRL-ffWEbR-Cmk",
       authDomain: "pau-movs.firebaseapp.com",
       projectId: "pau-movs",
-      storageBucket: "pau-movs.firebasestorage.app",
+      storageBucket: "pau-movs.appspot.com",
       messagingSenderId: "502537936923",
       appId: "1:502537936923:web:5f7c97f1469efc9a9b18be",
       measurementId: "G-SCJBGH476G"
@@ -112,6 +150,8 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
     let entries = [];
+
+    document.getElementById("submitBtn").addEventListener("click", saveEntry);
 
     db.collection("pau_movs").onSnapshot(snapshot => {
       entries = [];
@@ -205,9 +245,9 @@
         typeCount[e.type] = (typeCount[e.type] || 0) + 1;
       });
       document.getElementById("monthlyCards").innerHTML = Object.entries(monthlyCount)
-        .map(([month, count]) => `<div class="card"><strong>${month}</strong>${count} post(s)</div>`).join("");
+        .map(([month, count]) => `<div class="card"><strong>${month}</strong><br>${count} post(s)</div>`).join("");
       document.getElementById("typeCards").innerHTML = Object.entries(typeCount)
-        .map(([type, count]) => `<div class="card"><strong>${type}</strong>${count}</div>`).join("");
+        .map(([type, count]) => `<div class="card"><strong>${type}</strong><br>${count}</div>`).join("");
     }
 
     function exportToExcel() {
@@ -227,7 +267,12 @@
       pdf.addImage(imgData, 'PNG', 10, 10, pdfWidth - 20, pdfHeight);
       pdf.save("PAU-MOVS.pdf");
     }
+
+    function showSection(section) {
+      document.getElementById('dashboard-section').style.display = section === 'dashboard' ? 'block' : 'none';
+      document.getElementById('dashboard-summary').style.display = section === 'dashboard' ? 'block' : 'none';
+      document.getElementById('table-section').style.display = section === 'table' ? 'block' : 'none';
+    }
   </script>
 </body>
 </html>
-
