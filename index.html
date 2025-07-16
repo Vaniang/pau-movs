@@ -109,8 +109,8 @@
       <label>Responsible: <input type="text" id="responsible" /></label>
       <label>Link: <input type="text" id="link" /></label>
       <label>Remarks: <textarea id="remarks"></textarea></label>
-      <button id="submitBtn">Submit</button>
-      <button id="cancelBtn">Cancel</button>
+      <button onclick="saveEntry()">Submit</button>
+      <button onclick="clearForm()">Cancel</button>
     </div>
 
     <div class="table-container" id="table-section" style="display:none">
@@ -144,51 +144,46 @@
       measurementId: "G-SCJBGH476G"
     };
 
-    window.onload = function () {
-      firebase.initializeApp(firebaseConfig);
-      const db = firebase.firestore();
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
 
-      document.getElementById("submitBtn").addEventListener("click", saveEntry);
-      document.getElementById("cancelBtn").addEventListener("click", clearForm);
+    function saveEntry() {
+      const entry = {
+        date: document.getElementById('date').value,
+        type: document.getElementById('type').value,
+        details: document.getElementById('details').value,
+        responsible: document.getElementById('responsible').value,
+        link: document.getElementById('link').value,
+        remarks: document.getElementById('remarks').value
+      };
+      const editId = document.getElementById('editId').value;
 
-      window.saveEntry = function () {
-        const entry = {
-          date: document.getElementById('date').value,
-          type: document.getElementById('type').value,
-          details: document.getElementById('details').value,
-          responsible: document.getElementById('responsible').value,
-          link: document.getElementById('link').value,
-          remarks: document.getElementById('remarks').value
-        };
-        const editId = document.getElementById('editId').value;
+      if (!entry.date || !entry.details) return alert("Date and Details are required.");
 
-        if (!entry.date || !entry.details) return alert("Date and Details are required.");
-
-        if (editId) {
-          db.collection("pau_movs").doc(editId).update(entry);
-          document.getElementById('form-title').innerText = "Add Entry";
-        } else {
-          db.collection("pau_movs").add(entry);
-        }
-        clearForm();
-      }
-
-      window.clearForm = function () {
-        document.getElementById('date').value = "";
-        document.getElementById('type').value = "IEC Videos";
-        document.getElementById('details').value = "";
-        document.getElementById('responsible').value = "";
-        document.getElementById('link').value = "";
-        document.getElementById('remarks').value = "";
-        document.getElementById('editId').value = "";
+      if (editId) {
+        db.collection("pau_movs").doc(editId).update(entry);
         document.getElementById('form-title').innerText = "Add Entry";
+      } else {
+        db.collection("pau_movs").add(entry);
       }
+      clearForm();
+    }
 
-      window.showSection = function (section) {
-        document.getElementById('dashboard-section').style.display = section === 'dashboard' ? 'block' : 'none';
-        document.getElementById('dashboard-summary').style.display = section === 'dashboard' ? 'block' : 'none';
-        document.getElementById('table-section').style.display = section === 'table' ? 'block' : 'none';
-      }
+    function clearForm() {
+      document.getElementById('date').value = "";
+      document.getElementById('type').value = "IEC Videos";
+      document.getElementById('details').value = "";
+      document.getElementById('responsible').value = "";
+      document.getElementById('link').value = "";
+      document.getElementById('remarks').value = "";
+      document.getElementById('editId').value = "";
+      document.getElementById('form-title').innerText = "Add Entry";
+    }
+
+    function showSection(section) {
+      document.getElementById('dashboard-section').style.display = section === 'dashboard' ? 'block' : 'none';
+      document.getElementById('dashboard-summary').style.display = section === 'dashboard' ? 'block' : 'none';
+      document.getElementById('table-section').style.display = section === 'table' ? 'block' : 'none';
     }
   </script>
 </body>
