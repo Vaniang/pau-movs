@@ -134,11 +134,61 @@
   </div>
 
   <script>
-    // Fix: Define the showSection function
-    function showSection(section) {
-      document.getElementById('dashboard-section').style.display = section === 'dashboard' ? 'block' : 'none';
-      document.getElementById('dashboard-summary').style.display = section === 'dashboard' ? 'block' : 'none';
-      document.getElementById('table-section').style.display = section === 'table' ? 'block' : 'none';
+    window.onload = function () {
+      const firebaseConfig = {
+        apiKey: "AIzaSyBTMtGna6DHyqdSxvmEsIRL-ffWEbR-Cmk",
+        authDomain: "pau-movs.firebaseapp.com",
+        projectId: "pau-movs",
+        storageBucket: "pau-movs.appspot.com",
+        messagingSenderId: "502537936923",
+        appId: "1:502537936923:web:5f7c97f1469efc9a9b18be",
+        measurementId: "G-SCJBGH476G"
+      };
+
+      firebase.initializeApp(firebaseConfig);
+      const db = firebase.firestore();
+      let entries = [];
+
+      document.getElementById("submitBtn").addEventListener("click", saveEntry);
+
+      function saveEntry() {
+        const entry = {
+          date: document.getElementById('date').value,
+          type: document.getElementById('type').value,
+          details: document.getElementById('details').value,
+          responsible: document.getElementById('responsible').value,
+          link: document.getElementById('link').value,
+          remarks: document.getElementById('remarks').value
+        };
+        const editId = document.getElementById('editId').value;
+
+        if (!entry.date || !entry.details) return alert("Date and Details are required.");
+
+        if (editId) {
+          db.collection("pau_movs").doc(editId).update(entry);
+          document.getElementById('form-title').innerText = "Add Entry";
+        } else {
+          db.collection("pau_movs").add(entry);
+        }
+        clearForm();
+      }
+
+      function clearForm() {
+        document.getElementById('date').value = "";
+        document.getElementById('type').value = "IEC Videos";
+        document.getElementById('details').value = "";
+        document.getElementById('responsible').value = "";
+        document.getElementById('link').value = "";
+        document.getElementById('remarks').value = "";
+        document.getElementById('editId').value = "";
+        document.getElementById('form-title').innerText = "Add Entry";
+      }
+
+      window.showSection = function (section) {
+        document.getElementById('dashboard-section').style.display = section === 'dashboard' ? 'block' : 'none';
+        document.getElementById('dashboard-summary').style.display = section === 'dashboard' ? 'block' : 'none';
+        document.getElementById('table-section').style.display = section === 'table' ? 'block' : 'none';
+      }
     }
   </script>
 </body>
