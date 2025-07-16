@@ -6,9 +6,8 @@
   <title>PAU-MOVS Monitoring System</title>
 
   <!-- Firebase SDKs -->
-<script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-firestore-compat.js"></script>
 
   <!-- Excel and PDF Export -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -86,14 +85,12 @@
   <div class="main">
     <h1>PAU-MOVS Monitoring System</h1>
 
-    <!-- Dashboard Summary -->
     <div class="table-container" id="dashboard-summary">
       <h2>Summary Dashboard</h2>
       <div id="monthlyCards"></div>
       <div id="typeCards"></div>
     </div>
 
-    <!-- Dashboard / Form -->
     <div class="form-container" id="dashboard-section">
       <h2 id="form-title">Add Entry</h2>
       <input type="hidden" id="editId" />
@@ -116,7 +113,6 @@
       <button onclick="clearForm()">Cancel</button>
     </div>
 
-    <!-- Table Section -->
     <div class="table-container" id="table-section" style="display:none">
       <h2>Entries Table</h2>
       <div class="search-export">
@@ -138,137 +134,7 @@
   </div>
 
   <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyBTMtGna6DHyqdSxvmEsIRL-ffWEbR-Cmk",
-      authDomain: "pau-movs.firebaseapp.com",
-      projectId: "pau-movs",
-      storageBucket: "pau-movs.appspot.com",
-      messagingSenderId: "502537936923",
-      appId: "1:502537936923:web:5f7c97f1469efc9a9b18be",
-      measurementId: "G-SCJBGH476G"
-    };
-
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-    let entries = [];
-
-    document.getElementById("submitBtn").addEventListener("click", saveEntry);
-
-    db.collection("pau_movs").onSnapshot(snapshot => {
-      entries = [];
-      snapshot.forEach(doc => entries.push({ id: doc.id, ...doc.data() }));
-      renderDashboard();
-      renderTable();
-    });
-
-    function saveEntry() {
-      const entry = {
-        date: document.getElementById('date').value,
-        type: document.getElementById('type').value,
-        details: document.getElementById('details').value,
-        responsible: document.getElementById('responsible').value,
-        link: document.getElementById('link').value,
-        remarks: document.getElementById('remarks').value
-      };
-      const editId = document.getElementById('editId').value;
-
-      if (!entry.date || !entry.details) return alert("Date and Details are required.");
-
-      if (editId) {
-        db.collection("pau_movs").doc(editId).update(entry);
-        document.getElementById('form-title').innerText = "Add Entry";
-      } else {
-        db.collection("pau_movs").add(entry);
-      }
-      clearForm();
-    }
-
-    function clearForm() {
-      document.getElementById('date').value = "";
-      document.getElementById('type').value = "IEC Videos";
-      document.getElementById('details').value = "";
-      document.getElementById('responsible').value = "";
-      document.getElementById('link').value = "";
-      document.getElementById('remarks').value = "";
-      document.getElementById('editId').value = "";
-      document.getElementById('form-title').innerText = "Add Entry";
-    }
-
-    function editEntry(id) {
-      const entry = entries.find(e => e.id === id);
-      document.getElementById('editId').value = entry.id;
-      document.getElementById('form-title').innerText = "Edit Entry";
-      document.getElementById('date').value = entry.date;
-      document.getElementById('type').value = entry.type;
-      document.getElementById('details').value = entry.details;
-      document.getElementById('responsible').value = entry.responsible;
-      document.getElementById('link').value = entry.link;
-      document.getElementById('remarks').value = entry.remarks;
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    function deleteEntry(id) {
-      if (confirm("Delete this entry?")) {
-        db.collection("pau_movs").doc(id).delete();
-      }
-    }
-
-    function renderTable() {
-      const search = document.getElementById('searchInput').value.toLowerCase();
-      const tbody = document.querySelector('#entryTable tbody');
-      tbody.innerHTML = '';
-
-      entries
-        .filter(e => Object.values(e).some(val => String(val).toLowerCase().includes(search)))
-        .forEach(e => {
-          const row = document.createElement("tr");
-          row.innerHTML = `
-            <td>${e.date}</td>
-            <td>${e.type}</td>
-            <td>${e.details}</td>
-            <td>${e.responsible}</td>
-            <td><a href="${e.link}" target="_blank">View</a></td>
-            <td>${e.remarks}</td>
-            <td>
-              <button onclick="editEntry('${e.id}')">✏️</button>
-              <button onclick="deleteEntry('${e.id}')">🗑️</button>
-            </td>
-          `;
-          tbody.appendChild(row);
-        });
-    }
-
-    function renderDashboard() {
-      const typeCount = {}, monthlyCount = {};
-      entries.forEach(e => {
-        const month = e.date?.slice(0, 7);
-        monthlyCount[month] = (monthlyCount[month] || 0) + 1;
-        typeCount[e.type] = (typeCount[e.type] || 0) + 1;
-      });
-      document.getElementById("monthlyCards").innerHTML = Object.entries(monthlyCount)
-        .map(([month, count]) => `<div class="card"><strong>${month}</strong><br>${count} post(s)</div>`).join("");
-      document.getElementById("typeCards").innerHTML = Object.entries(typeCount)
-        .map(([type, count]) => `<div class="card"><strong>${type}</strong><br>${count}</div>`).join("");
-    }
-
-    function exportToExcel() {
-      const table = document.getElementById("entryTable");
-      const wb = XLSX.utils.table_to_book(table, { sheet: "PAU-MOVS" });
-      XLSX.writeFile(wb, "PAU-MOVS.xlsx");
-    }
-
-    async function exportToPDF() {
-      const table = document.querySelector(".table-container");
-      const canvas = await html2canvas(table);
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jspdf.jsPDF('l', 'pt', 'a4');
-      const imgProps = pdf.getImageProperties(imgData);
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-      pdf.addImage(imgData, 'PNG', 10, 10, pdfWidth - 20, pdfHeight);
-      pdf.save("PAU-MOVS.pdf");
-    }
-
+    // Fix: Define the showSection function
     function showSection(section) {
       document.getElementById('dashboard-section').style.display = section === 'dashboard' ? 'block' : 'none';
       document.getElementById('dashboard-summary').style.display = section === 'dashboard' ? 'block' : 'none';
