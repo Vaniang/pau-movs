@@ -110,7 +110,7 @@
       <label>Link: <input type="text" id="link" /></label>
       <label>Remarks: <textarea id="remarks"></textarea></label>
       <button id="submitBtn">Submit</button>
-      <button onclick="clearForm()">Cancel</button>
+      <button id="cancelBtn">Cancel</button>
     </div>
 
     <div class="table-container" id="table-section" style="display:none">
@@ -134,24 +134,24 @@
   </div>
 
   <script>
-    window.onload = function () {
-      const firebaseConfig = {
-        apiKey: "AIzaSyBTMtGna6DHyqdSxvmEsIRL-ffWEbR-Cmk",
-        authDomain: "pau-movs.firebaseapp.com",
-        projectId: "pau-movs",
-        storageBucket: "pau-movs.appspot.com",
-        messagingSenderId: "502537936923",
-        appId: "1:502537936923:web:5f7c97f1469efc9a9b18be",
-        measurementId: "G-SCJBGH476G"
-      };
+    const firebaseConfig = {
+      apiKey: "AIzaSyBTMtGna6DHyqdSxvmEsIRL-ffWEbR-Cmk",
+      authDomain: "pau-movs.firebaseapp.com",
+      projectId: "pau-movs",
+      storageBucket: "pau-movs.appspot.com",
+      messagingSenderId: "502537936923",
+      appId: "1:502537936923:web:5f7c97f1469efc9a9b18be",
+      measurementId: "G-SCJBGH476G"
+    };
 
+    window.onload = function () {
       firebase.initializeApp(firebaseConfig);
       const db = firebase.firestore();
-      let entries = [];
 
       document.getElementById("submitBtn").addEventListener("click", saveEntry);
+      document.getElementById("cancelBtn").addEventListener("click", clearForm);
 
-      function saveEntry() {
+      window.saveEntry = function () {
         const entry = {
           date: document.getElementById('date').value,
           type: document.getElementById('type').value,
@@ -173,7 +173,7 @@
         clearForm();
       }
 
-      function clearForm() {
+      window.clearForm = function () {
         document.getElementById('date').value = "";
         document.getElementById('type').value = "IEC Videos";
         document.getElementById('details').value = "";
