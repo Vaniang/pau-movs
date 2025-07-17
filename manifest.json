@@ -1,0 +1,9 @@
+{
+  "name": "PAU-MOVS Monitoring System",
+  "short_name": "PAU-MOVS",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "description": "Offline-capable PAU MOVs monitoring web app.",
+  "icons": []
+}
