@@ -103,115 +103,116 @@
   </div>
 
 <script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyBTMtGna6DHyqdSxvmEsIRL-ffWEbR-Cmk",
-    authDomain: "pau-movs.firebaseapp.com",
-    projectId: "pau-movs",
-    storageBucket: "pau-movs.appspot.com",
-    messagingSenderId: "502537936923",
-    appId: "1:502537936923:web:5f7c97f1469efc9a9b18be",
-    measurementId: "G-SCJBGH476G"
-  };
-
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
-
-  async function saveEntry() {
-    const entry = {
-      date: document.getElementById('date').value,
-      type: document.getElementById('type').value,
-      details: document.getElementById('details').value,
-      responsible: document.getElementById('responsible').value,
-      link: document.getElementById('link').value,
-      remarks: document.getElementById('remarks').value
+  document.addEventListener('DOMContentLoaded', () => {
+    const firebaseConfig = {
+      apiKey: "AIzaSyBTMtGna6DHyqdSxvmEsIRL-ffWEbR-Cmk",
+      authDomain: "pau-movs.firebaseapp.com",
+      projectId: "pau-movs",
+      storageBucket: "pau-movs.appspot.com",
+      messagingSenderId: "502537936923",
+      appId: "1:502537936923:web:5f7c97f1469efc9a9b18be",
+      measurementId: "G-SCJBGH476G"
     };
-    const editId = document.getElementById('editId').value;
-    if (!entry.date || !entry.details) return alert("Date and Details required.");
+    firebase.initializeApp(firebaseConfig);
+    window.db = firebase.firestore();
 
-    try {
-      if (editId) {
-        await db.collection("pau_movs").doc(editId).update(entry);
-      } else {
-        await db.collection("pau_movs").add(entry);
+    async function saveEntry() {
+      const entry = {
+        date: document.getElementById('date').value,
+        type: document.getElementById('type').value,
+        details: document.getElementById('details').value,
+        responsible: document.getElementById('responsible').value,
+        link: document.getElementById('link').value,
+        remarks: document.getElementById('remarks').value
+      };
+      const editId = document.getElementById('editId').value;
+      if (!entry.date || !entry.details) return alert("Date and Details required.");
+
+      try {
+        if (editId) {
+          await window.db.collection("pau_movs").doc(editId).update(entry);
+        } else {
+          await window.db.collection("pau_movs").add(entry);
+        }
+        clearForm();
+        renderTable();
+        drawChart();
+      } catch (e) { alert("Error saving entry"); }
+    }
+
+    function clearForm() {
+      ['date','details','responsible','link','remarks','editId'].forEach(id => document.getElementById(id).value = "");
+      document.getElementById('type').value = "IEC Videos";
+      document.getElementById('form-title').innerText = "Add Entry";
+    }
+
+    async function renderTable() {
+      const tbody = document.querySelector("#entryTable tbody");
+      tbody.innerHTML = "";
+      const snapshot = await window.db.collection("pau_movs").orderBy("date", "desc").get();
+      const search = document.getElementById('searchInput').value.toLowerCase();
+      snapshot.forEach(doc => {
+        const d = doc.data();
+        if (!Object.values(d).some(v => String(v).toLowerCase().includes(search))) return;
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${d.date}</td><td>${d.type}</td><td>${d.details}</td>
+          <td>${d.responsible}</td>
+          <td><a href="${d.link}" target="_blank">Link</a></td>
+          <td>${d.remarks}</td>
+          <td>
+            <button onclick='editEntry("${doc.id}", ${JSON.stringify(d)})'>Edit</button>
+            <button onclick='deleteEntry("${doc.id}")'>Delete</button>
+          </td>`;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function editEntry(id, d) {
+      document.getElementById('editId').value = id;
+      Object.entries(d).forEach(([k, v]) => {
+        if (document.getElementById(k)) document.getElementById(k).value = v;
+      });
+      document.getElementById('form-title').innerText = "Edit Entry";
+      showSection('dashboard');
+    }
+
+    async function deleteEntry(id) {
+      if (confirm("Delete this entry?")) {
+        await window.db.collection("pau_movs").doc(id).delete();
+        renderTable(); drawChart();
       }
-      clearForm();
+    }
+
+    function showSection(section) {
+      document.getElementById('dashboard-section').style.display = section === 'dashboard' ? 'block' : 'none';
+      document.getElementById('dashboard-summary').style.display = section === 'dashboard' ? 'block' : 'none';
+      document.getElementById('table-section').style.display = section === 'table' ? 'block' : 'none';
+    }
+
+    async function drawChart() {
+      const snapshot = await window.db.collection("pau_movs").get();
+      const monthCount = {};
+      snapshot.forEach(doc => {
+        const month = new Date(doc.data().date).toLocaleString('default', { month: 'short', year: 'numeric' });
+        monthCount[month] = (monthCount[month] || 0) + 1;
+      });
+      const ctx = document.getElementById('monthlyChart').getContext('2d');
+      if (window.myChart) window.myChart.destroy();
+      window.myChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: Object.keys(monthCount),
+          datasets: [{ label: 'Entries', data: Object.values(monthCount), backgroundColor: '#2563eb' }]
+        }
+      });
+    }
+
+    window.onload = () => {
       renderTable();
       drawChart();
-    } catch (e) { alert("Error saving entry"); }
-  }
-
-  function clearForm() {
-    ['date','details','responsible','link','remarks','editId'].forEach(id => document.getElementById(id).value = "");
-    document.getElementById('type').value = "IEC Videos";
-    document.getElementById('form-title').innerText = "Add Entry";
-  }
-
-  async function renderTable() {
-    const tbody = document.querySelector("#entryTable tbody");
-    tbody.innerHTML = "";
-    const snapshot = await db.collection("pau_movs").orderBy("date", "desc").get();
-    const search = document.getElementById('searchInput').value.toLowerCase();
-    snapshot.forEach(doc => {
-      const d = doc.data();
-      if (!Object.values(d).some(v => String(v).toLowerCase().includes(search))) return;
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${d.date}</td><td>${d.type}</td><td>${d.details}</td>
-        <td>${d.responsible}</td>
-        <td><a href="${d.link}" target="_blank">Link</a></td>
-        <td>${d.remarks}</td>
-        <td>
-          <button onclick='editEntry("${doc.id}", ${JSON.stringify(d)})'>Edit</button>
-          <button onclick='deleteEntry("${doc.id}")'>Delete</button>
-        </td>`;
-      tbody.appendChild(tr);
-    });
-  }
-
-  function editEntry(id, d) {
-    document.getElementById('editId').value = id;
-    Object.entries(d).forEach(([k, v]) => {
-      if (document.getElementById(k)) document.getElementById(k).value = v;
-    });
-    document.getElementById('form-title').innerText = "Edit Entry";
-    showSection('dashboard');
-  }
-
-  async function deleteEntry(id) {
-    if (confirm("Delete this entry?")) {
-      await db.collection("pau_movs").doc(id).delete();
-      renderTable(); drawChart();
-    }
-  }
-
-  function showSection(section) {
-    document.getElementById('dashboard-section').style.display = section === 'dashboard' ? 'block' : 'none';
-    document.getElementById('dashboard-summary').style.display = section === 'dashboard' ? 'block' : 'none';
-    document.getElementById('table-section').style.display = section === 'table' ? 'block' : 'none';
-  }
-
-  async function drawChart() {
-    const snapshot = await db.collection("pau_movs").get();
-    const monthCount = {};
-    snapshot.forEach(doc => {
-      const month = new Date(doc.data().date).toLocaleString('default', { month: 'short', year: 'numeric' });
-      monthCount[month] = (monthCount[month] || 0) + 1;
-    });
-    const ctx = document.getElementById('monthlyChart').getContext('2d');
-    if (window.myChart) window.myChart.destroy();
-    window.myChart = new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: Object.keys(monthCount),
-        datasets: [{ label: 'Entries', data: Object.values(monthCount), backgroundColor: '#2563eb' }]
-      }
-    });
-  }
-
-  window.onload = () => {
-    renderTable();
-    drawChart();
-  };
+    };
+  });
 </script>
 </body>
 </html>
