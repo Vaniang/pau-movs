@@ -106,7 +106,6 @@
   </div>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script>
-     <script>
     const sidebarItems = document.querySelectorAll('.sidebar li');
     const sections = document.querySelectorAll('.section');
     sidebarItems.forEach(item => {
@@ -130,39 +129,6 @@
       remarks: document.getElementById('input-remarks')
     };
 
-    function saveData() {
-      const rows = [...movsTable.querySelectorAll('tr')].map(row => {
-        return {
-          date: row.children[0].textContent,
-          type: row.children[1].textContent,
-          title: row.children[2].textContent,
-          responsible: row.children[3].textContent,
-          link: row.children[4].querySelector('span.full-link').textContent,
-          remarks: row.children[5].textContent
-        };
-      });
-      localStorage.setItem('movsData', JSON.stringify(rows));
-    }
-
-    function loadData() {
-      const data = JSON.parse(localStorage.getItem('movsData') || '[]');
-      movsTable.innerHTML = '';
-      data.forEach(item => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td>${item.date}</td>
-          <td>${item.type}</td>
-          <td>${item.title}</td>
-          <td>${item.responsible}</td>
-          <td><a href="${item.link}" target="_blank">View</a><span class="full-link" style="display:none;">${item.link}</span></td>
-          <td>${item.remarks}</td>
-          <td><button class="edit">Edit</button> <button class="delete">Delete</button></td>
-        `;
-        movsTable.appendChild(row);
-      });
-      updateCategoryCounts();
-    }
-
     addBtn.addEventListener('click', () => {
       if (!inputs.date.value || !inputs.title.value) return;
       const row = document.createElement('tr');
@@ -178,14 +144,12 @@
       movsTable.appendChild(row);
       Object.values(inputs).forEach(input => input.value = '');
       updateCategoryCounts();
-      saveData();
     });
 
     movsTable.addEventListener('click', (e) => {
       if (e.target.classList.contains('delete')) {
         e.target.closest('tr').remove();
         updateCategoryCounts();
-        saveData();
       } else if (e.target.classList.contains('edit')) {
         const row = e.target.closest('tr').children;
         inputs.date.value = row[0].textContent;
@@ -196,7 +160,6 @@
         inputs.remarks.value = row[5].textContent;
         e.target.closest('tr').remove();
         updateCategoryCounts();
-        saveData();
       }
     });
 
@@ -263,8 +226,6 @@
       printWindow.document.close();
       printWindow.print();
     });
-
-    window.addEventListener('load', loadData);
   </script>
 </body>
 </html>
