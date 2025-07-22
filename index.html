@@ -1,34 +1,33 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PAU-MOVs</title>
-  <link rel="stylesheet" href="style.css">
-    <style>
-      * {margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif;}
-body {display: flex; height: 100vh;}
-.sidebar {width: 200px; background: #1c1c1c; color: #fff; padding: 20px;}
-.sidebar h2 {text-align: center; margin-bottom: 20px;}
-.sidebar ul {list-style: none;}
-.sidebar li {padding: 10px; cursor: pointer; transition: background 0.3s;}
-.sidebar li.active, .sidebar li:hover {background: #333;}
-.content {flex: 1; padding: 20px; background: #f9f9f9; overflow-y: auto;}
-.section {display: none;}
-.section.active {display: block;}
-.summary {display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 20px;}
-.card {background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); text-align: center;}
-.input-fields {display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-bottom: 20px;}
-button {padding: 8px 12px; background: #1c1c1c; color: #fff; border: none; border-radius: 4px; cursor: pointer; transition: background 0.3s;}
-button:hover {background: #333;}
-.table-actions {margin-bottom: 10px;}
-#movs-table, #report-table {width: 100%; border-collapse: collapse; background: #fff;}
-#movs-table th, #movs-table td, #report-table th, #report-table td {padding: 10px; border: 1px solid #ccc; text-align: left;}
-#movs-table a, #report-table a {color: blue; text-decoration: underline;}
-.filters {display: flex; gap: 10px; margin-bottom: 10px;}
-.report-summary {margin: 10px 0; font-size: 1.1em;}
-    </style>
+  <style>
+    * {margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif;}
+    body {display: flex; height: 100vh;}
+    .sidebar {width: 200px; background: #1c1c1c; color: #fff; padding: 20px;}
+    .sidebar h2 {text-align: center; margin-bottom: 20px;}
+    .sidebar ul {list-style: none;}
+    .sidebar li {padding: 10px; cursor: pointer; transition: background 0.3s;}
+    .sidebar li.active, .sidebar li:hover {background: #333;}
+    .content {flex: 1; padding: 20px; background: #f9f9f9; overflow-y: auto;}
+    .section {display: none;}
+    .section.active {display: block;}
+    .summary {display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 20px;}
+    .card {background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); text-align: center;}
+    .input-fields {display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 20px;}
+    .input-fields input, .input-fields select {padding: 10px; border-radius: 4px; border: 1px solid #ccc;}
+    button {padding: 10px 14px; background: #1c1c1c; color: #fff; border: none; border-radius: 4px; cursor: pointer; transition: background 0.3s;}
+    button:hover {background: #333;}
+    .table-actions {margin-bottom: 10px;}
+    #movs-table, #report-table {width: 100%; border-collapse: collapse; background: #fff;}
+    #movs-table th, #movs-table td, #report-table th, #report-table td {padding: 10px; border: 1px solid #ccc; text-align: left;}
+    #movs-table a, #report-table a {color: blue; text-decoration: underline;}
+    .filters {display: flex; gap: 10px; margin-bottom: 10px;}
+    .report-summary {margin: 10px 0; font-size: 1.1em;}
+  </style>
 </head>
 <body>
   <div class="sidebar">
@@ -106,117 +105,127 @@ button:hover {background: #333;}
     </section>
   </div>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <script src="script.js"></script>
   <script>
     const sidebarItems = document.querySelectorAll('.sidebar li');
-const sections = document.querySelectorAll('.section');
-sidebarItems.forEach(item => {
-  item.addEventListener('click', () => {
-    sidebarItems.forEach(i => i.classList.remove('active'));
-    item.classList.add('active');
-    sections.forEach(sec => sec.classList.remove('active'));
-    document.getElementById(item.dataset.section).classList.add('active');
-    if(item.dataset.section === 'reports') buildReport();
-  });
-});
+    const sections = document.querySelectorAll('.section');
+    sidebarItems.forEach(item => {
+      item.addEventListener('click', () => {
+        sidebarItems.forEach(i => i.classList.remove('active'));
+        item.classList.add('active');
+        sections.forEach(sec => sec.classList.remove('active'));
+        document.getElementById(item.dataset.section).classList.add('active');
+        if(item.dataset.section === 'reports') buildReport();
+      });
+    });
 
-const movsTable = document.querySelector('#movs-table tbody');
-const addBtn = document.getElementById('add-mov');
-const inputs = {
-  date: document.getElementById('input-date'),
-  type: document.getElementById('input-type'),
-  title: document.getElementById('input-title'),
-  responsible: document.getElementById('input-responsible'),
-  link: document.getElementById('input-link'),
-  remarks: document.getElementById('input-remarks')
-};
+    const movsTable = document.querySelector('#movs-table tbody');
+    const addBtn = document.getElementById('add-mov');
+    const inputs = {
+      date: document.getElementById('input-date'),
+      type: document.getElementById('input-type'),
+      title: document.getElementById('input-title'),
+      responsible: document.getElementById('input-responsible'),
+      link: document.getElementById('input-link'),
+      remarks: document.getElementById('input-remarks')
+    };
 
-addBtn.addEventListener('click', () => {
-  if (!inputs.date.value || !inputs.title.value) return;
-  const row = document.createElement('tr');
-  row.innerHTML = `
-    <td>${inputs.date.value}</td>
-    <td>${inputs.type.value}</td>
-    <td>${inputs.title.value}</td>
-    <td>${inputs.responsible.value}</td>
-    <td><a href="${inputs.link.value}" target="_blank">View</a></td>
-    <td>${inputs.remarks.value}</td>
-    <td><button class="edit">Edit</button> <button class="delete">Delete</button></td>
-  `;
-  movsTable.appendChild(row);
-  Object.values(inputs).forEach(input => input.value = '');
-  updateCategoryCounts();
-});
+    addBtn.addEventListener('click', () => {
+      if (!inputs.date.value || !inputs.title.value) return;
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${inputs.date.value}</td>
+        <td>${inputs.type.value}</td>
+        <td>${inputs.title.value}</td>
+        <td>${inputs.responsible.value}</td>
+        <td><a href="${inputs.link.value}" target="_blank">View</a><span class="full-link" style="display:none;">${inputs.link.value}</span></td>
+        <td>${inputs.remarks.value}</td>
+        <td><button class="edit">Edit</button> <button class="delete">Delete</button></td>
+      `;
+      movsTable.appendChild(row);
+      Object.values(inputs).forEach(input => input.value = '');
+      updateCategoryCounts();
+    });
 
-movsTable.addEventListener('click', (e) => {
-  if (e.target.classList.contains('delete')) {
-    e.target.closest('tr').remove();
-    updateCategoryCounts();
-  } else if (e.target.classList.contains('edit')) {
-    const row = e.target.closest('tr').children;
-    inputs.date.value = row[0].textContent;
-    inputs.type.value = row[1].textContent;
-    inputs.title.value = row[2].textContent;
-    inputs.responsible.value = row[3].textContent;
-    inputs.link.value = row[4].querySelector('a').href;
-    inputs.remarks.value = row[5].textContent;
-    e.target.closest('tr').remove();
-    updateCategoryCounts();
-  }
-});
+    movsTable.addEventListener('click', (e) => {
+      if (e.target.classList.contains('delete')) {
+        e.target.closest('tr').remove();
+        updateCategoryCounts();
+      } else if (e.target.classList.contains('edit')) {
+        const row = e.target.closest('tr').children;
+        inputs.date.value = row[0].textContent;
+        inputs.type.value = row[1].textContent;
+        inputs.title.value = row[2].textContent;
+        inputs.responsible.value = row[3].textContent;
+        inputs.link.value = row[4].querySelector('span.full-link').textContent;
+        inputs.remarks.value = row[5].textContent;
+        e.target.closest('tr').remove();
+        updateCategoryCounts();
+      }
+    });
 
-function updateCategoryCounts() {
-  const allRows = [...movsTable.querySelectorAll('tr')];
-  const categories = {};
-  allRows.forEach(row => {
-    const type = row.children[1].textContent;
-    categories[type] = (categories[type] || 0) + 1;
-  });
-  const summaryDiv = document.getElementById('category-summary');
-  summaryDiv.innerHTML = '';
-  let total = 0;
-  for (let [cat, count] of Object.entries(categories)) {
-    summaryDiv.innerHTML += `<div class="card"><h3>${cat}</h3><p>${count}</p></div>`;
-    total += count;
-  }
-  summaryDiv.innerHTML += `<div class="card"><h3>Total IEC Produced</h3><p>${total}</p></div>`;
-}
-
-function buildReport() {
-  const monthFilter = document.getElementById('filter-month').value;
-  const typeFilter = document.getElementById('filter-type').value;
-  const reportTableBody = document.querySelector('#report-table tbody');
-  reportTableBody.innerHTML = '';
-  let total = 0;
-  [...movsTable.querySelectorAll('tr')].forEach(row => {
-    const date = row.children[0].textContent;
-    const type = row.children[1].textContent;
-    if ((monthFilter === '' || date.startsWith(monthFilter)) && (typeFilter === '' || type === typeFilter)) {
-      const newRow = row.cloneNode(true);
-      newRow.removeChild(newRow.lastElementChild);
-      reportTableBody.appendChild(newRow);
-      total++;
+    function updateCategoryCounts() {
+      const allRows = [...movsTable.querySelectorAll('tr')];
+      const categories = {};
+      allRows.forEach(row => {
+        const type = row.children[1].textContent;
+        categories[type] = (categories[type] || 0) + 1;
+      });
+      const summaryDiv = document.getElementById('category-summary');
+      summaryDiv.innerHTML = '';
+      let total = 0;
+      for (let [cat, count] of Object.entries(categories)) {
+        summaryDiv.innerHTML += `<div class="card"><h3>${cat}</h3><p>${count}</p></div>`;
+        total += count;
+      }
+      summaryDiv.innerHTML += `<div class="card"><h3>Total IEC Produced</h3><p>${total}</p></div>`;
     }
-  });
-  document.getElementById('report-total').textContent = total;
-}
 
-document.getElementById('filter-report').addEventListener('click', buildReport);
+    function buildReport() {
+      const monthFilter = document.getElementById('filter-month').value;
+      const typeFilter = document.getElementById('filter-type').value;
+      const reportTableBody = document.querySelector('#report-table tbody');
+      reportTableBody.innerHTML = '';
+      let total = 0;
+      [...movsTable.querySelectorAll('tr')].forEach(row => {
+        const date = row.children[0].textContent;
+        const type = row.children[1].textContent;
+        if ((monthFilter === '' || date.startsWith(monthFilter)) && (typeFilter === '' || type === typeFilter)) {
+          const newRow = row.cloneNode(true);
+          newRow.removeChild(newRow.lastElementChild);
+          reportTableBody.appendChild(newRow);
+          total++;
+        }
+      });
+      document.getElementById('report-total').textContent = total;
+    }
 
-document.getElementById('export-excel').addEventListener('click', () => {
-  const table = document.getElementById('movs-table');
-  const wb = XLSX.utils.table_to_book(table, {sheet:"MOVs"});
-  XLSX.writeFile(wb, 'movs.xlsx');
-});
+    document.getElementById('filter-report').addEventListener('click', buildReport);
 
-document.getElementById('print-table').addEventListener('click', () => {
-  const printWindow = window.open('', '', 'width=800,height=600');
-  printWindow.document.write('<html><head><title>Print</title></head><body>');
-  printWindow.document.write(document.getElementById('movs-table').outerHTML);
-  printWindow.document.write('</body></html>');
-  printWindow.document.close();
-  printWindow.print();
-});
+    document.getElementById('export-excel').addEventListener('click', () => {
+      const table = document.getElementById('movs-table');
+      const wb = XLSX.utils.book_new();
+      const ws_data = [];
+      const rows = table.querySelectorAll('tr');
+      rows.forEach(row => {
+        const cells = row.querySelectorAll('th, td');
+        ws_data.push([...cells].map(c => {
+          const linkSpan = c.querySelector('span.full-link');
+          return linkSpan ? linkSpan.textContent : c.innerText;
+        }));
+      });
+      const ws = XLSX.utils.aoa_to_sheet(ws_data);
+      XLSX.utils.book_append_sheet(wb, ws, "MOVs");
+      XLSX.writeFile(wb, 'movs.xlsx');
+    });
+
+    document.getElementById('print-table').addEventListener('click', () => {
+      const printWindow = window.open('', '', 'width=800,height=600');
+      printWindow.document.write('<html><head><title>Print</title></head><body>');
+      printWindow.document.write(document.getElementById('movs-table').outerHTML);
+      printWindow.document.write('</body></html>');
+      printWindow.document.close();
+      printWindow.print();
+    });
   </script>
 </body>
 </html>
