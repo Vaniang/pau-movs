@@ -1,33 +1,41 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>PAU-MOVs</title>
   <style>
-    * {margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif;}
-    body {display: flex; height: 100vh;}
-    .sidebar {width: 200px; background: #1c1c1c; color: #fff; padding: 20px;}
-    .sidebar h2 {text-align: center; margin-bottom: 20px;}
-    .sidebar ul {list-style: none;}
-    .sidebar li {padding: 10px; cursor: pointer; transition: background 0.3s;}
-    .sidebar li.active, .sidebar li:hover {background: #333;}
-    .content {flex: 1; padding: 20px; background: #f9f9f9; overflow-y: auto;}
-    .section {display: none;}
-    .section.active {display: block;}
-    .summary {display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 20px;}
-    .card {background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); text-align: center;}
-    .input-fields {display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 20px;}
-    .input-fields input, .input-fields select {padding: 10px; border-radius: 4px; border: 1px solid #ccc;}
-    button {padding: 10px 14px; background: #1c1c1c; color: #fff; border: none; border-radius: 4px; cursor: pointer; transition: background 0.3s;}
-    button:hover {background: #333;}
-    .table-actions {margin-bottom: 10px;}
-    #movs-table, #report-table {width: 100%; border-collapse: collapse; background: #fff;}
-    #movs-table th, #movs-table td, #report-table th, #report-table td {padding: 10px; border: 1px solid #ccc; text-align: left;}
-    #movs-table a, #report-table a {color: blue; text-decoration: underline;}
-    .filters {display: flex; gap: 10px; margin-bottom: 10px;}
-    .report-summary {margin: 10px 0; font-size: 1.1em;}
+    *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,Helvetica,sans-serif;}
+    body{display:flex;height:100vh;color:#111;}
+    .sidebar{width:200px;background:#1c1c1c;color:#fff;padding:20px;}
+    .sidebar h2{text-align:center;margin-bottom:20px;font-size:1.25rem;}
+    .sidebar ul{list-style:none;}
+    .sidebar li{padding:10px;cursor:pointer;transition:background .3s;border-radius:4px;}
+    .sidebar li.active,.sidebar li:hover{background:#333;}
+    .content{flex:1;padding:20px;background:#f9f9f9;overflow-y:auto;}
+    .section{display:none;}
+    .section.active{display:block;}
+    .summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:20px;}
+    .card{background:#fff;padding:15px;border-radius:8px;box-shadow:0 2px 5px rgba(0,0,0,.1);text-align:center;}
+    .input-fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:15px;margin-bottom:20px;}
+    .input-fields input,.input-fields select{padding:10px;border-radius:4px;border:1px solid #ccc;font-size:1rem;}
+    button{padding:10px 14px;background:#1c1c1c;color:#fff;border:none;border-radius:4px;cursor:pointer;transition:background .3s;font-size:.95rem;}
+    button:hover{background:#333;}
+    .table-actions{margin-bottom:10px;display:flex;gap:6px;flex-wrap:wrap;}
+    #movs-table,#report-table{width:100%;border-collapse:collapse;background:#fff;}
+    #movs-table th,#movs-table td,#report-table th,#report-table td{padding:10px;border:1px solid #ccc;text-align:left;vertical-align:top;}
+    #movs-table a,#report-table a{color:#1976d2;text-decoration:underline;word-break:break-all;}
+    .filters{display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap;}
+    .report-summary{margin:10px 0;font-size:1.1em;}
+    .sr-only{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;}
+    @media(max-width:640px){body{flex-direction:column;}.sidebar{width:100%;display:flex;align-items:center;justify-content:space-around;padding:10px;}.sidebar h2{display:none;}.content{padding:10px;}}
+    @media print{body{display:block;background:#fff;color:#000;}.sidebar,.input-fields,.table-actions,.filters{display:none!important;}button{display:none!important;}.content{padding:0;}}
   </style>
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/11.0.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore-compat.js"></script>
+  <!-- SheetJS for Excel export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
   <div class="sidebar">
@@ -38,12 +46,14 @@
       <li data-section="reports">Reports</li>
     </ul>
   </div>
+
   <div class="content">
+    <!-- DASHBOARD -->
     <section id="dashboard" class="section active">
       <h1>Dashboard</h1>
       <div class="summary" id="category-summary"></div>
       <div class="input-fields">
-        <input type="date" id="input-date">
+        <input type="date" id="input-date" />
         <select id="input-type">
           <option value="IEC Videos">IEC Videos</option>
           <option value="News Release">News Release</option>
@@ -52,14 +62,15 @@
           <option value="Social Cards (others)">Social Cards (others)</option>
           <option value="Social Cards (PAU)">Social Cards (PAU)</option>
         </select>
-        <input type="text" id="input-title" placeholder="Title/Details">
-        <input type="text" id="input-responsible" placeholder="Responsible">
-        <input type="url" id="input-link" placeholder="Link">
-        <input type="text" id="input-remarks" placeholder="Remarks">
+        <input type="text" id="input-title" placeholder="Title/Details" />
+        <input type="text" id="input-responsible" placeholder="Responsible" />
+        <input type="url" id="input-link" placeholder="Link" />
+        <input type="text" id="input-remarks" placeholder="Remarks" />
         <button id="add-mov">Add</button>
       </div>
     </section>
 
+    <!-- MOVS TABLE -->
     <section id="movs" class="section">
       <h1>MOVs</h1>
       <div class="table-actions">
@@ -69,17 +80,24 @@
       <table id="movs-table">
         <thead>
           <tr>
-            <th>Date</th><th>Type</th><th>Title</th><th>Responsible</th><th>Link</th><th>Remarks</th><th>Actions</th>
+            <th>Date</th>
+            <th>Type</th>
+            <th>Title</th>
+            <th>Responsible</th>
+            <th>Link</th>
+            <th>Remarks</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody></tbody>
       </table>
     </section>
 
+    <!-- REPORTS -->
     <section id="reports" class="section">
       <h1>Reports</h1>
       <div class="filters">
-        <input type="month" id="filter-month">
+        <input type="month" id="filter-month" />
         <select id="filter-type">
           <option value="">All Categories</option>
           <option value="IEC Videos">IEC Videos</option>
@@ -90,6 +108,8 @@
           <option value="Social Cards (PAU)">Social Cards (PAU)</option>
         </select>
         <button id="filter-report">Filter</button>
+        <button id="export-report">Export Excel</button>
+        <button id="print-report">Print</button>
       </div>
       <div class="report-summary">
         <h3>Total IEC Produced: <span id="report-total">0</span></h3>
@@ -97,135 +117,348 @@
       <table id="report-table">
         <thead>
           <tr>
-            <th>Date</th><th>Type</th><th>Title</th><th>Responsible</th><th>Link</th><th>Remarks</th>
+            <th>Date</th>
+            <th>Type</th>
+            <th>Title</th>
+            <th>Responsible</th>
+            <th>Link</th>
+            <th>Remarks</th>
           </tr>
         </thead>
         <tbody></tbody>
       </table>
     </section>
   </div>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <script>
-    const sidebarItems = document.querySelectorAll('.sidebar li');
-    const sections = document.querySelectorAll('.section');
-    sidebarItems.forEach(item => {
-      item.addEventListener('click', () => {
-        sidebarItems.forEach(i => i.classList.remove('active'));
-        item.classList.add('active');
-        sections.forEach(sec => sec.classList.remove('active'));
-        document.getElementById(item.dataset.section).classList.add('active');
-        if(item.dataset.section === 'reports') buildReport();
-      });
-    });
 
-    const movsTable = document.querySelector('#movs-table tbody');
-    const addBtn = document.getElementById('add-mov');
-    const inputs = {
-      date: document.getElementById('input-date'),
-      type: document.getElementById('input-type'),
-      title: document.getElementById('input-title'),
-      responsible: document.getElementById('input-responsible'),
-      link: document.getElementById('input-link'),
-      remarks: document.getElementById('input-remarks')
-    };
+<script>
+/***********************************
+ * 1. FIREBASE CONFIG (EDIT THESE!) *
+ ***********************************/
+const firebaseConfig = {
+  apiKey: "AIzaSyBTMtGna6DHyqdSxvmEsIRL-ffWEbR-Cmk",
+  authDomain: "pau-movs.firebaseapp.com",
+  projectId: "pau-movs",
+  storageBucket: "pau-movs.firebasestorage.app",
+  messagingSenderId: "502537936923",
+  appId: "1:502537936923:web:5f7c97f1469efc9a9b18be",
+  measurementId: "G-SCJBGH476G"
+};
+/***********************************
+ * 2. INIT FIREBASE / FIRESTORE     *
+ ***********************************/
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const movsColl = db.collection('movs');
 
-    addBtn.addEventListener('click', () => {
-      if (!inputs.date.value || !inputs.title.value) return;
-      const row = document.createElement('tr');
-      row.innerHTML = `
-        <td>${inputs.date.value}</td>
-        <td>${inputs.type.value}</td>
-        <td>${inputs.title.value}</td>
-        <td>${inputs.responsible.value}</td>
-        <td><a href="${inputs.link.value}" target="_blank">View</a><span class="full-link" style="display:none;">${inputs.link.value}</span></td>
-        <td>${inputs.remarks.value}</td>
-        <td><button class="edit">Edit</button> <button class="delete">Delete</button></td>
-      `;
-      movsTable.appendChild(row);
-      Object.values(inputs).forEach(input => input.value = '');
-      updateCategoryCounts();
-    });
+/***********************************
+ * 3. STATE                         *
+ ***********************************/
+const TYPES = [
+  'IEC Videos',
+  'News Release',
+  'Photo Release',
+  'PILU EduAksyon',
+  'Social Cards (others)',
+  'Social Cards (PAU)'
+];
+let movsData = [];        // live from Firestore
+let editingId = null;     // doc id while editing
 
-    movsTable.addEventListener('click', (e) => {
-      if (e.target.classList.contains('delete')) {
-        e.target.closest('tr').remove();
-        updateCategoryCounts();
-      } else if (e.target.classList.contains('edit')) {
-        const row = e.target.closest('tr').children;
-        inputs.date.value = row[0].textContent;
-        inputs.type.value = row[1].textContent;
-        inputs.title.value = row[2].textContent;
-        inputs.responsible.value = row[3].textContent;
-        inputs.link.value = row[4].querySelector('span.full-link').textContent;
-        inputs.remarks.value = row[5].textContent;
-        e.target.closest('tr').remove();
-        updateCategoryCounts();
-      }
-    });
+/***********************************
+ * 4. ELEMENT REFS                  *
+ ***********************************/
+const sidebarItems = document.querySelectorAll('.sidebar li');
+const sections = document.querySelectorAll('.section');
+const movsTbody = document.querySelector('#movs-table tbody');
+const addBtn = document.getElementById('add-mov');
+const inputDate = document.getElementById('input-date');
+const inputType = document.getElementById('input-type');
+const inputTitle = document.getElementById('input-title');
+const inputResp = document.getElementById('input-responsible');
+const inputLink = document.getElementById('input-link');
+const inputRemarks = document.getElementById('input-remarks');
+const categorySummary = document.getElementById('category-summary');
 
-    function updateCategoryCounts() {
-      const allRows = [...movsTable.querySelectorAll('tr')];
-      const categories = {};
-      allRows.forEach(row => {
-        const type = row.children[1].textContent;
-        categories[type] = (categories[type] || 0) + 1;
-      });
-      const summaryDiv = document.getElementById('category-summary');
-      summaryDiv.innerHTML = '';
-      let total = 0;
-      for (let [cat, count] of Object.entries(categories)) {
-        summaryDiv.innerHTML += `<div class="card"><h3>${cat}</h3><p>${count}</p></div>`;
-        total += count;
-      }
-      summaryDiv.innerHTML += `<div class="card"><h3>Total IEC Produced</h3><p>${total}</p></div>`;
+// Reports
+const reportMonthEl = document.getElementById('filter-month');
+const reportTypeEl  = document.getElementById('filter-type');
+const reportBtn     = document.getElementById('filter-report');
+const reportTbody   = document.querySelector('#report-table tbody');
+const reportTotalEl = document.getElementById('report-total');
+const reportExportBtn = document.getElementById('export-report');
+const reportPrintBtn  = document.getElementById('print-report');
+
+// MOVs export/print
+const exportMovsBtn = document.getElementById('export-excel');
+const printMovsBtn  = document.getElementById('print-table');
+
+/***********************************
+ * 5. NAVIGATION                    *
+ ***********************************/
+sidebarItems.forEach(item=>{
+  item.addEventListener('click',()=>{
+    sidebarItems.forEach(i=>i.classList.remove('active'));
+    item.classList.add('active');
+    sections.forEach(sec=>sec.classList.remove('active'));
+    document.getElementById(item.dataset.section).classList.add('active');
+    if(item.dataset.section==='reports') buildReport();
+  });
+});
+
+/***********************************
+ * 6. CRUD HELPERS (FIRESTORE)      *
+ ***********************************/
+async function addMOV(rec){
+  await movsColl.add({
+    date: rec.date,
+    type: rec.type,
+    title: rec.title,
+    responsible: rec.responsible,
+    link: rec.link,
+    remarks: rec.remarks,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+  });
+}
+
+async function updateMOV(id, rec){
+  await movsColl.doc(id).update({
+    date: rec.date,
+    type: rec.type,
+    title: rec.title,
+    responsible: rec.responsible,
+    link: rec.link,
+    remarks: rec.remarks,
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+  });
+}
+
+async function deleteMOV(id){
+  await movsColl.doc(id).delete();
+}
+
+/***********************************
+ * 7. RENDERERS                     *
+ ***********************************/
+function renderMOVsTable(){
+  movsTbody.innerHTML = movsData.map(rec=>{
+    const esc = s=>String(s??'').replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[c]));
+    const linkEsc = esc(rec.link);
+    return `<tr data-id="${rec.id}">
+      <td>${esc(rec.date)}</td>
+      <td>${esc(rec.type)}</td>
+      <td>${esc(rec.title)}</td>
+      <td>${esc(rec.responsible)}</td>
+      <td><a href="${linkEsc}" target="_blank">View</a><span class="full-link" style="display:none;">${linkEsc}</span></td>
+      <td>${esc(rec.remarks)}</td>
+      <td><button class="edit">Edit</button> <button class="delete">Delete</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function renderCategorySummary(){
+  const counts={};
+  TYPES.forEach(t=>counts[t]=0);
+  movsData.forEach(r=>{ if(counts[r.type]!==undefined) counts[r.type]++; });
+  categorySummary.innerHTML='';
+  let total=0;
+  for(const t of TYPES){
+    const c=counts[t]||0; total+=c;
+    categorySummary.innerHTML+=`<div class="card"><h3>${t}</h3><p>${c}</p></div>`;
+  }
+  categorySummary.innerHTML+=`<div class="card"><h3>Total IEC Produced</h3><p>${total}</p></div>`;
+}
+
+function renderAll(){
+  renderMOVsTable();
+  renderCategorySummary();
+}
+
+/***********************************
+ * 8. FORM ADD / EDIT               *
+ ***********************************/
+function resetForm(){
+  inputDate.value = todayISO();
+  inputType.value = 'IEC Videos';
+  inputTitle.value = '';
+  inputResp.value = '';
+  inputLink.value = '';
+  inputRemarks.value = '';
+  editingId = null;
+  addBtn.textContent = 'Add';
+}
+
+addBtn.addEventListener('click', async ()=>{
+  const rec = {
+    date: inputDate.value || todayISO(),
+    type: inputType.value,
+    title: inputTitle.value.trim(),
+    responsible: inputResp.value.trim(),
+    link: inputLink.value.trim(),
+    remarks: inputRemarks.value.trim(),
+  };
+  if(!rec.title){alert('Please enter a Title.');return;}
+  try{
+    if(editingId){
+      await updateMOV(editingId, rec);
+    }else{
+      await addMOV(rec);
     }
+    resetForm();
+  }catch(err){
+    console.error(err);alert('Save failed: '+err.message);
+  }
+});
 
-    function buildReport() {
-      const monthFilter = document.getElementById('filter-month').value;
-      const typeFilter = document.getElementById('filter-type').value;
-      const reportTableBody = document.querySelector('#report-table tbody');
-      reportTableBody.innerHTML = '';
-      let total = 0;
-      [...movsTable.querySelectorAll('tr')].forEach(row => {
-        const date = row.children[0].textContent;
-        const type = row.children[1].textContent;
-        if ((monthFilter === '' || date.startsWith(monthFilter)) && (typeFilter === '' || type === typeFilter)) {
-          const newRow = row.cloneNode(true);
-          newRow.removeChild(newRow.lastElementChild);
-          reportTableBody.appendChild(newRow);
-          total++;
-        }
-      });
-      document.getElementById('report-total').textContent = total;
-    }
+// MOVs row actions
+movsTbody.addEventListener('click',async e=>{
+  const tr = e.target.closest('tr');
+  if(!tr) return;
+  const id = tr.dataset.id;
+  if(e.target.classList.contains('delete')){
+    if(confirm('Delete this entry?')){
+      try{await deleteMOV(id);}catch(err){alert('Delete failed: '+err.message);} }
+  }else if(e.target.classList.contains('edit')){
+    const rec = movsData.find(r=>r.id===id);
+    if(!rec) return;
+    inputDate.value = rec.date;
+    inputType.value = rec.type;
+    inputTitle.value = rec.title;
+    inputResp.value = rec.responsible;
+    inputLink.value = rec.link;
+    inputRemarks.value = rec.remarks;
+    editingId = id;
+    addBtn.textContent = 'Save';
+    // jump user to dashboard form
+    sidebarItems.forEach(i=>i.classList.remove('active'));
+    document.querySelector('[data-section="dashboard"]').classList.add('active');
+    sections.forEach(sec=>sec.classList.remove('active'));
+    document.getElementById('dashboard').classList.add('active');
+  }
+});
 
-    document.getElementById('filter-report').addEventListener('click', buildReport);
+/***********************************
+ * 9. REPORTS                       *
+ ***********************************/
+function buildReport(){
+  const monthVal = reportMonthEl.value; // "YYYY-MM"
+  const typeVal  = reportTypeEl.value;  // or ""
+  let filtered = movsData.slice();
+  if(monthVal){ filtered = filtered.filter(r=>r.date.startsWith(monthVal)); }
+  if(typeVal){ filtered = filtered.filter(r=>r.type===typeVal); }
+  renderReportTable(filtered);
+}
 
-    document.getElementById('export-excel').addEventListener('click', () => {
-      const table = document.getElementById('movs-table');
-      const wb = XLSX.utils.book_new();
-      const ws_data = [];
-      const rows = table.querySelectorAll('tr');
-      rows.forEach(row => {
-        const cells = row.querySelectorAll('th, td');
-        ws_data.push([...cells].map(c => {
-          const linkSpan = c.querySelector('span.full-link');
-          return linkSpan ? linkSpan.textContent : c.innerText;
-        }));
-      });
-      const ws = XLSX.utils.aoa_to_sheet(ws_data);
-      XLSX.utils.book_append_sheet(wb, ws, "MOVs");
-      XLSX.writeFile(wb, 'movs.xlsx');
-    });
+function renderReportTable(rows){
+  const esc = s=>String(s??'').replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[c]));
+  reportTbody.innerHTML = rows.map(r=>{
+    const linkEsc = esc(r.link);
+    return `<tr>
+      <td>${esc(r.date)}</td>
+      <td>${esc(r.type)}</td>
+      <td>${esc(r.title)}</td>
+      <td>${esc(r.responsible)}</td>
+      <td><a href="${linkEsc}" target="_blank">View</a></td>
+      <td>${esc(r.remarks)}</td>
+    </tr>`;}).join('');
+  reportTotalEl.textContent = rows.length;
+}
 
-    document.getElementById('print-table').addEventListener('click', () => {
-      const printWindow = window.open('', '', 'width=800,height=600');
-      printWindow.document.write('<html><head><title>Print</title></head><body>');
-      printWindow.document.write(document.getElementById('movs-table').outerHTML);
-      printWindow.document.write('</body></html>');
-      printWindow.document.close();
-      printWindow.print();
-    });
-  </script>
+reportBtn.addEventListener('click',buildReport);
+
+reportExportBtn.addEventListener('click',()=>{
+  const monthVal = reportMonthEl.value;
+  const typeVal  = reportTypeEl.value;
+  let filtered = movsData.slice();
+  if(monthVal){ filtered = filtered.filter(r=>r.date.startsWith(monthVal)); }
+  if(typeVal){ filtered = filtered.filter(r=>r.type===typeVal); }
+  exportRecordsToExcel(filtered, 'movs-report');
+});
+
+reportPrintBtn.addEventListener('click',()=>{
+  printElement(document.getElementById('report-table').outerHTML,'PAU-MOVs Report');
+});
+
+/***********************************
+ * 10. EXPORT + PRINT HELPERS       *
+ ***********************************/
+function exportRecordsToExcel(records, base){
+  if(!records.length){alert('No data to export.');return;}
+  const rows = records.map(r=>({
+    Date:r.date,
+    Type:r.type,
+    Title:r.title,
+    Responsible:r.responsible,
+    Link:r.link,
+    Remarks:r.remarks
+  }));
+  const ws = XLSX.utils.json_to_sheet(rows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'MOVs');
+  const ts = new Date().toISOString().slice(0,19).replace(/[:T]/g,'-');
+  XLSX.writeFile(wb, `${base||'movs'}-${ts}.xlsx`);
+}
+
+exportMovsBtn.addEventListener('click',()=>{
+  exportRecordsToExcel(movsData,'movs');
+});
+
+printMovsBtn.addEventListener('click',()=>{
+  printElement(document.getElementById('movs-table').outerHTML,'PAU-MOVs MOVs Table');
+});
+
+function printElement(htmlFragment,title){
+  const w = window.open('', '', 'width=800,height=600');
+  w.document.write('<html><head><title>'+title+'</title></head><body>');
+  w.document.write('<h1>'+title+'</h1>');
+  w.document.write(htmlFragment);
+  w.document.write('</body></html>');
+  w.document.close();
+  w.focus();
+  w.print();
+}
+
+/***********************************
+ * 11. LOCAL CACHE (fallback)       *
+ ***********************************/
+function cacheSave(){ try{localStorage.setItem('pauMovsCache', JSON.stringify(movsData));}catch(_){} }
+function cacheLoad(){ try{return JSON.parse(localStorage.getItem('pauMovsCache')||'[]');}catch(_){return [];} }
+
+/***********************************
+ * 12. FIRESTORE REALTIME SYNC      *
+ ***********************************/
+// Listen to Firestore; keep local cache in sync.
+movsColl.orderBy('date','desc').orderBy('createdAt','desc').onSnapshot(snap=>{
+  const arr=[];
+  snap.forEach(doc=>{ arr.push({id:doc.id,...doc.data()}); });
+  // fill date if timestamp? ensure string
+  arr.forEach(r=>{ if(r.date instanceof firebase.firestore.Timestamp){ r.date = r.date.toDate().toISOString().slice(0,10); } });
+  movsData = arr;
+  cacheSave();
+  renderAll();
+},err=>{
+  console.error('Firestore listen error',err);
+  // fallback to cache if nothing shown
+  if(!movsData.length){ movsData = cacheLoad(); renderAll(); }
+});
+
+/***********************************
+ * 13. UTILITIES                    *
+ ***********************************/
+function todayISO(){
+  const d=new Date();
+  const m=String(d.getMonth()+1).padStart(2,'0');
+  const day=String(d.getDate()).padStart(2,'0');
+  return `${d.getFullYear()}-${m}-${day}`;
+}
+
+window.addEventListener('load',()=>{
+  // default date
+  inputDate.value = todayISO();
+  // show cached immediately for perceived speed, then Firestore will overwrite
+  const cached = cacheLoad();
+  if(cached.length){ movsData = cached; renderAll(); }
+});
+</script>
 </body>
 </html>
