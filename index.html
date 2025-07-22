@@ -1,218 +1,222 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>PAU-MOVS Monitoring System</title>
-
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-firestore-compat.js"></script>
-
-  <!-- Export & Chart -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-  <link rel="manifest" href="manifest.json" />
-  <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('service-worker.js');
-      });
-    }
-  </script>
-
-  <style>
-    body { font-family: Arial; margin: 0; background: #f7fafc; display: flex; }
-    .sidebar {
-      width: 250px; background: #1e293b; color: white;
-      min-height: 100vh; padding: 20px;
-    }
-    .sidebar h2 { margin-top: 0; }
-    .sidebar ul { list-style: none; padding-left: 0; }
-    .sidebar ul li { cursor: pointer; padding: 10px 0; }
-    .sidebar ul li:hover { text-decoration: underline; }
-    .main { flex: 1; padding: 20px; }
-    h1, h2 { color: #1e293b; }
-    .form-container, .table-container {
-      background: white; padding: 20px; border-radius: 10px;
-      box-shadow: 0 3px 6px rgba(0,0,0,0.1); margin-bottom: 30px;
-    }
-    label { display: block; margin-top: 10px; }
-    input, select, textarea {
-      width: 100%; padding: 8px; margin-top: 4px; margin-bottom: 10px;
-      border: 1px solid #ccc; border-radius: 6px;
-    }
-    button {
-      padding: 8px 15px; background: #2563eb; color: white;
-      border: none; border-radius: 6px; cursor: pointer; margin-right: 5px;
-    }
-    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-    th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
-    th { background-color: #f3f4f6; }
-    a { color: #2563eb; text-decoration: none; }
-  </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PAU-MOVs</title>
+  <link rel="stylesheet" href="style.css">
+    <style>
+      * {margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif;}
+body {display: flex; height: 100vh;}
+.sidebar {width: 200px; background: #1c1c1c; color: #fff; padding: 20px;}
+.sidebar h2 {text-align: center; margin-bottom: 20px;}
+.sidebar ul {list-style: none;}
+.sidebar li {padding: 10px; cursor: pointer; transition: background 0.3s;}
+.sidebar li.active, .sidebar li:hover {background: #333;}
+.content {flex: 1; padding: 20px; background: #f9f9f9; overflow-y: auto;}
+.section {display: none;}
+.section.active {display: block;}
+.summary {display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 20px;}
+.card {background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); text-align: center;}
+.input-fields {display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-bottom: 20px;}
+button {padding: 8px 12px; background: #1c1c1c; color: #fff; border: none; border-radius: 4px; cursor: pointer; transition: background 0.3s;}
+button:hover {background: #333;}
+.table-actions {margin-bottom: 10px;}
+#movs-table, #report-table {width: 100%; border-collapse: collapse; background: #fff;}
+#movs-table th, #movs-table td, #report-table th, #report-table td {padding: 10px; border: 1px solid #ccc; text-align: left;}
+#movs-table a, #report-table a {color: blue; text-decoration: underline;}
+.filters {display: flex; gap: 10px; margin-bottom: 10px;}
+.report-summary {margin: 10px 0; font-size: 1.1em;}
+    </style>
 </head>
 <body>
   <div class="sidebar">
-    <h2>PAU-MOVS</h2>
+    <h2>PAU-MOVs</h2>
     <ul>
-      <li onclick="showSection('dashboard')">Dashboard</li>
-      <li onclick="showSection('table')">MOVs</li>
+      <li class="active" data-section="dashboard">Dashboard</li>
+      <li data-section="movs">MOVs</li>
+      <li data-section="reports">Reports</li>
     </ul>
   </div>
-  <div class="main">
-    <h1>PAU-MOVS Monitoring System</h1>
-
-    <div class="table-container" id="dashboard-summary">
-      <h2>Monthly Summary</h2>
-      <canvas id="monthlyChart" height="120"></canvas>
-    </div>
-
-    <div class="form-container" id="dashboard-section">
-      <h2 id="form-title">Add Entry</h2>
-      <input type="hidden" id="editId" />
-      <label>Date: <input type="date" id="date" /></label>
-      <label>Type:
-        <select id="type">
-          <option>IEC Videos</option>
-          <option>News Release</option>
-          <option>Photo Release</option>
-          <option>PILU EduAksyon</option>
-          <option>Social Cards (others)</option>
-          <option>Social Cards (PAU)</option>
+  <div class="content">
+    <section id="dashboard" class="section active">
+      <h1>Dashboard</h1>
+      <div class="summary" id="category-summary"></div>
+      <div class="input-fields">
+        <input type="date" id="input-date">
+        <select id="input-type">
+          <option value="IEC Videos">IEC Videos</option>
+          <option value="News Release">News Release</option>
+          <option value="Photo Release">Photo Release</option>
+          <option value="PILU EduAksyon">PILU EduAksyon</option>
+          <option value="Social Cards (others)">Social Cards (others)</option>
+          <option value="Social Cards (PAU)">Social Cards (PAU)</option>
         </select>
-      </label>
-      <label>Title/Details: <input type="text" id="details" /></label>
-      <label>Responsible: <input type="text" id="responsible" /></label>
-      <label>Link: <input type="text" id="link" /></label>
-      <label>Remarks: <textarea id="remarks"></textarea></label>
-      <button onclick="saveEntry()">Submit</button>
-      <button onclick="clearForm()">Cancel</button>
-    </div>
+        <input type="text" id="input-title" placeholder="Title/Details">
+        <input type="text" id="input-responsible" placeholder="Responsible">
+        <input type="url" id="input-link" placeholder="Link">
+        <input type="text" id="input-remarks" placeholder="Remarks">
+        <button id="add-mov">Add</button>
+      </div>
+    </section>
 
-    <div class="table-container" id="table-section" style="display:none">
-      <h2>Entries Table</h2>
-      <input type="text" id="searchInput" placeholder="Search..." onkeyup="renderTable()" />
-      <table id="entryTable"><thead>
-        <tr><th>Date</th><th>Type</th><th>Details</th><th>Responsible</th><th>Link</th><th>Remarks</th><th>Actions</th></tr>
-      </thead><tbody></tbody></table>
-    </div>
+    <section id="movs" class="section">
+      <h1>MOVs</h1>
+      <div class="table-actions">
+        <button id="export-excel">Export Excel</button>
+        <button id="print-table">Print</button>
+      </div>
+      <table id="movs-table">
+        <thead>
+          <tr>
+            <th>Date</th><th>Type</th><th>Title</th><th>Responsible</th><th>Link</th><th>Remarks</th><th>Actions</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+    <section id="reports" class="section">
+      <h1>Reports</h1>
+      <div class="filters">
+        <input type="month" id="filter-month">
+        <select id="filter-type">
+          <option value="">All Categories</option>
+          <option value="IEC Videos">IEC Videos</option>
+          <option value="News Release">News Release</option>
+          <option value="Photo Release">Photo Release</option>
+          <option value="PILU EduAksyon">PILU EduAksyon</option>
+          <option value="Social Cards (others)">Social Cards (others)</option>
+          <option value="Social Cards (PAU)">Social Cards (PAU)</option>
+        </select>
+        <button id="filter-report">Filter</button>
+      </div>
+      <div class="report-summary">
+        <h3>Total IEC Produced: <span id="report-total">0</span></h3>
+      </div>
+      <table id="report-table">
+        <thead>
+          <tr>
+            <th>Date</th><th>Type</th><th>Title</th><th>Responsible</th><th>Link</th><th>Remarks</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
   </div>
-
-<script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const firebaseConfig = {
-      apiKey: "AIzaSyBTMtGna6DHyqdSxvmEsIRL-ffWEbR-Cmk",
-      authDomain: "pau-movs.firebaseapp.com",
-      projectId: "pau-movs",
-      storageBucket: "pau-movs.appspot.com",
-      messagingSenderId: "502537936923",
-      appId: "1:502537936923:web:5f7c97f1469efc9a9b18be",
-      measurementId: "G-SCJBGH476G"
-    };
-    firebase.initializeApp(firebaseConfig);
-    window.db = firebase.firestore();
-
-    async function saveEntry() {
-      const entry = {
-        date: document.getElementById('date').value,
-        type: document.getElementById('type').value,
-        details: document.getElementById('details').value,
-        responsible: document.getElementById('responsible').value,
-        link: document.getElementById('link').value,
-        remarks: document.getElementById('remarks').value
-      };
-      const editId = document.getElementById('editId').value;
-      if (!entry.date || !entry.details) return alert("Date and Details required.");
-
-      try {
-        if (editId) {
-          await window.db.collection("pau_movs").doc(editId).update(entry);
-        } else {
-          await window.db.collection("pau_movs").add(entry);
-        }
-        clearForm();
-        renderTable();
-        drawChart();
-      } catch (e) { alert("Error saving entry"); }
-    }
-
-    function clearForm() {
-      ['date','details','responsible','link','remarks','editId'].forEach(id => document.getElementById(id).value = "");
-      document.getElementById('type').value = "IEC Videos";
-      document.getElementById('form-title').innerText = "Add Entry";
-    }
-
-    async function renderTable() {
-      const tbody = document.querySelector("#entryTable tbody");
-      tbody.innerHTML = "";
-      const snapshot = await window.db.collection("pau_movs").orderBy("date", "desc").get();
-      const search = document.getElementById('searchInput').value.toLowerCase();
-      snapshot.forEach(doc => {
-        const d = doc.data();
-        if (!Object.values(d).some(v => String(v).toLowerCase().includes(search))) return;
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${d.date}</td><td>${d.type}</td><td>${d.details}</td>
-          <td>${d.responsible}</td>
-          <td><a href="${d.link}" target="_blank">Link</a></td>
-          <td>${d.remarks}</td>
-          <td>
-            <button onclick='editEntry("${doc.id}", ${JSON.stringify(d)})'>Edit</button>
-            <button onclick='deleteEntry("${doc.id}")'>Delete</button>
-          </td>`;
-        tbody.appendChild(tr);
-      });
-    }
-
-    function editEntry(id, d) {
-      document.getElementById('editId').value = id;
-      Object.entries(d).forEach(([k, v]) => {
-        if (document.getElementById(k)) document.getElementById(k).value = v;
-      });
-      document.getElementById('form-title').innerText = "Edit Entry";
-      showSection('dashboard');
-    }
-
-    async function deleteEntry(id) {
-      if (confirm("Delete this entry?")) {
-        await window.db.collection("pau_movs").doc(id).delete();
-        renderTable(); drawChart();
-      }
-    }
-
-    function showSection(section) {
-      document.getElementById('dashboard-section').style.display = section === 'dashboard' ? 'block' : 'none';
-      document.getElementById('dashboard-summary').style.display = section === 'dashboard' ? 'block' : 'none';
-      document.getElementById('table-section').style.display = section === 'table' ? 'block' : 'none';
-    }
-
-    async function drawChart() {
-      const snapshot = await window.db.collection("pau_movs").get();
-      const monthCount = {};
-      snapshot.forEach(doc => {
-        const month = new Date(doc.data().date).toLocaleString('default', { month: 'short', year: 'numeric' });
-        monthCount[month] = (monthCount[month] || 0) + 1;
-      });
-      const ctx = document.getElementById('monthlyChart').getContext('2d');
-      if (window.myChart) window.myChart.destroy();
-      window.myChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: Object.keys(monthCount),
-          datasets: [{ label: 'Entries', data: Object.values(monthCount), backgroundColor: '#2563eb' }]
-        }
-      });
-    }
-
-    window.onload = () => {
-      renderTable();
-      drawChart();
-    };
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="script.js"></script>
+  <script>
+    const sidebarItems = document.querySelectorAll('.sidebar li');
+const sections = document.querySelectorAll('.section');
+sidebarItems.forEach(item => {
+  item.addEventListener('click', () => {
+    sidebarItems.forEach(i => i.classList.remove('active'));
+    item.classList.add('active');
+    sections.forEach(sec => sec.classList.remove('active'));
+    document.getElementById(item.dataset.section).classList.add('active');
+    if(item.dataset.section === 'reports') buildReport();
   });
-</script>
+});
+
+const movsTable = document.querySelector('#movs-table tbody');
+const addBtn = document.getElementById('add-mov');
+const inputs = {
+  date: document.getElementById('input-date'),
+  type: document.getElementById('input-type'),
+  title: document.getElementById('input-title'),
+  responsible: document.getElementById('input-responsible'),
+  link: document.getElementById('input-link'),
+  remarks: document.getElementById('input-remarks')
+};
+
+addBtn.addEventListener('click', () => {
+  if (!inputs.date.value || !inputs.title.value) return;
+  const row = document.createElement('tr');
+  row.innerHTML = `
+    <td>${inputs.date.value}</td>
+    <td>${inputs.type.value}</td>
+    <td>${inputs.title.value}</td>
+    <td>${inputs.responsible.value}</td>
+    <td><a href="${inputs.link.value}" target="_blank">View</a></td>
+    <td>${inputs.remarks.value}</td>
+    <td><button class="edit">Edit</button> <button class="delete">Delete</button></td>
+  `;
+  movsTable.appendChild(row);
+  Object.values(inputs).forEach(input => input.value = '');
+  updateCategoryCounts();
+});
+
+movsTable.addEventListener('click', (e) => {
+  if (e.target.classList.contains('delete')) {
+    e.target.closest('tr').remove();
+    updateCategoryCounts();
+  } else if (e.target.classList.contains('edit')) {
+    const row = e.target.closest('tr').children;
+    inputs.date.value = row[0].textContent;
+    inputs.type.value = row[1].textContent;
+    inputs.title.value = row[2].textContent;
+    inputs.responsible.value = row[3].textContent;
+    inputs.link.value = row[4].querySelector('a').href;
+    inputs.remarks.value = row[5].textContent;
+    e.target.closest('tr').remove();
+    updateCategoryCounts();
+  }
+});
+
+function updateCategoryCounts() {
+  const allRows = [...movsTable.querySelectorAll('tr')];
+  const categories = {};
+  allRows.forEach(row => {
+    const type = row.children[1].textContent;
+    categories[type] = (categories[type] || 0) + 1;
+  });
+  const summaryDiv = document.getElementById('category-summary');
+  summaryDiv.innerHTML = '';
+  let total = 0;
+  for (let [cat, count] of Object.entries(categories)) {
+    summaryDiv.innerHTML += `<div class="card"><h3>${cat}</h3><p>${count}</p></div>`;
+    total += count;
+  }
+  summaryDiv.innerHTML += `<div class="card"><h3>Total IEC Produced</h3><p>${total}</p></div>`;
+}
+
+function buildReport() {
+  const monthFilter = document.getElementById('filter-month').value;
+  const typeFilter = document.getElementById('filter-type').value;
+  const reportTableBody = document.querySelector('#report-table tbody');
+  reportTableBody.innerHTML = '';
+  let total = 0;
+  [...movsTable.querySelectorAll('tr')].forEach(row => {
+    const date = row.children[0].textContent;
+    const type = row.children[1].textContent;
+    if ((monthFilter === '' || date.startsWith(monthFilter)) && (typeFilter === '' || type === typeFilter)) {
+      const newRow = row.cloneNode(true);
+      newRow.removeChild(newRow.lastElementChild);
+      reportTableBody.appendChild(newRow);
+      total++;
+    }
+  });
+  document.getElementById('report-total').textContent = total;
+}
+
+document.getElementById('filter-report').addEventListener('click', buildReport);
+
+document.getElementById('export-excel').addEventListener('click', () => {
+  const table = document.getElementById('movs-table');
+  const wb = XLSX.utils.table_to_book(table, {sheet:"MOVs"});
+  XLSX.writeFile(wb, 'movs.xlsx');
+});
+
+document.getElementById('print-table').addEventListener('click', () => {
+  const printWindow = window.open('', '', 'width=800,height=600');
+  printWindow.document.write('<html><head><title>Print</title></head><body>');
+  printWindow.document.write(document.getElementById('movs-table').outerHTML);
+  printWindow.document.write('</body></html>');
+  printWindow.document.close();
+  printWindow.print();
+});
+  </script>
 </body>
 </html>
