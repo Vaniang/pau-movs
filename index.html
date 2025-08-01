@@ -492,7 +492,7 @@ window.addEventListener('load',()=>{
     for (const row of json) {
       if (row.DATE && row.TYPE && row["TITLE/DETAILS"] && row.RESPONSIBLE) {
         const rec = {
-          date: String(new Date(row.DATE)).slice(0, 10),
+          date: formatExcelDate(row.DATE),
           type: row.TYPE,
           title: row["TITLE/DETAILS"],
           responsible: row.RESPONSIBLE,
@@ -543,6 +543,40 @@ document.getElementById('deleteSelectedBtn').addEventListener('click', async fun
     }
   }
 });
+
+function formatExcelDate(value) {
+  if (!value) return "";
+
+  // If it's already a JS Date object
+  if (value instanceof Date && !isNaN(value)) {
+    return formatDate(value);
+  }
+
+  // If it's an Excel serial number (e.g., 44562)
+  if (typeof value === 'number') {
+    const excelEpoch = new Date(Date.UTC(1899, 11, 30));
+    const date = new Date(excelEpoch.getTime() + value * 86400000);
+    return formatDate(date);
+  }
+
+  // Try to parse string directly
+  const date = new Date(value);
+  if (!isNaN(date)) {
+    return formatDate(date);
+  }
+
+  return ""; // fallback if all fails
+}
+
+function formatDate(dateObj) {
+  const day = String(dateObj.getDate()).padStart(2, '0');
+  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                      "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const month = monthNames[dateObj.getMonth()];
+  const year = dateObj.getFullYear();
+  return `${day}-${month}-${year}`;
+}
+
 </script>
 </body>
 </html>
