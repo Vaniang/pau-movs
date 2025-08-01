@@ -73,28 +73,33 @@
       </div>
     </section>
 
-    <!-- MOVS TABLE -->
-    <section id="movs" class="section">
-      <h1>MOVs</h1>
-      <div class="table-actions">
-        <button id="export-excel">Export Excel</button>
-        <button id="print-table">Print</button>
-      </div>
-      <table id="movs-table">
-        <thead>
-          <tr><th><input type="checkbox" id="selectAll"></th>
-            <th>Date</th>
-            <th>Type</th>
-            <th>Title</th>
-            <th>Responsible</th>
-            <th>Link</th>
-            <th>Remarks</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </section>
+  <!-- MOVS TABLE -->
+<section id="movs" class="section">
+  <h1>MOVs</h1>
+  <div class="table-actions">
+    <button id="export-excel">Export Excel</button>
+    <button id="print-table">Print</button>
+    <button id="deleteSelectedBtn">Delete Selected</button> <!-- New button -->
+  </div>
+  <table id="movs-table">
+    <thead>
+      <tr>
+        <th><input type="checkbox" id="selectAll"></th> <!-- Select All -->
+        <th>Date</th>
+        <th>Type</th>
+        <th>Title</th>
+        <th>Responsible</th>
+        <th>Link</th>
+        <th>Remarks</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Data rows will be populated here dynamically -->
+    </tbody>
+  </table>
+</section>
+
 
     <!-- REPORTS -->
     <section id="reports" class="section">
@@ -508,7 +513,7 @@ window.addEventListener('load',()=>{
     alert('Upload failed: ' + err.message);
   }
 });
-  // Select All logic
+ // Select All functionality
 document.getElementById('selectAll').addEventListener('change', function () {
   const checkboxes = document.querySelectorAll('.rowCheckbox');
   checkboxes.forEach(cb => cb.checked = this.checked);
@@ -517,11 +522,29 @@ document.getElementById('selectAll').addEventListener('change', function () {
 // Delete selected rows
 document.getElementById('deleteSelectedBtn').addEventListener('click', function () {
   const checkboxes = document.querySelectorAll('.rowCheckbox:checked');
+  if (checkboxes.length === 0) {
+    alert("Please select at least one row to delete.");
+    return;
+  }
+
+  if (!confirm("Are you sure you want to delete the selected entries?")) return;
+
   checkboxes.forEach(cb => {
-    cb.closest('tr').remove();
-    // Optional: remove from localStorage/dataArray if you're persisting data
+    const row = cb.closest('tr');
+    const index = row.getAttribute("data-index");
+    
+    // Remove from localStorage or your main data array if needed
+    if (index !== null && data[index]) {
+      data.splice(index, 1);
+    }
+
+    row.remove();
   });
+
+  localStorage.setItem("movsData", JSON.stringify(data));
+  renderTable(); // Re-render the table to update indexes
 });
+
 
 </script>
 </body>
