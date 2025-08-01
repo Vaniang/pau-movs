@@ -494,39 +494,56 @@ window.addEventListener('load',()=>{
     const workbook = XLSX.read(data, { type: 'array' });
     const sheet = workbook.Sheets[workbook.SheetNames[0]];
 
-    // Skip the first row and treat second row as header
-    const json = XLSX.utils.sheet_to_json(sheet, { range: 1 });
-
-    if (!json.length) {
-      alert('No data found in the file.');
-      return;
-    }
+    const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" }); // raw rows
+    const headers = rows[0].map(h => String(h).trim().toUpperCase());
+    const dataRows = rows.slice(1);
 
     let successCount = 0;
+    let skippedRows = 0;
 
-    for (const row of json) {
-      if (row.DATE && row.TYPE && row["TITLE/DETAILS"] && row.RESPONSIBLE) {
-        const rec = {
-            rawDate: row.DATE, // original value (serial or ISO)
-            date: formatExcelDate(row.DATE), // formatted display
-            type: row.TYPE,
-            title: row["TITLE/DETAILS"],
-            responsible: row.RESPONSIBLE,
-            link: row.LINK || '',
-            remarks: row.REMARKS || '',
-            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-          };
-        await movsColl.add(rec);
-        successCount++;
+    for (const row of dataRows) {
+      const obj = {};
+      headers.forEach((header, index) => {
+        obj[header] = row[index];
+      });
+
+      const dateVal = obj["DATE"] || obj["Date"];
+      const typeVal = obj["TYPE"];
+      const titleVal = obj["TITLE/DETAILS"] || obj["TITLE"] || obj["DETAILS"];
+      const responsibleVal = obj["RESPONSIBLE"];
+      const linkVal = obj["LINK"] || '';
+      const remarksVal = obj["REMARKS"] || '';
+
+      if (dateVal && typeVal && titleVal && responsibleVal) {
+        const record = {
+          rawDate: dateVal,
+          date: formatExcelDate(dateVal),
+          type: typeVal,
+          title: titleVal,
+          responsible: responsibleVal,
+          link: linkVal,
+          remarks: remarksVal,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        };
+
+        try {
+          await movsColl.add(record);
+          successCount++;
+        } catch (err) {
+          console.error("Error saving record:", record, err);
+        }
+      } else {
+        console.warn("Skipped row due to missing required fields:", obj);
+        skippedRows++;
       }
     }
 
-    alert(`${successCount} record(s) uploaded successfully.`);
+    alert(`${successCount} record(s) uploaded successfully. ${skippedRows > 0 ? skippedRows + ' skipped due to missing data.' : ''}`);
     uploadInput.value = '';
   } catch (err) {
-    console.error(err);
-    alert('Upload failed: ' + err.message);
+    console.error("Upload failed:", err);
+    alert("Upload failed: " + err.message);
   }
 });
 
