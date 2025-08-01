@@ -68,6 +68,8 @@
         <input type="url" id="input-link" placeholder="Link" />
         <input type="text" id="input-remarks" placeholder="Remarks" />
         <button id="add-mov">Add</button>
+        <input type="file" id="upload-excel" accept=".xlsx,.xls" />
+
       </div>
     </section>
 
@@ -460,6 +462,49 @@ window.addEventListener('load',()=>{
   const cached = cacheLoad();
   if(cached.length){ movsData = cached; renderAll(); }
 });
+   const uploadInput = document.getElementById('upload-excel');
+
+  uploadInput.addEventListener('change', async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    try {
+      const data = await file.arrayBuffer();
+      const workbook = XLSX.read(data, { type: 'array' });
+      const sheetName = workbook.SheetNames[0];
+      const sheet = workbook.Sheets[sheetName];
+      const json = XLSX.utils.sheet_to_json(sheet);
+
+      if (!json.length) {
+        alert('No data found in the file.');
+        return;
+      }
+
+      let successCount = 0;
+      for (const row of json) {
+        if (row.Date && row.Type && row.Title && row.Responsible) {
+          const rec = {
+            date: String(row.Date).slice(0, 10),
+            type: row.Type,
+            title: row.Title,
+            responsible: row.Responsible,
+            link: row.Link || '',
+            remarks: row.Remarks || '',
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+          };
+          await movsColl.add(rec);
+          successCount++;
+        }
+      }
+
+      alert(`${successCount} record(s) uploaded successfully.`);
+      uploadInput.value = ''; // reset input
+    } catch (err) {
+      console.error(err);
+      alert('Upload failed: ' + err.message);
+    }
+  });
 </script>
 </body>
 </html>
