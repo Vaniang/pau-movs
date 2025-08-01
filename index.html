@@ -82,7 +82,7 @@
       </div>
       <table id="movs-table">
         <thead>
-          <tr>
+          <tr><th><input type="checkbox" id="selectAll"></th>
             <th>Date</th>
             <th>Type</th>
             <th>Title</th>
@@ -508,6 +508,21 @@ window.addEventListener('load',()=>{
     alert('Upload failed: ' + err.message);
   }
 });
+  // Select All logic
+document.getElementById('selectAll').addEventListener('change', function () {
+  const checkboxes = document.querySelectorAll('.rowCheckbox');
+  checkboxes.forEach(cb => cb.checked = this.checked);
+});
+
+// Delete selected rows
+document.getElementById('deleteSelectedBtn').addEventListener('click', function () {
+  const checkboxes = document.querySelectorAll('.rowCheckbox:checked');
+  checkboxes.forEach(cb => {
+    cb.closest('tr').remove();
+    // Optional: remove from localStorage/dataArray if you're persisting data
+  });
+});
+
 </script>
 </body>
 </html>
