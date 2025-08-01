@@ -252,8 +252,9 @@ function renderMOVsTable(){
   movsTbody.innerHTML = movsData.map(rec=>{
     const esc = s=>String(s??'').replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[c]));
     const linkEsc = esc(rec.link);
-    return `<tr data-id="${rec.id}">
-      <td>${esc(rec.date)}</td>
+   return `<tr data-id="${rec.id}">
+  <td><input type="checkbox" class="rowCheckbox"></td>
+  <td>${esc(rec.date)}</td>
       <td>${esc(rec.type)}</td>
       <td>${esc(rec.title)}</td>
       <td>${esc(rec.responsible)}</td>
@@ -513,14 +514,8 @@ window.addEventListener('load',()=>{
     alert('Upload failed: ' + err.message);
   }
 });
- // Select All functionality
-document.getElementById('selectAll').addEventListener('change', function () {
-  const checkboxes = document.querySelectorAll('.rowCheckbox');
-  checkboxes.forEach(cb => cb.checked = this.checked);
-});
 
-// Delete selected rows
-document.getElementById('deleteSelectedBtn').addEventListener('click', function () {
+document.getElementById('deleteSelectedBtn').addEventListener('click', async function () {
   const checkboxes = document.querySelectorAll('.rowCheckbox:checked');
   if (checkboxes.length === 0) {
     alert("Please select at least one row to delete.");
@@ -529,23 +524,19 @@ document.getElementById('deleteSelectedBtn').addEventListener('click', function 
 
   if (!confirm("Are you sure you want to delete the selected entries?")) return;
 
-  checkboxes.forEach(cb => {
+  for (const cb of checkboxes) {
     const row = cb.closest('tr');
-    const index = row.getAttribute("data-index");
-    
-    // Remove from localStorage or your main data array if needed
-    if (index !== null && data[index]) {
-      data.splice(index, 1);
+    const id = row.getAttribute('data-id');
+    if (id) {
+      try {
+        await deleteMOV(id); // remove from Firestore
+      } catch (err) {
+        console.error("Delete error:", err);
+        alert("Failed to delete entry: " + err.message);
+      }
     }
-
-    row.remove();
-  });
-
-  localStorage.setItem("movsData", JSON.stringify(data));
-  renderTable(); // Re-render the table to update indexes
+  }
 });
-
-
 </script>
 </body>
 </html>
