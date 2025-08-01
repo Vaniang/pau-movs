@@ -84,7 +84,7 @@
   <table id="movs-table">
     <thead>
       <tr>
-        <th><input type="checkbox" id="selectAll"></th> <!-- Select All -->
+        <th><th><input type="checkbox" id="selectAll"></th>
         <th>Date</th>
         <th>Type</th>
         <th>Title</th>
@@ -515,6 +515,12 @@ window.addEventListener('load',()=>{
   }
 });
 
+document.getElementById('selectAll').addEventListener('change', function () {
+  const checkboxes = document.querySelectorAll('.rowCheckbox');
+  checkboxes.forEach(cb => cb.checked = this.checked);
+});
+
+  
 document.getElementById('deleteSelectedBtn').addEventListener('click', async function () {
   const checkboxes = document.querySelectorAll('.rowCheckbox:checked');
   if (checkboxes.length === 0) {
