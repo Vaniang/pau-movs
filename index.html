@@ -484,8 +484,7 @@ window.addEventListener('load',()=>{
   if(cached.length){ movsData = cached; renderAll(); }
 });
    const uploadInput = document.getElementById('upload-excel');
-
- uploadInput.addEventListener('change', async (event) => {
+uploadInput.addEventListener('change', async (event) => {
   const file = event.target.files[0];
   if (!file) return;
 
@@ -495,9 +494,8 @@ window.addEventListener('load',()=>{
     const sheet = workbook.Sheets[workbook.SheetNames[0]];
 
     const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
-    // Skip the first row (title row), use the second as headers
-const headers = rows[1].map(h => String(h).trim().toUpperCase());
-const dataRows = rows.slice(2); // start reading data from 3rd row
+    const headers = rows[1].map(h => String(h).trim().toUpperCase());
+    const dataRows = rows.slice(2); // data starts from row 3
 
     let successCount = 0;
     let skippedRows = 0;
@@ -509,13 +507,14 @@ const dataRows = rows.slice(2); // start reading data from 3rd row
       });
 
       const dateVal = obj["DATE"] || obj["Date"];
-      const typeVal = obj["TYPE"];
       const titleVal = obj["TITLE/DETAILS"] || obj["TITLE"] || obj["DETAILS"];
       const responsibleVal = obj["RESPONSIBLE"];
-      const linkVal = obj["LINK"] || '';
-      const remarksVal = obj["REMARKS"] || '';
+      const typeVal = obj["TYPE"] || ""; // allow empty
+      const linkVal = obj["LINK"] || "";
+      const remarksVal = obj["REMARKS"] || "";
 
-      if (dateVal && typeVal && titleVal && responsibleVal) {
+      // Only require DATE, TITLE, and RESPONSIBLE to save
+      if (dateVal && titleVal && responsibleVal) {
         const record = {
           rawDate: dateVal,
           date: formatExcelDate(dateVal),
@@ -640,8 +639,6 @@ document.querySelectorAll('#movs-table thead th[data-sort]').forEach(th => {
     toggleSort(field);
   });
 });
-
-console.log("Parsed row example:", parsedData[0]);
   
 </script>
 </body>
