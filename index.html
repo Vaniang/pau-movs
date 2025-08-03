@@ -642,6 +642,38 @@ document.querySelectorAll('#movs-table thead th[data-sort]').forEach(th => {
   });
 });
 
+  async function processParsedData(parsedData) {
+  for (const row of parsedData) {
+    const DATE = row["DATE"];
+    const TYPE = row["TYPE"];
+    const TITLE = row["TITLE/DETAILS"];
+    const RESPONSIBLE = row["RESPONSIBLE"];
+    const LINK = row["LINK"];
+
+    if (!TYPE || !DATE || !TITLE || !RESPONSIBLE || !LINK) {
+      console.warn("Skipped row due to missing required fields:", row);
+      continue;
+    }
+
+    const record = { DATE, TYPE, TITLE, RESPONSIBLE, LINK };
+    try {
+      await movsColl.add(record);
+      console.log("Uploaded:", record);
+    } catch (e) {
+      console.error("Upload error:", e);
+    }
+  }
+
+  refreshTable(); // after upload
+}
+
+  processParsedData(parsedData); // Call it after parsing is complete
+
+  if (!DATE || !TITLE || !RESPONSIBLE || !LINK) {
+  console.warn("Skipped row due to missing required fields:", row);
+  continue;
+}
+
   
 </script>
 </body>
