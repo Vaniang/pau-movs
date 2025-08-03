@@ -243,21 +243,6 @@ async function updateMOV(id, rec){
   });
 }
 
-
-async function updateMOV(id, rec){
-  await movsColl.add(record);
-console.log("Uploaded:", record);  // ✅ Add this to confirm
-  await movsColl.doc(id).update({
-    date: rec.date,
-    type: rec.type,
-    title: rec.title,
-    responsible: rec.responsible,
-    link: rec.link,
-    remarks: rec.remarks,
-    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-  });
-}
-
 async function deleteMOV(id){
   await movsColl.doc(id).delete();
 }
@@ -367,13 +352,18 @@ movsTbody.addEventListener('click',async e=>{
  * 9. REPORTS                       *
  ***********************************/
 function buildReport(){
-  const monthVal = reportMonthEl.value; // "YYYY-MM"
-  const typeVal  = reportTypeEl.value;  // or ""
+  const monthVal = reportMonthEl.value;
+  const typeVal  = reportTypeEl.value;
   let filtered = movsData.slice();
-  if(monthVal){ filtered = filtered.filter(r=>r.date.startsWith(monthVal)); }
-  if(typeVal){ filtered = filtered.filter(r=>r.type===typeVal); }
+  if(monthVal){
+    filtered = filtered.filter(r=>String(r.date).startsWith(monthVal));
+  }
+  if(typeVal){
+    filtered = filtered.filter(r=>r.type===typeVal);
+  }
   renderReportTable(filtered);
 }
+
 
 function renderReportTable(rows){
   const esc = s=>String(s??'').replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[c]));
@@ -641,39 +631,6 @@ document.querySelectorAll('#movs-table thead th[data-sort]').forEach(th => {
     toggleSort(field);
   });
 });
-
-  async function processParsedData(parsedData) {
-  for (const row of parsedData) {
-    const DATE = row["DATE"];
-    const TYPE = row["TYPE"];
-    const TITLE = row["TITLE/DETAILS"];
-    const RESPONSIBLE = row["RESPONSIBLE"];
-    const LINK = row["LINK"];
-
-    if (!TYPE || !DATE || !TITLE || !RESPONSIBLE || !LINK) {
-      console.warn("Skipped row due to missing required fields:", row);
-      continue;
-    }
-
-    const record = { DATE, TYPE, TITLE, RESPONSIBLE, LINK };
-    try {
-      await movsColl.add(record);
-      console.log("Uploaded:", record);
-    } catch (e) {
-      console.error("Upload error:", e);
-    }
-  }
-
-  refreshTable(); // after upload
-}
-
-  processParsedData(parsedData); // Call it after parsing is complete
-
-  if (!DATE || !TITLE || !RESPONSIBLE || !LINK) {
-  console.warn("Skipped row due to missing required fields:", row);
-  continue;
-}
-
   
 </script>
 </body>
