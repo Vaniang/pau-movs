@@ -444,19 +444,23 @@ function cacheLoad(){ try{return JSON.parse(localStorage.getItem('pauMovsCache')
  * 12. FIRESTORE REALTIME SYNC      *
  ***********************************/
 // Listen to Firestore; keep local cache in sync.
-movsColl.orderBy('sortDate', 'desc').onSnapshot(snap=>{
-  const arr=[];
-  snap.forEach(doc=>{ arr.push({id:doc.id,...doc.data()}); });
-  // fill date if timestamp? ensure string
-  arr.forEach(r=>{ if(r.date instanceof firebase.firestore.Timestamp){ r.date = r.date.toDate().toISOString().slice(0,10); } });
+// 🔁 Firestore Realtime Sync
+movsColl.orderBy('sortDate', 'desc').onSnapshot(snap => {
+  const arr = [];
+  snap.forEach(doc => {
+    const data = doc.data();
+    arr.push({
+      id: doc.id,
+      ...data,
+      date: data.date instanceof firebase.firestore.Timestamp
+        ? data.date.toDate().toISOString().slice(0, 10)
+        : data.date
+    });
+  });
   movsData = arr;
-  cacheSave();
   renderAll();
-},err=>{
-  console.error('Firestore listen error',err);
-  // fallback to cache if nothing shown
-  if(!movsData.length){ movsData = cacheLoad(); renderAll(); }
 });
+
 
 /***********************************
  * 13. UTILITIES                    *
