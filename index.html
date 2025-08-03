@@ -632,10 +632,6 @@ function toggleSort(field) {
   loadAndRenderMOVs();
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  loadAndRenderMOVs();
-});
-
 document.querySelectorAll('#movs-table thead th[data-sort]').forEach(th => {
   th.style.cursor = 'pointer';
   th.addEventListener('click', () => {
