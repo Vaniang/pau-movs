@@ -245,6 +245,8 @@ async function updateMOV(id, rec){
 
 
 async function updateMOV(id, rec){
+  await movsColl.add(record);
+console.log("Uploaded:", record);  // ✅ Add this to confirm
   await movsColl.doc(id).update({
     date: rec.date,
     type: rec.type,
@@ -639,9 +641,6 @@ document.querySelectorAll('#movs-table thead th[data-sort]').forEach(th => {
     toggleSort(field);
   });
 });
-
-await movsColl.add(record);
-console.log("Uploaded:", record);  // ✅ Add this to confirm
 
   
 </script>
