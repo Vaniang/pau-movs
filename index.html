@@ -494,9 +494,10 @@ window.addEventListener('load',()=>{
     const workbook = XLSX.read(data, { type: 'array' });
     const sheet = workbook.Sheets[workbook.SheetNames[0]];
 
-    const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" }); // raw rows
-    const headers = rows[0].map(h => String(h).trim().toUpperCase());
-    const dataRows = rows.slice(1);
+    const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
+    // Skip the first row (title row), use the second as headers
+const headers = rows[1].map(h => String(h).trim().toUpperCase());
+const dataRows = rows.slice(2); // start reading data from 3rd row
 
     let successCount = 0;
     let skippedRows = 0;
