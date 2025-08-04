@@ -479,69 +479,71 @@ window.addEventListener('load',()=>{
   const cached = cacheLoad();
   if(cached.length){ movsData = cached; renderAll(); }
 });
+
    const uploadInput = document.getElementById('upload-excel');
-uploadInput.addEventListener('change', async (event) => {
-  const file = event.target.files[0];
-  if (!file) return;
+  uploadInput.addEventListener('change', async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
 
-  try {
-    const data = await file.arrayBuffer();
-    const workbook = XLSX.read(data, { type: 'array' });
-    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+    try {
+      const data = await file.arrayBuffer();
+      const workbook = XLSX.read(data, { type: 'array' });
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
 
-    const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
-    const headers = rows[1].map(h => String(h).trim().toUpperCase());
-    const dataRows = rows.slice(2); // data starts from row 3
+      const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
+      const headers = rows[1].map(h => String(h).trim().toUpperCase());
+      const dataRows = rows.slice(2); // Data starts from row 3
 
-    let successCount = 0;
-    let skippedRows = 0;
+      let successCount = 0;
+      let skippedRows = 0;
 
-    for (const row of dataRows) {
-      const obj = {};
-      headers.forEach((header, index) => {
-        obj[header] = row[index];
-      });
+      for (const row of dataRows) {
+        const obj = {};
+        headers.forEach((header, index) => {
+          obj[header] = row[index];
+        });
 
-      const dateVal = obj["DATE"] || obj["Date"];
-      const titleVal = obj["TITLE/DETAILS"] || obj["TITLE"] || obj["DETAILS"];
-      const responsibleVal = obj["RESPONSIBLE"];
-      const typeVal = obj["TYPE"] || ""; // allow empty
-      const linkVal = obj["LINK"] || "";
-      const remarksVal = obj["REMARKS"] || "";
+        const dateVal = obj["DATE"] || obj["Date"];
+        const titleVal = obj["TITLE/DETAILS"] || obj["TITLE"] || obj["DETAILS"];
+        const responsibleVal = obj["RESPONSIBLE"];
+        const typeVal = obj["TYPE"] || "";
+        const linkVal = obj["LINK"] || "";
+        const remarksVal = obj["REMARKS"] || "";
 
-      // Only require DATE, TITLE, and RESPONSIBLE to save
-      if (dateVal && titleVal && responsibleVal) {
-        const record = {
-          rawDate: dateVal,
-          date: formatExcelDate(dateVal),
-          type: typeVal,
-          title: titleVal,
-          responsible: responsibleVal,
-          link: linkVal,
-          remarks: remarksVal,
-          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-        };
+        if (dateVal && titleVal && responsibleVal) {
+          const record = {
+            rawDate: dateVal,
+            date: formatExcelDate(dateVal),
+            sortDate: parseToDate(dateVal),
+            type: typeVal,
+            title: titleVal,
+            responsible: responsibleVal,
+            link: linkVal,
+            remarks: remarksVal,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+          };
 
-        try {
-          await movsColl.add(record);
-          successCount++;
-        } catch (err) {
-          console.error("Error saving record:", record, err);
+          try {
+            await movsColl.add(record);
+            successCount++;
+          } catch (err) {
+            console.error("Error saving record:", record, err);
+          }
+        } else {
+          console.warn("Skipped row due to missing required fields:", obj);
+          skippedRows++;
         }
-      } else {
-        console.warn("Skipped row due to missing required fields:", obj);
-        skippedRows++;
       }
-    }
 
-    alert(`${successCount} record(s) uploaded successfully. ${skippedRows > 0 ? skippedRows + ' skipped due to missing data.' : ''}`);
-    uploadInput.value = '';
-  } catch (err) {
-    console.error("Upload failed:", err);
-    alert("Upload failed: " + err.message);
-  }
-});
+      alert(`${successCount} record(s) uploaded successfully. ${skippedRows > 0 ? skippedRows + ' skipped due to missing data.' : ''}`);
+      uploadInput.value = '';
+    } catch (err) {
+      console.error("Upload failed:", err);
+      alert("Upload failed: " + err.message);
+    }
+  });
+
 
 document.getElementById('selectAll').addEventListener('change', function () {
   const checkboxes = document.querySelectorAll('.rowCheckbox');
@@ -573,37 +575,25 @@ document.getElementById('deleteSelectedBtn').addEventListener('click', async fun
 });
 
 function formatExcelDate(value) {
-  if (!value) return "";
-
-  // If it's already a JS Date object
-  if (value instanceof Date && !isNaN(value)) {
-    return formatDate(value);
+    if (!value) return "";
+    if (value instanceof Date && !isNaN(value)) return formatDate(value);
+    if (typeof value === 'number') {
+      const excelEpoch = new Date(Date.UTC(1899, 11, 30));
+      const date = new Date(excelEpoch.getTime() + value * 86400000);
+      return formatDate(date);
+    }
+    const date = new Date(value);
+    return !isNaN(date) ? formatDate(date) : "";
   }
-
-  // If it's an Excel serial number (e.g., 44562)
-  if (typeof value === 'number') {
-    const excelEpoch = new Date(Date.UTC(1899, 11, 30));
-    const date = new Date(excelEpoch.getTime() + value * 86400000);
-    return formatDate(date);
-  }
-
-  // Try to parse string directly
-  const date = new Date(value);
-  if (!isNaN(date)) {
-    return formatDate(date);
-  }
-
-  return ""; // fallback if all fails
-}
 
 function formatDate(dateObj) {
-  const day = String(dateObj.getDate()).padStart(2, '0');
-  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
-                      "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-  const month = monthNames[dateObj.getMonth()];
-  const year = dateObj.getFullYear();
-  return `${day}-${month}-${year}`;
-}
+    const day = String(dateObj.getDate()).padStart(2, '0');
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const month = monthNames[dateObj.getMonth()];
+    const year = dateObj.getFullYear();
+    return `${day}-${month}-${year}`;
+  }
 
 let currentSortField = 'sortDate'; // default
 let currentSortDirection = 'desc';
@@ -638,27 +628,28 @@ document.querySelectorAll('#movs-table thead th[data-sort]').forEach(th => {
 
 
 function parseToDate(input) {
-  if (!input) return new Date();
-  if (input instanceof Date) return input;
-  if (typeof input === 'number') {
-    const excelEpoch = new Date(Date.UTC(1899, 11, 30));
-    return new Date(excelEpoch.getTime() + input * 86400000);
-  }
-  // Try to parse manually if string (like 07-Jan-2025)
-  const parts = input.split("-");
-  if (parts.length === 3) {
-    const [day, mon, year] = parts;
-    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
-                        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-    const monthIndex = monthNames.indexOf(mon);
-    if (monthIndex >= 0) {
-      return new Date(Number(year), monthIndex, Number(day));
+    if (!input) return new Date();
+    if (input instanceof Date) return input;
+    if (typeof input === 'number') {
+      const excelEpoch = new Date(Date.UTC(1899, 11, 30));
+      return new Date(excelEpoch.getTime() + input * 86400000);
     }
-  }
-  const parsed = new Date(input);
-  return isNaN(parsed) ? new Date() : parsed;
-}
 
+    // Parse string like "07-Jan-2025"
+    const parts = input.split("-");
+    if (parts.length === 3) {
+      const [day, mon, year] = parts;
+      const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                          "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+      const monthIndex = monthNames.indexOf(mon);
+      if (monthIndex >= 0) {
+        return new Date(Number(year), monthIndex, Number(day));
+      }
+    }
+
+    const parsed = new Date(input);
+    return isNaN(parsed) ? new Date() : parsed;
+  }
   
 </script>
 </body>
