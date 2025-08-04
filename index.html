@@ -267,18 +267,25 @@ function renderMOVsTable(){
   }).join('');
 }
 
-function renderCategorySummary(){
-  const counts={};
-  TYPES.forEach(t=>counts[t]=0);
-  movsData.forEach(r=>{ if(counts[r.type]!==undefined) counts[r.type]++; });
-  categorySummary.innerHTML='';
-  let total=0;
-  for(const t of TYPES){
-    const c=counts[t]||0; total+=c;
-    categorySummary.innerHTML+=`<div class="card"><h3>${t}</h3><p>${c}</p></div>`;
+function renderCategorySummary() {
+  const counts = {};
+  TYPES.forEach(t => counts[t.toUpperCase()] = 0);
+  movsData.forEach(r => {
+    const typeKey = String(r.type || '').toUpperCase();
+    if (counts[typeKey] !== undefined) counts[typeKey]++;
+  });
+
+  categorySummary.innerHTML = '';
+  let total = 0;
+  for (const t of TYPES) {
+    const key = t.toUpperCase();
+    const c = counts[key] || 0;
+    total += c;
+    categorySummary.innerHTML += `<div class="card"><h3>${t}</h3><p>${c}</p></div>`;
   }
-  categorySummary.innerHTML+=`<div class="card"><h3>Total IEC Produced</h3><p>${total}</p></div>`;
+  categorySummary.innerHTML += `<div class="card"><h3>Total IEC Produced</h3><p>${total}</p></div>`;
 }
+
 
 function renderAll(){
   renderMOVsTable();
