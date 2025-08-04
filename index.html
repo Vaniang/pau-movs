@@ -219,7 +219,7 @@ sidebarItems.forEach(item=>{
 async function addMOV(rec){
   await movsColl.add({
     date: rec.date, // "07-Jan-2025"
-    sortDate: new Date(rec.rawDate || rec.date), // hidden sortable value
+    sortDate: parseToDate(rec.rawDate || rec.date),
     type: rec.type,
     title: rec.title,
     responsible: rec.responsible,
@@ -635,6 +635,30 @@ document.querySelectorAll('#movs-table thead th[data-sort]').forEach(th => {
     toggleSort(field);
   });
 });
+
+
+function parseToDate(input) {
+  if (!input) return new Date();
+  if (input instanceof Date) return input;
+  if (typeof input === 'number') {
+    const excelEpoch = new Date(Date.UTC(1899, 11, 30));
+    return new Date(excelEpoch.getTime() + input * 86400000);
+  }
+  // Try to parse manually if string (like 07-Jan-2025)
+  const parts = input.split("-");
+  if (parts.length === 3) {
+    const [day, mon, year] = parts;
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const monthIndex = monthNames.indexOf(mon);
+    if (monthIndex >= 0) {
+      return new Date(Number(year), monthIndex, Number(day));
+    }
+  }
+  const parsed = new Date(input);
+  return isNaN(parsed) ? new Date() : parsed;
+}
+
   
 </script>
 </body>
