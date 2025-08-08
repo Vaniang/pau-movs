@@ -53,6 +53,8 @@
     <section id="dashboard" class="section active">
       <h1>Dashboard</h1>
       <div class="summary" id="category-summary"></div>
+      <h2 style="margin-top:30px;">Quarterly Summary (All Years)</h2>
+<div id="quarterly-summary" class="summary"></div>
       <div class="input-fields">
         <input type="date" id="input-date" />
         <select id="input-type">
@@ -657,6 +659,60 @@ function parseToDate(input) {
     const parsed = new Date(input);
     return isNaN(parsed) ? new Date() : parsed;
   }
+
+function renderQuarterlySummary() {
+  const summary = {}; // Format: { '2025': { 'IEC Videos': { Q1: 0, Q2: 0, Q3: 0, Q4: 0 }, ... }, ... }
+
+  for (const r of movsData) {
+    const type = r.type;
+    const date = parseToDate(r.sortDate || r.date);
+
+    if (!(date instanceof Date) || isNaN(date)) continue;
+
+    const year = date.getFullYear();
+    const month = date.getMonth(); // 0-11
+    let quarter = '';
+    if (month <= 2) quarter = 'Q1';
+    else if (month <= 5) quarter = 'Q2';
+    else if (month <= 8) quarter = 'Q3';
+    else quarter = 'Q4';
+
+    if (!summary[year]) summary[year] = {};
+    if (!summary[year][type]) summary[year][type] = { Q1: 0, Q2: 0, Q3: 0, Q4: 0 };
+
+    summary[year][type][quarter]++;
+  }
+
+  // Render to DOM
+  const container = document.getElementById('quarterly-summary');
+  container.innerHTML = '';
+
+  // Sort years descending (newest first)
+  const years = Object.keys(summary).sort((a, b) => b - a);
+
+  for (const year of years) {
+    const typesInYear = summary[year];
+    for (const type of TYPES) {
+      const q = typesInYear[type];
+      if (!q) continue; // Skip if this type has no data in the year
+
+      container.innerHTML += `
+        <div class="card">
+          <h3>${type} (${year})</h3>
+          <p>Q1: ${q.Q1}</p>
+          <p>Q2: ${q.Q2}</p>
+          <p>Q3: ${q.Q3}</p>
+          <p>Q4: ${q.Q4}</p>
+        </div>`;
+    }
+  }
+}
+
+function renderAll(){
+  renderMOVsTable();
+  renderCategorySummary();
+  renderQuarterlySummary(); // <-- ✅ include this line
+}
   
 </script>
 </body>
