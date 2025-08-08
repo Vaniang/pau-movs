@@ -53,8 +53,13 @@
     <section id="dashboard" class="section active">
       <h1>Dashboard</h1>
       <div class="summary" id="category-summary"></div>
-      <h2 style="margin-top:30px;">Quarterly Summary (All Years)</h2>
-<div id="quarterly-summary" class="summary"></div>
+      <div style="margin-top:20px;">
+  <label for="year-filter"><strong>Select Year:</strong></label>
+  <select id="year-filter"></select>
+</div>
+
+<div id="quarterly-summary" style="margin-top:20px;"></div>
+      
       <div class="input-fields">
         <input type="date" id="input-date" />
         <select id="input-type">
@@ -292,6 +297,76 @@ function renderCategorySummary() {
 function renderAll(){
   renderMOVsTable();
   renderCategorySummary();
+}
+
+function renderYearFilter() {
+  const years = new Set();
+  movsData.forEach(r => {
+    const year = parseToDate(r.date).getFullYear();
+    years.add(year);
+  });
+
+  const yearFilter = document.getElementById('year-filter');
+  yearFilter.innerHTML = '';
+  Array.from(years).sort((a, b) => b - a).forEach(y => {
+    const opt = document.createElement('option');
+    opt.value = y;
+    opt.textContent = y;
+    yearFilter.appendChild(opt);
+  });
+
+  // Default to current year if available
+  const currentYear = new Date().getFullYear();
+  if (years.has(currentYear)) {
+    yearFilter.value = currentYear;
+  }
+}
+
+function renderQuarterlySummary() {
+  const year = parseInt(document.getElementById('year-filter').value, 10);
+  const counts = {};
+
+  // Initialize structure: counts[quarter][category] = 0
+  for (let q = 1; q <= 4; q++) {
+    counts[q] = {};
+    TYPES.forEach(type => {
+      counts[q][type] = 0;
+    });
+  }
+
+  // Fill counts
+  movsData.forEach(r => {
+    const d = parseToDate(r.date);
+    if (d.getFullYear() !== year) return;
+    const quarter = Math.floor(d.getMonth() / 3) + 1;
+    if (counts[quarter] && counts[quarter][r.type] !== undefined) {
+      counts[quarter][r.type]++;
+    }
+  });
+
+  // Build HTML table
+  let html = `<table border="1" cellpadding="5" style="border-collapse:collapse;background:#fff;width:100%;margin-top:10px;">
+    <thead>
+      <tr style="background:#eee;">
+        <th>Quarter</th>`;
+  TYPES.forEach(type => {
+    html += `<th>${type}</th>`;
+  });
+  html += `<th>Total</th></tr></thead><tbody>`;
+
+  for (let q = 1; q <= 4; q++) {
+    const total = Object.values(counts[q]).reduce((a, b) => a + b, 0);
+    html += `<tr>
+      <td>Q${q}</td>`;
+    TYPES.forEach(type => {
+      html += `<td>${counts[q][type]}</td>`;
+    });
+    html += `<td><strong>${total}</strong></td></tr>`;
+  }
+
+  html += `</tbody></table>`;
+
+  document.getElementById('quarterly-summary').innerHTML = html;
 }
 
 /***********************************
@@ -711,8 +786,10 @@ function renderQuarterlySummary() {
 function renderAll(){
   renderMOVsTable();
   renderCategorySummary();
-  renderQuarterlySummary(); // <-- ✅ include this line
+  renderYearFilter();
+  renderQuarterlySummary();
 }
+
   
 </script>
 </body>
