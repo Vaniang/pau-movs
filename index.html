@@ -735,63 +735,50 @@ function parseToDate(input) {
     return isNaN(parsed) ? new Date() : parsed;
   }
 
-// Add default card & sticky table styling
+// Safe fallbacks
+const TYPES = window.TYPES || ["Category1", "Category2", "Category3"];
+let movsData = window.movsData || [];
+const parseToDate = window.parseToDate || function(dateStr) {
+  const d = new Date(dateStr);
+  return isNaN(d) ? null : d;
+};
+
+const quarterlyContainer = document.getElementById('quarterly-summary');
+let quarterlyViewMode = 'table';
+
+// Add styles
 const style = document.createElement('style');
 style.textContent = `
-  .card {
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    padding: 10px;
-    margin-bottom: 10px;
-    background: #fff;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  }
-  .card h3 {
-    margin-top: 0;
-  }
-  table thead th {
-    position: sticky;
-    top: 0;
-    background: #eee;
-    z-index: 1;
-  }
+  .card { border: 1px solid #ccc; border-radius: 8px; padding: 10px; margin-bottom: 10px; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+  .card h3 { margin-top: 0; }
+  table thead th { position: sticky; top: 0; background: #eee; z-index: 1; }
 `;
 document.head.appendChild(style);
 
-// Grab container & insert toggle button
-const quarterlyContainer = document.getElementById('quarterly-summary');
+// Toggle button
 const viewToggleBtn = document.createElement('button');
 viewToggleBtn.textContent = "Switch to Card View";
 viewToggleBtn.style.marginBottom = "10px";
-let quarterlyViewMode = 'table'; // default
 viewToggleBtn.onclick = () => {
   quarterlyViewMode = quarterlyViewMode === 'table' ? 'cards' : 'table';
   viewToggleBtn.textContent = quarterlyViewMode === 'table' ? "Switch to Card View" : "Switch to Table View";
   renderQuarterlySummary();
 };
-if (quarterlyContainer && quarterlyContainer.parentNode) {
-  quarterlyContainer.parentNode.insertBefore(viewToggleBtn, quarterlyContainer);
-}
+quarterlyContainer.parentNode.insertBefore(viewToggleBtn, quarterlyContainer);
 
 function populateYearDropdown() {
   const yearFilterEl = document.getElementById('year-filter');
-  if (!yearFilterEl || !Array.isArray(movsData) || movsData.length === 0) return;
-
   const years = [...new Set(movsData.map(r => {
     const d = parseToDate(r.sortDate || r.date);
-    return d instanceof Date && !isNaN(d) ? d.getFullYear() : null;
-  }).filter(Boolean))].sort((a, b) => b - a);
+    return d ? d.getFullYear() : null;
+  }).filter(y => y !== null))].sort((a,b) => b-a);
 
   yearFilterEl.innerHTML = years.map(y => `<option value="${y}">${y}</option>`).join('');
-  yearFilterEl.value = years[0];
+  yearFilterEl.value = years[0]; // Latest year
 }
 
 function renderQuarterlySummary() {
-  if (!Array.isArray(movsData) || movsData.length === 0 || !Array.isArray(TYPES) || TYPES.length === 0) return;
-
   const yearFilterEl = document.getElementById('year-filter');
-  if (!yearFilterEl) return;
-
   const year = parseInt(yearFilterEl.value, 10);
   if (isNaN(year)) return;
 
@@ -814,8 +801,9 @@ function renderQuarterlySummary() {
 
   if (quarterlyViewMode === 'table') {
     let html = `<table border="1" cellpadding="5" style="border-collapse:collapse;background:#fff;width:100%;margin-top:10px;">
-      <thead><tr><th>Quarter</th>`;
-    TYPES.forEach(type => html += `<th>${type}</th>`);
+      <thead>
+        <tr><th>Quarter</th>`;
+    TYPES.forEach(type => { html += `<th>${type}</th>`; });
     html += `<th>Total</th></tr></thead><tbody>`;
 
     let grandTotal = 0;
@@ -823,22 +811,23 @@ function renderQuarterlySummary() {
       const rowTotal = Object.values(counts[q]).reduce((a, b) => a + b, 0);
       grandTotal += rowTotal;
       html += `<tr><td>Q${q}</td>`;
-      TYPES.forEach(type => html += `<td>${counts[q][type]}</td>`);
+      TYPES.forEach(type => { html += `<td>${counts[q][type]}</td>`; });
       html += `<td><strong>${rowTotal}</strong></td></tr>`;
     }
 
-    html += `<tr style="font-weight:bold;background:#f0f0f0;"><td>Grand Total (${year})</td>`;
+    html += `<tr style="font-weight:bold;background:#f0f0f0;">
+      <td>Grand Total (${year})</td>`;
     TYPES.forEach(type => {
-      const totalPerType = Object.values(counts).reduce((sum, qCounts) => sum + qCounts[type], 0);
-      html += `<td>${totalPerType}</td>`;
+      const typeTotal = Object.values(counts).reduce((sum, qData) => sum + qData[type], 0);
+      html += `<td>${typeTotal}</td>`;
     });
-    html += `<td>${grandTotal}</td></tr>`;
-    html += `</tbody></table>`;
+    html += `<td>${grandTotal}</td></tr></tbody></table>`;
 
     quarterlyContainer.innerHTML = html;
   } else {
     TYPES.forEach(type => {
-      const qCounts = { Q1: counts[1][type], Q2: counts[2][type], Q3: counts[3][type], Q4: counts[4][type] };
+      let qCounts = { Q1: 0, Q2: 0, Q3: 0, Q4: 0 };
+      for (let q = 1; q <= 4; q++) { qCounts[`Q${q}`] = counts[q][type]; }
       quarterlyContainer.innerHTML += `
         <div class="card">
           <h3>${type} (${year})</h3>
@@ -846,28 +835,24 @@ function renderQuarterlySummary() {
           <p>Q2: ${qCounts.Q2}</p>
           <p>Q3: ${qCounts.Q3}</p>
           <p>Q4: ${qCounts.Q4}</p>
-          <p><strong>Total: ${Object.values(qCounts).reduce((a,b) => a+b, 0)}</strong></p>
+          <p><strong>Total: ${Object.values(qCounts).reduce((a, b) => a + b, 0)}</strong></p>
         </div>`;
     });
   }
 }
 
-function initQuarterlySummary() {
-  populateYearDropdown();
-  renderQuarterlySummary();
-  const yearFilterEl = document.getElementById('year-filter');
-  if (yearFilterEl) {
-    yearFilterEl.addEventListener('change', renderQuarterlySummary);
+function waitForDataAndInit() {
+  if (movsData && movsData.length > 0) {
+    populateYearDropdown();
+    renderQuarterlySummary();
+    document.getElementById('year-filter').addEventListener('change', renderQuarterlySummary);
+  } else {
+    setTimeout(waitForDataAndInit, 500);
   }
 }
 
-// Wait until movsData exists and has data
-const dataCheckInterval = setInterval(() => {
-  if (window.movsData && Array.isArray(window.movsData) && movsData.length > 0) {
-    clearInterval(dataCheckInterval);
-    initQuarterlySummary();
-  }
-}, 200);
+document.addEventListener('DOMContentLoaded', waitForDataAndInit);
+
 
 
   
