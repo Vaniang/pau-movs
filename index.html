@@ -735,9 +735,9 @@ function parseToDate(input) {
     return isNaN(parsed) ? new Date() : parsed;
   }
 
-// === Quarterly Summary View Toggle with Grand Totals & Multi-Filter Support ===
+// === Quarterly Summary Toggle with Year Filter Fix ===
 
-// Add default card styling + sticky table headers
+// Add styling
 const style = document.createElement('style');
 style.textContent = `
   .card {
@@ -760,20 +760,19 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
-// Create toggle button
 const quarterlyContainer = document.getElementById('quarterly-summary');
 let quarterlyViewMode = 'table';
-if (quarterlyContainer && quarterlyContainer.parentNode) {
-  const viewToggleBtn = document.createElement('button');
-  viewToggleBtn.textContent = "Switch to Card View";
-  viewToggleBtn.style.marginBottom = "10px";
-  viewToggleBtn.onclick = () => {
-    quarterlyViewMode = quarterlyViewMode === 'table' ? 'cards' : 'table';
-    viewToggleBtn.textContent = quarterlyViewMode === 'table'
-      ? "Switch to Card View"
-      : "Switch to Table View";
-    renderQuarterlySummary();
-  };
+
+// Toggle button
+const viewToggleBtn = document.createElement('button');
+viewToggleBtn.textContent = "Switch to Card View";
+viewToggleBtn.style.marginBottom = "10px";
+viewToggleBtn.onclick = () => {
+  quarterlyViewMode = quarterlyViewMode === 'table' ? 'cards' : 'table';
+  viewToggleBtn.textContent = quarterlyViewMode === 'table' ? "Switch to Card View" : "Switch to Table View";
+  renderQuarterlySummary();
+};
+if (quarterlyContainer?.parentNode) {
   quarterlyContainer.parentNode.insertBefore(viewToggleBtn, quarterlyContainer);
 }
 
@@ -790,10 +789,7 @@ function renderQuarterlySummary() {
     TYPES.forEach(type => counts[q][type] = 0);
   }
 
-  // Use the already-filtered data if PAU-MOVs exposes it, else fallback to movsData
-  const dataToUse = typeof getFilteredMovsData === 'function' ? getFilteredMovsData() : movsData;
-
-  dataToUse.forEach(r => {
+  movsData.forEach(r => {
     const d = parseToDate(r.sortDate || r.date);
     if (!(d instanceof Date) || isNaN(d) || d.getFullYear() !== year) return;
     const quarter = Math.floor(d.getMonth() / 3) + 1;
@@ -825,8 +821,8 @@ function renderQuarterlySummary() {
     html += `<tr style="font-weight:bold;background:#f0f0f0;">
       <td>Grand Total (${year})</td>`;
     TYPES.forEach(type => {
-      const totalPerType = Object.values(counts).reduce((sum, qCounts) => sum + qCounts[type], 0);
-      html += `<td>${totalPerType}</td>`;
+      const typeTotal = Object.values(counts).reduce((sum, qData) => sum + qData[type], 0);
+      html += `<td>${typeTotal}</td>`;
     });
     html += `<td>${grandTotal}</td></tr>`;
 
@@ -835,10 +831,8 @@ function renderQuarterlySummary() {
 
   } else {
     for (const type of TYPES) {
-      const qCounts = { Q1: 0, Q2: 0, Q3: 0, Q4: 0 };
-      for (let q = 1; q <= 4; q++) {
-        qCounts[`Q${q}`] = counts[q][type];
-      }
+      let qCounts = { Q1: 0, Q2: 0, Q3: 0, Q4: 0 };
+      for (let q = 1; q <= 4; q++) { qCounts[`Q${q}`] = counts[q][type]; }
       quarterlyContainer.innerHTML += `
         <div class="card">
           <h3>${type} (${year})</h3>
@@ -846,26 +840,42 @@ function renderQuarterlySummary() {
           <p>Q2: ${qCounts.Q2}</p>
           <p>Q3: ${qCounts.Q3}</p>
           <p>Q4: ${qCounts.Q4}</p>
-          <p><strong>Total: ${qCounts.Q1 + qCounts.Q2 + qCounts.Q3 + qCounts.Q4}</strong></p>
+          <p><strong>Total: ${Object.values(qCounts).reduce((a, b) => a + b, 0)}</strong></p>
         </div>`;
     }
   }
 }
 
-// Run on page load + whenever filters change
+// Init when DOM ready
 document.addEventListener('DOMContentLoaded', () => {
-  renderQuarterlySummary();
-
   const yearFilterEl = document.getElementById('year-filter');
-  if (yearFilterEl) {
-    yearFilterEl.addEventListener('change', renderQuarterlySummary);
+
+  // Populate years if empty
+  if (yearFilterEl && yearFilterEl.options.length === 0) {
+    const years = Array.from(new Set(movsData
+      .map(r => {
+        const d = parseToDate(r.sortDate || r.date);
+        return (d instanceof Date && !isNaN(d)) ? d.getFullYear() : null;
+      })
+      .filter(y => y !== null)
+    )).sort((a, b) => b - a);
+
+    years.forEach(year => {
+      const opt = document.createElement('option');
+      opt.value = year;
+      opt.textContent = year;
+      yearFilterEl.appendChild(opt);
+    });
   }
 
-  // Listen for other PAU-MOVs filter changes (category, search, etc.)
-  const filterContainer = document.getElementById('filters');
-  if (filterContainer) {
-    filterContainer.addEventListener('change', renderQuarterlySummary);
-    filterContainer.addEventListener('input', renderQuarterlySummary);
+  if (yearFilterEl && !yearFilterEl.value && yearFilterEl.options.length > 0) {
+    yearFilterEl.value = yearFilterEl.options[0].value;
+  }
+
+  renderQuarterlySummary();
+
+  if (yearFilterEl) {
+    yearFilterEl.addEventListener('change', renderQuarterlySummary);
   }
 });
 
