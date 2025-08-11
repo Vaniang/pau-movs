@@ -735,60 +735,139 @@ function parseToDate(input) {
     return isNaN(parsed) ? new Date() : parsed;
   }
 
+// === Quarterly Summary View Toggle with Grand Totals & Multi-Filter Support ===
+
+// Add default card styling + sticky table headers
+const style = document.createElement('style');
+style.textContent = `
+  .card {
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 10px;
+    background: #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  .card h3 {
+    margin-top: 0;
+  }
+  table thead th {
+    position: sticky;
+    top: 0;
+    background: #eee;
+    z-index: 1;
+  }
+`;
+document.head.appendChild(style);
+
+// Create toggle button
+const quarterlyContainer = document.getElementById('quarterly-summary');
+let quarterlyViewMode = 'table';
+if (quarterlyContainer && quarterlyContainer.parentNode) {
+  const viewToggleBtn = document.createElement('button');
+  viewToggleBtn.textContent = "Switch to Card View";
+  viewToggleBtn.style.marginBottom = "10px";
+  viewToggleBtn.onclick = () => {
+    quarterlyViewMode = quarterlyViewMode === 'table' ? 'cards' : 'table';
+    viewToggleBtn.textContent = quarterlyViewMode === 'table'
+      ? "Switch to Card View"
+      : "Switch to Table View";
+    renderQuarterlySummary();
+  };
+  quarterlyContainer.parentNode.insertBefore(viewToggleBtn, quarterlyContainer);
+}
+
 function renderQuarterlySummary() {
-  const summary = {}; // Format: { '2025': { 'IEC Videos': { Q1: 0, Q2: 0, Q3: 0, Q4: 0 }, ... }, ... }
+  const yearFilterEl = document.getElementById('year-filter');
+  if (!yearFilterEl) return;
 
-  for (const r of movsData) {
-    const type = r.type;
-    const date = parseToDate(r.sortDate || r.date);
+  const year = parseInt(yearFilterEl.value, 10);
+  if (isNaN(year)) return;
 
-    if (!(date instanceof Date) || isNaN(date)) continue;
-
-    const year = date.getFullYear();
-    const month = date.getMonth(); // 0-11
-    let quarter = '';
-    if (month <= 2) quarter = 'Q1';
-    else if (month <= 5) quarter = 'Q2';
-    else if (month <= 8) quarter = 'Q3';
-    else quarter = 'Q4';
-
-    if (!summary[year]) summary[year] = {};
-    if (!summary[year][type]) summary[year][type] = { Q1: 0, Q2: 0, Q3: 0, Q4: 0 };
-
-    summary[year][type][quarter]++;
+  const counts = {};
+  for (let q = 1; q <= 4; q++) {
+    counts[q] = {};
+    TYPES.forEach(type => counts[q][type] = 0);
   }
 
-  // Render to DOM
-  const container = document.getElementById('quarterly-summary');
-  container.innerHTML = '';
+  // Use the already-filtered data if PAU-MOVs exposes it, else fallback to movsData
+  const dataToUse = typeof getFilteredMovsData === 'function' ? getFilteredMovsData() : movsData;
 
-  // Sort years descending (newest first)
-  const years = Object.keys(summary).sort((a, b) => b - a);
+  dataToUse.forEach(r => {
+    const d = parseToDate(r.sortDate || r.date);
+    if (!(d instanceof Date) || isNaN(d) || d.getFullYear() !== year) return;
+    const quarter = Math.floor(d.getMonth() / 3) + 1;
+    if (counts[quarter] && counts[quarter][r.type] !== undefined) {
+      counts[quarter][r.type]++;
+    }
+  });
 
-  for (const year of years) {
-    const typesInYear = summary[year];
+  quarterlyContainer.innerHTML = '';
+
+  if (quarterlyViewMode === 'table') {
+    let html = `<table border="1" cellpadding="5" style="border-collapse:collapse;background:#fff;width:100%;margin-top:10px;">
+      <thead>
+        <tr>
+          <th>Quarter</th>`;
+    TYPES.forEach(type => { html += `<th>${type}</th>`; });
+    html += `<th>Total</th></tr></thead><tbody>`;
+
+    let grandTotal = 0;
+    for (let q = 1; q <= 4; q++) {
+      const rowTotal = Object.values(counts[q]).reduce((a, b) => a + b, 0);
+      grandTotal += rowTotal;
+      html += `<tr>
+        <td>Q${q}</td>`;
+      TYPES.forEach(type => { html += `<td>${counts[q][type]}</td>`; });
+      html += `<td><strong>${rowTotal}</strong></td></tr>`;
+    }
+
+    html += `<tr style="font-weight:bold;background:#f0f0f0;">
+      <td>Grand Total (${year})</td>`;
+    TYPES.forEach(type => {
+      const totalPerType = Object.values(counts).reduce((sum, qCounts) => sum + qCounts[type], 0);
+      html += `<td>${totalPerType}</td>`;
+    });
+    html += `<td>${grandTotal}</td></tr>`;
+
+    html += `</tbody></table>`;
+    quarterlyContainer.innerHTML = html;
+
+  } else {
     for (const type of TYPES) {
-      const q = typesInYear[type];
-      if (!q) continue; // Skip if this type has no data in the year
-
-      container.innerHTML += `
+      const qCounts = { Q1: 0, Q2: 0, Q3: 0, Q4: 0 };
+      for (let q = 1; q <= 4; q++) {
+        qCounts[`Q${q}`] = counts[q][type];
+      }
+      quarterlyContainer.innerHTML += `
         <div class="card">
           <h3>${type} (${year})</h3>
-          <p>Q1: ${q.Q1}</p>
-          <p>Q2: ${q.Q2}</p>
-          <p>Q3: ${q.Q3}</p>
-          <p>Q4: ${q.Q4}</p>
+          <p>Q1: ${qCounts.Q1}</p>
+          <p>Q2: ${qCounts.Q2}</p>
+          <p>Q3: ${qCounts.Q3}</p>
+          <p>Q4: ${qCounts.Q4}</p>
+          <p><strong>Total: ${qCounts.Q1 + qCounts.Q2 + qCounts.Q3 + qCounts.Q4}</strong></p>
         </div>`;
     }
   }
 }
 
-function renderAll(){
-  renderMOVsTable();
-  renderCategorySummary();
-  renderYearFilter();
+// Run on page load + whenever filters change
+document.addEventListener('DOMContentLoaded', () => {
   renderQuarterlySummary();
-}
+
+  const yearFilterEl = document.getElementById('year-filter');
+  if (yearFilterEl) {
+    yearFilterEl.addEventListener('change', renderQuarterlySummary);
+  }
+
+  // Listen for other PAU-MOVs filter changes (category, search, etc.)
+  const filterContainer = document.getElementById('filters');
+  if (filterContainer) {
+    filterContainer.addEventListener('change', renderQuarterlySummary);
+    filterContainer.addEventListener('input', renderQuarterlySummary);
+  }
+});
 
   
 </script>
