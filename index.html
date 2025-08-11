@@ -735,13 +735,8 @@ function parseToDate(input) {
     return isNaN(parsed) ? new Date() : parsed;
   }
 
-// Safe fallbacks
-const TYPES = window.TYPES || ["Category1", "Category2", "Category3"];
-let movsData = window.movsData || [];
-const parseToDate = window.parseToDate || function(dateStr) {
-  const d = new Date(dateStr);
-  return isNaN(d) ? null : d;
-};
+// Use existing TYPES, movsData, parseToDate from PAU-MOVs
+// (Do not redeclare them here)
 
 const quarterlyContainer = document.getElementById('quarterly-summary');
 let quarterlyViewMode = 'table';
@@ -842,7 +837,7 @@ function renderQuarterlySummary() {
 }
 
 function waitForDataAndInit() {
-  if (movsData && movsData.length > 0) {
+  if (Array.isArray(movsData) && movsData.length > 0 && Array.isArray(TYPES) && TYPES.length > 0) {
     populateYearDropdown();
     renderQuarterlySummary();
     document.getElementById('year-filter').addEventListener('change', renderQuarterlySummary);
@@ -853,9 +848,6 @@ function waitForDataAndInit() {
 
 document.addEventListener('DOMContentLoaded', waitForDataAndInit);
 
-
-
-  
 </script>
 </body>
 </html>
