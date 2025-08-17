@@ -336,13 +336,22 @@ function renderQuarterlySummary() {
 
   // Fill counts
   movsData.forEach(r => {
-    const d = parseToDate(r.date);
-    if (d.getFullYear() !== year) return;
-    const quarter = Math.floor(d.getMonth() / 3) + 1;
-    if (counts[quarter] && counts[quarter][r.type] !== undefined) {
-      counts[quarter][r.type]++;
-    }
-  });
+  // Always convert to a JS date using parseToDate
+  const d = parseToDate(r.sortDate || r.date);
+
+  // Ignore invalid dates or wrong year
+  if (!(d instanceof Date) || isNaN(d.getTime()) || d.getFullYear() !== year) {
+    return;
+  }
+
+  // Determine the quarter and increment count
+  const quarter = Math.floor(d.getMonth() / 3) + 1;
+  if (counts[quarter] && counts[quarter][r.type] !== undefined) {
+    counts[quarter][r.type]++;
+  }
+});
+
+  movsData = arr;
 
   // Build HTML table
   let html = `<table border="1" cellpadding="5" style="border-collapse:collapse;background:#fff;width:100%;margin-top:10px;">
@@ -368,6 +377,9 @@ function renderQuarterlySummary() {
 
   document.getElementById('quarterly-summary').innerHTML = html;
 }
+
+  populateYearDropdown();
+renderQuarterlySummary();
 
 /***********************************
  * 8. FORM ADD / EDIT               *
@@ -771,82 +783,6 @@ function populateYearDropdown() {
   yearFilterEl.innerHTML = years.map(y => `<option value="${y}">${y}</option>`).join('');
   yearFilterEl.value = years[0]; // Latest year
 }
-
-function renderQuarterlySummary() {
-  const yearFilterEl = document.getElementById('year-filter');
-  const year = parseInt(yearFilterEl.value, 10);
-  if (isNaN(year)) return;
-
-  const counts = {};
-  for (let q = 1; q <= 4; q++) {
-    counts[q] = {};
-    TYPES.forEach(type => counts[q][type] = 0);
-  }
-
-  movsData.forEach(r => {
-    const d = parseToDate(r.sortDate || r.date);
-    if (!(d instanceof Date) || isNaN(d) || d.getFullYear() !== year) return;
-    const quarter = Math.floor(d.getMonth() / 3) + 1;
-    if (counts[quarter] && counts[quarter][r.type] !== undefined) {
-      counts[quarter][r.type]++;
-    }
-  });
-
-  quarterlyContainer.innerHTML = '';
-
-  if (quarterlyViewMode === 'table') {
-    let html = `<table border="1" cellpadding="5" style="border-collapse:collapse;background:#fff;width:100%;margin-top:10px;">
-      <thead>
-        <tr><th>Quarter</th>`;
-    TYPES.forEach(type => { html += `<th>${type}</th>`; });
-    html += `<th>Total</th></tr></thead><tbody>`;
-
-    let grandTotal = 0;
-    for (let q = 1; q <= 4; q++) {
-      const rowTotal = Object.values(counts[q]).reduce((a, b) => a + b, 0);
-      grandTotal += rowTotal;
-      html += `<tr><td>Q${q}</td>`;
-      TYPES.forEach(type => { html += `<td>${counts[q][type]}</td>`; });
-      html += `<td><strong>${rowTotal}</strong></td></tr>`;
-    }
-
-    html += `<tr style="font-weight:bold;background:#f0f0f0;">
-      <td>Grand Total (${year})</td>`;
-    TYPES.forEach(type => {
-      const typeTotal = Object.values(counts).reduce((sum, qData) => sum + qData[type], 0);
-      html += `<td>${typeTotal}</td>`;
-    });
-    html += `<td>${grandTotal}</td></tr></tbody></table>`;
-
-    quarterlyContainer.innerHTML = html;
-  } else {
-    TYPES.forEach(type => {
-      let qCounts = { Q1: 0, Q2: 0, Q3: 0, Q4: 0 };
-      for (let q = 1; q <= 4; q++) { qCounts[`Q${q}`] = counts[q][type]; }
-      quarterlyContainer.innerHTML += `
-        <div class="card">
-          <h3>${type} (${year})</h3>
-          <p>Q1: ${qCounts.Q1}</p>
-          <p>Q2: ${qCounts.Q2}</p>
-          <p>Q3: ${qCounts.Q3}</p>
-          <p>Q4: ${qCounts.Q4}</p>
-          <p><strong>Total: ${Object.values(qCounts).reduce((a, b) => a + b, 0)}</strong></p>
-        </div>`;
-    });
-  }
-}
-
-function waitForDataAndInit() {
-  if (Array.isArray(movsData) && movsData.length > 0 && Array.isArray(TYPES) && TYPES.length > 0) {
-    populateYearDropdown();
-    renderQuarterlySummary();
-    document.getElementById('year-filter').addEventListener('change', renderQuarterlySummary);
-  } else {
-    setTimeout(waitForDataAndInit, 500);
-  }
-}
-
-document.addEventListener('DOMContentLoaded', waitForDataAndInit);
 
 </script>
 </body>
