@@ -324,62 +324,41 @@ function renderYearFilter() {
 
 function renderQuarterlySummary() {
   const year = parseInt(document.getElementById('year-filter').value, 10);
-  const counts = {};
+  if (isNaN(year)) return;
 
-  // Initialize structure: counts[quarter][category] = 0
+  // Initialize structure: counts[quarter][type] = 0
+  const counts = {};
   for (let q = 1; q <= 4; q++) {
     counts[q] = {};
-    TYPES.forEach(type => {
-      counts[q][type] = 0;
-    });
+    TYPES.forEach(type => counts[q][type] = 0);
   }
 
   // Fill counts
   movsData.forEach(r => {
-  // Always convert to a JS date using parseToDate
-  const d = parseToDate(r.sortDate || r.date);
-
-  // Ignore invalid dates or wrong year
-  if (!(d instanceof Date) || isNaN(d.getTime()) || d.getFullYear() !== year) {
-    return;
-  }
-
-  // Determine the quarter and increment count
-  const quarter = Math.floor(d.getMonth() / 3) + 1;
-  if (counts[quarter] && counts[quarter][r.type] !== undefined) {
-    counts[quarter][r.type]++;
-  }
-});
-
-  movsData = arr;
+    const d = parseToDate(r.sortDate || r.date);
+    if (!(d instanceof Date) || isNaN(d.getTime()) || d.getFullYear() !== year) return;
+    const quarter = Math.floor(d.getMonth() / 3) + 1;
+    if (counts[quarter] && counts[quarter][r.type] !== undefined) {
+      counts[quarter][r.type]++;
+    }
+  });
 
   // Build HTML table
   let html = `<table border="1" cellpadding="5" style="border-collapse:collapse;background:#fff;width:100%;margin-top:10px;">
-    <thead>
-      <tr style="background:#eee;">
-        <th>Quarter</th>`;
-  TYPES.forEach(type => {
-    html += `<th>${type}</th>`;
-  });
+    <thead><tr><th>Quarter</th>`;
+  TYPES.forEach(type => { html += `<th>${type}</th>`; });
   html += `<th>Total</th></tr></thead><tbody>`;
 
   for (let q = 1; q <= 4; q++) {
     const total = Object.values(counts[q]).reduce((a, b) => a + b, 0);
-    html += `<tr>
-      <td>Q${q}</td>`;
-    TYPES.forEach(type => {
-      html += `<td>${counts[q][type]}</td>`;
-    });
+    html += `<tr><td>Q${q}</td>`;
+    TYPES.forEach(type => { html += `<td>${counts[q][type]}</td>`; });
     html += `<td><strong>${total}</strong></td></tr>`;
   }
 
   html += `</tbody></table>`;
-
   document.getElementById('quarterly-summary').innerHTML = html;
 }
-
-  populateYearDropdown();
-renderQuarterlySummary();
 
 /***********************************
  * 8. FORM ADD / EDIT               *
@@ -553,8 +532,11 @@ movsColl.orderBy('sortDate', 'desc').onSnapshot(snap => {
         : data.date
     });
   });
+
   movsData = arr;
-  renderAll();
+  renderAll();              // shows the table + category cards
+  populateYearDropdown();   // update <select> options
+  renderQuarterlySummary(); // draw the quarterly count
 });
 
 
