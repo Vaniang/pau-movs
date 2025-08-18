@@ -745,16 +745,25 @@ document.querySelectorAll('#movs-table thead th[data-sort]').forEach(th => {
   });
 });
 
-
 function parseToDate(input) {
-    if (!input) return new Date();
-    if (input instanceof Date) return input;
-    if (typeof input === 'number') {
-      const excelEpoch = new Date(Date.UTC(1899, 11, 30));
-      return new Date(excelEpoch.getTime() + input * 86400000);
-    }
+  if (!input) return new Date();
 
-    // Parse string like "07-Jan-2025"
+  // 👉 Firestore Timestamp (has .toDate())
+  if (typeof input === 'object' && typeof input.toDate === 'function') {
+    return input.toDate();
+  }
+
+  // Already a JS Date
+  if (input instanceof Date) return input;
+
+  // Excel serial number
+  if (typeof input === 'number') {
+    const excelEpoch = new Date(Date.UTC(1899, 11, 30));
+    return new Date(excelEpoch.getTime() + input * 86400000);
+  }
+
+  // String (example "07-Jan-2025")
+  if (typeof input === 'string') {
     const parts = input.split("-");
     if (parts.length === 3) {
       const [day, mon, year] = parts;
@@ -765,10 +774,13 @@ function parseToDate(input) {
         return new Date(Number(year), monthIndex, Number(day));
       }
     }
-
     const parsed = new Date(input);
     return isNaN(parsed) ? new Date() : parsed;
   }
+
+  // Fallback
+  return new Date();
+}
 
 // Use existing TYPES, movsData, parseToDate from PAU-MOVs
 // (Do not redeclare them here)
