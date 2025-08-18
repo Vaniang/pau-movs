@@ -343,22 +343,43 @@ function renderQuarterlySummary() {
     }
   });
 
-  // Build HTML table
-  let html = `<table border="1" cellpadding="5" style="border-collapse:collapse;background:#fff;width:100%;margin-top:10px;">
-    <thead><tr><th>Quarter</th>`;
-  TYPES.forEach(type => { html += `<th>${type}</th>`; });
-  html += `<th>Total</th></tr></thead><tbody>`;
+  // --- TABLE VIEW ---
+  if (quarterlyViewMode === 'table') {
+    let html = `<table border="1" cellpadding="5" style="border-collapse:collapse;background:#fff;width:100%;margin-top:10px;">
+      <thead><tr><th>Quarter</th>`;
+    TYPES.forEach(type => { html += `<th>${type}</th>`; });
+    html += `<th>Total</th></tr></thead><tbody>`;
 
-  for (let q = 1; q <= 4; q++) {
-    const total = Object.values(counts[q]).reduce((a, b) => a + b, 0);
-    html += `<tr><td>Q${q}</td>`;
-    TYPES.forEach(type => { html += `<td>${counts[q][type]}</td>`; });
-    html += `<td><strong>${total}</strong></td></tr>`;
+    for (let q = 1; q <= 4; q++) {
+      const total = Object.values(counts[q]).reduce((a, b) => a + b, 0);
+      html += `<tr><td>Q${q}</td>`;
+      TYPES.forEach(type => { html += `<td>${counts[q][type]}</td>`; });
+      html += `<td><strong>${total}</strong></td></tr>`;
+    }
+
+    html += `</tbody></table>`;
+    quarterlyContainer.innerHTML = html;
+    return;
   }
 
-  html += `</tbody></table>`;
-  document.getElementById('quarterly-summary').innerHTML = html;
+  // --- CARD VIEW ---
+  quarterlyContainer.innerHTML = '';
+  for (let q = 1; q <= 4; q++) {
+    let inner = '';
+    TYPES.forEach(type => {
+      inner += `<p>${type}: <strong>${counts[q][type]}</strong></p>`;
+    });
+    const total = Object.values(counts[q]).reduce((a, b) => a + b, 0);
+
+    quarterlyContainer.innerHTML += `
+      <div class="card">
+        <h3>Quarter ${q} (${year})</h3>
+        ${inner}
+        <p style="margin-top:8px;"><strong>Total: ${total}</strong></p>
+      </div>`;
+  }
 }
+
 
 /***********************************
  * 8. FORM ADD / EDIT               *
