@@ -335,8 +335,9 @@ document.getElementById('year-filter').addEventListener('change', renderQuarterl
 document.getElementById('quarter-filter').addEventListener('change', renderQuarterlySummary);
 
 function renderQuarterlySummary() {
-  const year   = parseInt(document.getElementById('year-filter').value, 10);
-const qFilter = document.getElementById('quarter-filter').value; // "all" or "1".."4"
+  const year    = parseInt(document.getElementById('year-filter').value, 10);
+  const qFilter = document.getElementById('quarter-filter').value; // "all" or "1".."4"
+
   if (isNaN(year)) return;
 
   // Initialize structure: counts[quarter][type] = 0
@@ -356,7 +357,7 @@ const qFilter = document.getElementById('quarter-filter').value; // "all" or "1"
     }
   });
 
-  // --- TABLE VIEW ---
+  // TABLE VIEW
   if (quarterlyViewMode === 'table') {
     let html = `<table border="1" cellpadding="5" style="border-collapse:collapse;background:#fff;width:100%;margin-top:10px;">
       <thead><tr><th>Quarter</th>`;
@@ -364,7 +365,7 @@ const qFilter = document.getElementById('quarter-filter').value; // "all" or "1"
     html += `<th>Total</th></tr></thead><tbody>`;
 
     for (let q = 1; q <= 4; q++) {
-  if (qFilter !== 'all' && qFilter !== String(q)) continue;     // 👈 skip other quarters 
+      if (qFilter !== 'all' && qFilter !== String(q)) continue; // Skip other quarters
       const total = Object.values(counts[q]).reduce((a, b) => a + b, 0);
       html += `<tr><td>Q${q}</td>`;
       TYPES.forEach(type => { html += `<td>${counts[q][type]}</td>`; });
@@ -376,10 +377,10 @@ const qFilter = document.getElementById('quarter-filter').value; // "all" or "1"
     return;
   }
 
-  // --- CARD VIEW ---
+  // CARD VIEW
   quarterlyContainer.innerHTML = '';
   for (let q = 1; q <= 4; q++) {
-  if (qFilter !== 'all' && qFilter !== String(q)) continue;     // 👈 skip other quarters
+    if (qFilter !== 'all' && qFilter !== String(q)) continue; // Skip other quarters
     let inner = '';
     TYPES.forEach(type => {
       inner += `<p>${type}: <strong>${counts[q][type]}</strong></p>`;
