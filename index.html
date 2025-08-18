@@ -31,6 +31,18 @@
     .sr-only{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;}
     @media(max-width:640px){body{flex-direction:column;}.sidebar{width:100%;display:flex;align-items:center;justify-content:space-around;padding:10px;}.sidebar h2{display:none;}.content{padding:10px;}}
     @media print{body{display:block;background:#fff;color:#000;}.sidebar,.input-fields,.table-actions,.filters{display:none!important;}button{display:none!important;}.content{padding:0;}}
+    .quarter-card {
+    background:#fff;
+    padding:15px;
+    border-radius:8px;
+    box-shadow:0 2px 5px rgba(0,0,0,.1);
+    text-align:center;
+  }
+  .quarter-card h3 {
+    margin-bottom:10px;
+    font-size:1.1rem;
+    font-weight:bold;
+  }
   </style>
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/11.0.0/firebase-app-compat.js"></script>
@@ -380,22 +392,24 @@ function renderQuarterlySummary() {
 
   // CARD VIEW
   quarterlyContainer.innerHTML = '';
-  for (let q = 1; q <= 4; q++) {
-    if (qFilter !== 'all' && qFilter !== String(q)) continue; // Skip other quarters
-    let inner = '';
-    TYPES.forEach(type => {
-      inner += `<p>${type}: <strong>${counts[q][type]}</strong></p>`;
-    });
-    const total = Object.values(counts[q]).reduce((a, b) => a + b, 0);
+  let cardHTML = '';
+for (let q = 1; q <= 4; q++) {
+  if (qFilter !== 'all' && qFilter !== String(q)) continue;
+  let inner = '';
+  TYPES.forEach(type => {
+    inner += `<p>${type}: <strong>${counts[q][type]}</strong></p>`;
+  });
+  const total = Object.values(counts[q]).reduce((a, b) => a + b, 0);
 
-    quarterlyContainer.innerHTML += `
-      <div class="card">
-        <h3>Quarter ${q} (${year})</h3>
-        ${inner}
-        <p style="margin-top:8px;"><strong>Total: ${total}</strong></p>
-      </div>`;
-  }
+  cardHTML += `
+    <div class="quarter-card">
+      <h3>Quarter ${q} (${year})</h3>
+      ${inner}
+      <p style="margin-top:8px;"><strong>Total: ${total}</strong></p>
+    </div>`;
 }
+quarterlyContainer.innerHTML = `<div class="summary">${cardHTML}</div>`;
+
 
 
 /***********************************
