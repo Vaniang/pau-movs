@@ -366,18 +366,20 @@ function renderQuarterlySummary() {
     TYPES.forEach(type => counts[q][type] = 0);
   }
 
-  // Fill counts
+  // Fill counts (case-insensitive match to one of the TYPES)
   movsData.forEach(r => {
     const d = parseToDate(r.sortDate || r.date);
     if (!(d instanceof Date) || isNaN(d.getTime()) || d.getFullYear() !== year) return;
+
     const quarter = Math.floor(d.getMonth() / 3) + 1;
-   // Case-insensitive match to one of the TYPES
-const normalizedType = (r.type || '').toLowerCase();
-TYPES.forEach(t => {
-  if (t.toLowerCase() === normalizedType) {
-    counts[quarter][t]++;
-  }
-});
+    const normalizedType = (r.type || '').toLowerCase();
+
+    TYPES.forEach(t => {
+      if (t.toLowerCase() === normalizedType) {
+        counts[quarter][t]++;
+      }
+    });
+  }); // <-- ✅ closes movsData.forEach()
 
   // TABLE VIEW
   if (quarterlyViewMode === 'table') {
@@ -387,7 +389,7 @@ TYPES.forEach(t => {
     html += `<th>Total</th></tr></thead><tbody>`;
 
     for (let q = 1; q <= 4; q++) {
-      if (qFilter !== 'all' && qFilter !== String(q)) continue; // Skip other quarters
+      if (qFilter !== 'all' && qFilter !== String(q)) continue;
       const total = Object.values(counts[q]).reduce((a, b) => a + b, 0);
       html += `<tr><td>Q${q}</td>`;
       TYPES.forEach(type => { html += `<td>${counts[q][type]}</td>`; });
@@ -400,24 +402,24 @@ TYPES.forEach(t => {
   }
 
   // CARD VIEW
-  quarterlyContainer.innerHTML = '';
   let cardHTML = '';
-for (let q = 1; q <= 4; q++) {
-  if (qFilter !== 'all' && qFilter !== String(q)) continue;
-  let inner = '';
-  TYPES.forEach(type => {
-    inner += `<p>${type}: <strong>${counts[q][type]}</strong></p>`;
-  });
-  const total = Object.values(counts[q]).reduce((a, b) => a + b, 0);
+  for (let q = 1; q <= 4; q++) {
+    if (qFilter !== 'all' && qFilter !== String(q)) continue;
 
-  cardHTML += `
-    <div class="quarter-card">
-      <h3>Quarter ${q} (${year})</h3>
-      ${inner}
-      <p style="margin-top:8px;"><strong>Total: ${total}</strong></p>
-    </div>`;
-}
-quarterlyContainer.innerHTML = `<div class="summary">${cardHTML}</div>`;
+    let inner = '';
+    TYPES.forEach(type => {
+      inner += `<p>${type}: <strong>${counts[q][type]}</strong></p>`;
+    });
+    const total = Object.values(counts[q]).reduce((a, b) => a + b, 0);
+
+    cardHTML += `
+      <div class="quarter-card">
+        <h3>Quarter ${q} (${year})</h3>
+        ${inner}
+        <p style="margin-top:8px;"><strong>Total: ${total}</strong></p>
+      </div>`;
+  }
+  quarterlyContainer.innerHTML = `<div class="summary">${cardHTML}</div>`;
 }
 
 /***********************************
