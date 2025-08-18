@@ -55,7 +55,17 @@
       <div class="summary" id="category-summary"></div>
       <div style="margin-top:20px;">
   <label for="year-filter"><strong>Select Year:</strong></label>
-  <select id="year-filter"></select>
+<select id="year-filter"></select>
+
+<label for="quarter-filter" style="margin-left:15px;"><strong>Quarter:</strong></label>
+<select id="quarter-filter">
+  <option value="all">All</option>
+  <option value="1">Q1</option>
+  <option value="2">Q2</option>
+  <option value="3">Q3</option>
+  <option value="4">Q4</option>
+</select>
+
 </div>
 
 <div id="quarterly-summary" style="margin-top:20px;"></div>
@@ -321,9 +331,12 @@ function renderYearFilter() {
     yearFilter.value = currentYear;
   }
 }
+document.getElementById('year-filter').addEventListener('change', renderQuarterlySummary);
+document.getElementById('quarter-filter').addEventListener('change', renderQuarterlySummary);
 
 function renderQuarterlySummary() {
-  const year = parseInt(document.getElementById('year-filter').value, 10);
+  const year   = parseInt(document.getElementById('year-filter').value, 10);
+const qFilter = document.getElementById('quarter-filter').value; // "all" or "1".."4"
   if (isNaN(year)) return;
 
   // Initialize structure: counts[quarter][type] = 0
@@ -351,6 +364,7 @@ function renderQuarterlySummary() {
     html += `<th>Total</th></tr></thead><tbody>`;
 
     for (let q = 1; q <= 4; q++) {
+  if (qFilter !== 'all' && qFilter !== String(q)) continue;     // 👈 skip other quarters 
       const total = Object.values(counts[q]).reduce((a, b) => a + b, 0);
       html += `<tr><td>Q${q}</td>`;
       TYPES.forEach(type => { html += `<td>${counts[q][type]}</td>`; });
@@ -365,6 +379,7 @@ function renderQuarterlySummary() {
   // --- CARD VIEW ---
   quarterlyContainer.innerHTML = '';
   for (let q = 1; q <= 4; q++) {
+  if (qFilter !== 'all' && qFilter !== String(q)) continue;     // 👈 skip other quarters
     let inner = '';
     TYPES.forEach(type => {
       inner += `<p>${type}: <strong>${counts[q][type]}</strong></p>`;
