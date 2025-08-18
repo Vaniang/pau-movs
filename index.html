@@ -572,8 +572,12 @@ movsColl.orderBy('sortDate', 'desc').onSnapshot(snap => {
 
   movsData = arr;
   renderAll();              // shows the table + category cards
-  populateYearDropdown();   // update <select> options
-  renderQuarterlySummary(); // draw the quarterly count
+
+  // 👉 Add these
+  populateYearDropdown();
+  renderQuarterlySummary();
+});
+
 });
 
 
