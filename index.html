@@ -480,6 +480,9 @@ let chartDonutInstance = null;
 let chartBarInstance = null;
 let filteredReportData = [];
 
+// Storage Key for Persistence
+const STORAGE_KEY_YEAR = 'pau_dashboard_year';
+
 // --- 3. INIT ---
 window.addEventListener('load', () => {
   document.getElementById('input-date').value = new Date().toISOString().split('T')[0];
@@ -500,18 +503,11 @@ function updateApp() {
   renderTable(movsData);
 }
 
-// --- 4. DATA PARSING (FIXED) ---
+// --- 4. DATA PARSING ---
 function parseDate(s) {
   if (!s) return new Date();
-  // Handle Firestore Timestamp (has .toDate() method)
-  if (s && typeof s.toDate === 'function') {
-    return s.toDate();
-  }
-  // Handle Excel Serial Number
-  if (typeof s === 'number') {
-    return new Date((s - 25569) * 86400 * 1000);
-  }
-  // Handle Standard Date Strings
+  if (s && typeof s.toDate === 'function') return s.toDate(); // Firestore Timestamp
+  if (typeof s === 'number') return new Date((s - 25569) * 86400 * 1000); // Excel Serial
   const d = new Date(s);
   return isNaN(d) ? new Date() : d;
 }
@@ -559,7 +555,9 @@ function renderStatsCards() {
 }
 
 function updateCharts() {
-  const selectedYear = parseInt(document.getElementById('chart-year-filter').value) || new Date().getFullYear();
+  const yearEl = document.getElementById('chart-year-filter');
+  // Default to current year if logic fails
+  const selectedYear = parseInt(yearEl.value) || new Date().getFullYear();
   
   const typeCounts = {};
   TYPES.forEach(t => typeCounts[t] = 0);
@@ -568,9 +566,9 @@ function updateCharts() {
 
   movsData.forEach(r => {
     const d = parseDate(r.sortDate || r.date);
-    // Donut: All Time
+    // Donut: All Time Stats
     if(typeCounts[r.type] !== undefined) typeCounts[r.type]++;
-    // Bar: Selected Year
+    // Bar: Selected Year Stats
     if(d.getFullYear() === selectedYear) {
        if(monthlyData[d.getMonth()]) monthlyData[d.getMonth()][r.type]++;
     }
@@ -633,7 +631,6 @@ function updateCharts() {
 function renderQuarterlyTable() {
     const container = document.getElementById('quarterly-table-container');
     const qFilter = document.getElementById('q-summary-filter').value;
-    // Default to current year if filter is empty/loading
     const year = parseInt(document.getElementById('chart-year-filter').value) || new Date().getFullYear();
 
     const counts = {1:{}, 2:{}, 3:{}, 4:{}};
@@ -667,7 +664,13 @@ function renderQuarterlyTable() {
     container.innerHTML = html;
 }
 
-document.getElementById('chart-year-filter').addEventListener('change', () => { updateCharts(); renderQuarterlyTable(); });
+// EVENTS FOR FILTERS (Persistence Logic)
+document.getElementById('chart-year-filter').addEventListener('change', (e) => { 
+    // Save selection to Local Storage
+    localStorage.setItem(STORAGE_KEY_YEAR, e.target.value);
+    updateCharts(); 
+    renderQuarterlyTable(); 
+});
 document.getElementById('q-summary-filter').addEventListener('change', renderQuarterlyTable);
 
 // --- 6. CRUD & TABLES ---
@@ -827,15 +830,27 @@ function populateYearDropdowns() {
   
   const chartsSel = document.getElementById('chart-year-filter');
   const reportSel = document.getElementById('filter-report-year');
-  const curChart = chartsSel.value;
-  const curRep = reportSel.value;
   
+  // 1. Get saved year from localStorage
+  const savedYear = localStorage.getItem(STORAGE_KEY_YEAR);
+  
+  // 2. Determine best default year (Saved year > Current dropdown value > First available year)
+  let yearToSelect = savedYear || chartsSel.value || years[0];
+  
+  // 3. Populate options
   const ops = years.map(y => `<option value="${y}">${y}</option>`).join('');
   chartsSel.innerHTML = ops;
   reportSel.innerHTML = ops;
   
-  if(curChart && years.includes(parseInt(curChart))) chartsSel.value = curChart;
-  if(curRep && years.includes(parseInt(curRep))) reportSel.value = curRep;
+  // 4. Set Value (Ensure the year actually exists in the list)
+  if(years.includes(parseInt(yearToSelect))) {
+      chartsSel.value = yearToSelect;
+  } else {
+      chartsSel.value = years[0]; // Fallback if saved year not found
+  }
+
+  // Set report filter to same if not set
+  if(!reportSel.value) reportSel.value = years[0];
 }
 
 function showToast(msg, type='success') {
