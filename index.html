@@ -464,7 +464,6 @@ const db = firebase.firestore();
 const movsColl = db.collection('movs');
 
 // --- 2. CONFIG & STATE ---
-// Mapped from Lovable's StatCard.tsx variants
 const CONFIG = {
   'IEC Videos': { variant: 'variant-primary', icon: 'fa-video' },
   'News Release': { variant: 'variant-success', icon: 'fa-newspaper' },
@@ -501,7 +500,23 @@ function updateApp() {
   renderTable(movsData);
 }
 
-// --- 4. DASHBOARD RENDERERS ---
+// --- 4. DATA PARSING (FIXED) ---
+function parseDate(s) {
+  if (!s) return new Date();
+  // Handle Firestore Timestamp (has .toDate() method)
+  if (s && typeof s.toDate === 'function') {
+    return s.toDate();
+  }
+  // Handle Excel Serial Number
+  if (typeof s === 'number') {
+    return new Date((s - 25569) * 86400 * 1000);
+  }
+  // Handle Standard Date Strings
+  const d = new Date(s);
+  return isNaN(d) ? new Date() : d;
+}
+
+// --- 5. RENDERERS ---
 
 function renderStatsCards() {
   const container = document.getElementById('stats-container');
@@ -510,8 +525,6 @@ function renderStatsCards() {
   movsData.forEach(r => { if(counts[r.type] !== undefined) counts[r.type]++; });
 
   let html = '';
-  
-  // Type Cards
   TYPES.forEach(t => {
     const conf = CONFIG[t];
     html += `
@@ -529,7 +542,6 @@ function renderStatsCards() {
     `;
   });
   
-  // Total Card
   html += `
     <div class="stat-card variant-primary" style="grid-column: span 1 / -1;">
         <div class="stat-header">
@@ -547,25 +559,23 @@ function renderStatsCards() {
 }
 
 function updateCharts() {
-  const selectedYear = parseInt(document.getElementById('chart-year-filter').value);
+  const selectedYear = parseInt(document.getElementById('chart-year-filter').value) || new Date().getFullYear();
   
-  // Data Prep
   const typeCounts = {};
   TYPES.forEach(t => typeCounts[t] = 0);
   const monthlyData = {};
   for(let m=0; m<12; m++) { monthlyData[m] = {}; TYPES.forEach(t => monthlyData[m][t] = 0); }
 
   movsData.forEach(r => {
-    const d = parseDate(r.date);
-    // Donut: All time
+    const d = parseDate(r.sortDate || r.date);
+    // Donut: All Time
     if(typeCounts[r.type] !== undefined) typeCounts[r.type]++;
-    // Monthly: Selected Year
+    // Bar: Selected Year
     if(d.getFullYear() === selectedYear) {
        if(monthlyData[d.getMonth()]) monthlyData[d.getMonth()][r.type]++;
     }
   });
 
-  // Colors from CategoryChart.tsx
   const chartColors = [
     'hsl(220, 70%, 50%)', 'hsl(160, 60%, 45%)', 'hsl(38, 92%, 50%)',
     'hsl(280, 65%, 60%)', 'hsl(350, 80%, 60%)', 'hsl(200, 80%, 50%)'
@@ -623,7 +633,8 @@ function updateCharts() {
 function renderQuarterlyTable() {
     const container = document.getElementById('quarterly-table-container');
     const qFilter = document.getElementById('q-summary-filter').value;
-    const year = parseInt(document.getElementById('chart-year-filter').value);
+    // Default to current year if filter is empty/loading
+    const year = parseInt(document.getElementById('chart-year-filter').value) || new Date().getFullYear();
 
     const counts = {1:{}, 2:{}, 3:{}, 4:{}};
     for(let q=1; q<=4; q++) TYPES.forEach(t => counts[q][t] = 0);
@@ -632,7 +643,9 @@ function renderQuarterlyTable() {
         const d = parseDate(r.sortDate || r.date);
         if(d.getFullYear() === year) {
             const q = Math.floor(d.getMonth() / 3) + 1;
-            if(counts[q][r.type] !== undefined) counts[q][r.type]++;
+            if(counts[q] && counts[q][r.type] !== undefined) {
+                counts[q][r.type]++;
+            }
         }
     });
 
@@ -657,7 +670,7 @@ function renderQuarterlyTable() {
 document.getElementById('chart-year-filter').addEventListener('change', () => { updateCharts(); renderQuarterlyTable(); });
 document.getElementById('q-summary-filter').addEventListener('change', renderQuarterlyTable);
 
-// --- 5. CRUD ---
+// --- 6. CRUD & TABLES ---
 document.getElementById('add-mov').addEventListener('click', async () => {
   const rec = {
     date: document.getElementById('input-date').value,
@@ -695,7 +708,6 @@ function resetForm() {
 
 document.getElementById('cancel-edit').addEventListener('click', resetForm);
 
-// Table Render
 function renderTable(data) {
   const tbody = document.querySelector('#movs-table tbody');
   const search = document.getElementById('global-search').value.toLowerCase();
@@ -706,14 +718,10 @@ function renderTable(data) {
   );
 
   tbody.innerHTML = filtered.map(r => {
-    const badgeColor = CONFIG[r.type]?.variant.replace('variant-', 'text-'); // simple hack or use var
-    const badgeClass = CONFIG[r.type]?.variant === 'variant-primary' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-700'; // Simplified styling for badge
-    
-    // Using inline styles for badges to match variants
     let badgeStyle = "background:#f1f5f9; color:#475569;";
     if(r.type.includes('IEC')) badgeStyle = "background:var(--primary-soft); color:var(--primary);";
     if(r.type.includes('News')) badgeStyle = "background:var(--success-soft); color:var(--success);";
-    if(r.type.includes('Photo')) badgeStyle = "background:var(--warning-soft); color:#b45309;"; // darken warning text
+    if(r.type.includes('Photo')) badgeStyle = "background:var(--warning-soft); color:#b45309;";
     
     return `
     <tr data-id="${r.id}">
@@ -745,58 +753,49 @@ window.editItem = (id) => {
     document.getElementById('add-mov').textContent = 'Update Record';
     document.getElementById('form-title').textContent = 'Edit Record';
     document.getElementById('cancel-edit').style.display = 'inline-block';
-    
-    // Switch to dashboard
     document.querySelector('[data-section="dashboard"]').click();
-    document.getElementById('input-title').focus();
   }
 };
 
 window.deleteItem = async (id) => {
-  if(confirm('Are you sure you want to delete this record?')) {
+  if(confirm('Are you sure?')) {
     await movsColl.doc(id).delete();
     showToast('Record deleted');
   }
 };
 
-// --- 6. REPORTS LOGIC (Matches ReportsSection.tsx) ---
+// --- 7. REPORTS ---
 document.getElementById('filter-report-btn').addEventListener('click', () => {
     const yVal = document.getElementById('filter-report-year').value;
     const mVal = document.getElementById('filter-report-month').value;
     const tVal = document.getElementById('filter-report-type').value;
 
     filteredReportData = movsData.filter(r => {
-        const d = parseDate(r.date);
+        const d = parseDate(r.sortDate || r.date);
         if(d.getFullYear().toString() !== yVal) return false;
         if(mVal !== 'all' && d.getMonth().toString() !== mVal) return false;
         if(tVal !== 'all' && r.type !== tVal) return false;
         return true;
     });
 
-    // Render Summary Grid
     const summaryDiv = document.getElementById('report-summary-area');
     const counts = {};
     filteredReportData.forEach(r => counts[r.type] = (counts[r.type]||0) + 1);
     
     if(filteredReportData.length > 0) {
         summaryDiv.style.display = 'block';
-        let summaryHtml = ``;
-        // Show Total
-        summaryHtml += `<div style="background:#fff; padding:0.5rem; border-radius:0.5rem;"><div class="font-bold text-2xl" style="color:var(--primary)">${filteredReportData.length}</div><div class="text-sm text-muted">Total</div></div>`;
-        
-        // Show Types found
+        let summaryHtml = `<div style="background:#fff; padding:0.5rem; border-radius:0.5rem; border:1px solid #e2e8f0;"><div class="font-bold text-2xl" style="color:var(--primary)">${filteredReportData.length}</div><div class="text-sm text-muted">Total</div></div>`;
         for(let t in counts) {
-            summaryHtml += `<div style="background:#fff; padding:0.5rem; border-radius:0.5rem;"><div class="font-bold text-2xl" style="color:#0f172a">${counts[t]}</div><div class="text-sm text-muted">${t}</div></div>`;
+            summaryHtml += `<div style="background:#fff; padding:0.5rem; border-radius:0.5rem; border:1px solid #e2e8f0;"><div class="font-bold text-2xl" style="color:#0f172a">${counts[t]}</div><div class="text-sm text-muted">${t}</div></div>`;
         }
         summaryDiv.querySelector('.grid').innerHTML = summaryHtml;
     } else {
         summaryDiv.style.display = 'none';
     }
 
-    // Render Table
     const tbody = document.querySelector('#report-table tbody');
     if(filteredReportData.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:2rem;">No records found matching filters.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:2rem;">No records found.</td></tr>';
         return;
     }
     tbody.innerHTML = filteredReportData.map(r => `
@@ -823,13 +822,11 @@ document.getElementById('export-report-btn').addEventListener('click', () => {
 
 // --- UTILS ---
 function populateYearDropdowns() {
-  const years = [...new Set(movsData.map(r => parseDate(r.date).getFullYear()))].sort((a,b)=>b-a);
+  const years = [...new Set(movsData.map(r => parseDate(r.sortDate || r.date).getFullYear()))].sort((a,b)=>b-a);
   if(years.length === 0) years.push(new Date().getFullYear());
   
   const chartsSel = document.getElementById('chart-year-filter');
   const reportSel = document.getElementById('filter-report-year');
-  
-  // Save current values
   const curChart = chartsSel.value;
   const curRep = reportSel.value;
   
@@ -839,12 +836,6 @@ function populateYearDropdowns() {
   
   if(curChart && years.includes(parseInt(curChart))) chartsSel.value = curChart;
   if(curRep && years.includes(parseInt(curRep))) reportSel.value = curRep;
-}
-
-function parseDate(s) {
-  if(!s) return new Date();
-  if(typeof s === 'number') return new Date((s - 25569) * 86400 * 1000);
-  return new Date(s);
 }
 
 function showToast(msg, type='success') {
@@ -865,7 +856,6 @@ document.querySelectorAll('.sidebar li').forEach(item => {
   });
 });
 
-// Excel Import Stub
 document.getElementById('upload-excel').addEventListener('change', async (e) => {
     const file = e.target.files[0];
     if(!file) return;
@@ -890,6 +880,7 @@ document.getElementById('upload-excel').addEventListener('change', async (e) => 
         showToast(`Imported ${count} items`);
     } catch(err) { showToast('Import Error', 'error'); }
 });
+
 document.getElementById('deleteSelectedBtn').addEventListener('click', async () => {
   const checkboxes = document.querySelectorAll('.rowCheckbox:checked');
   if(checkboxes.length === 0) return showToast('No items selected', 'error');
@@ -901,6 +892,7 @@ document.getElementById('deleteSelectedBtn').addEventListener('click', async () 
   showToast('Deleted successfully');
   document.getElementById('selectAll').checked = false;
 });
+
 document.getElementById('selectAll').addEventListener('change', function() {
     document.querySelectorAll('.rowCheckbox').forEach(cb => cb.checked = this.checked);
 });
