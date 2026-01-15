@@ -7,45 +7,50 @@
   <link rel="icon" type="image/png" href="PAU MOVs.png" />
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <style>
-    /* --- 1. DESIGN TOKENS --- */
+    /* --- 1. DESIGN TOKENS (Shadcn/Lovable System) --- */
     :root {
-      /* Backgrounds */
-      --background: #f8fafc; /* Slate-50 */
-      --foreground: #0f172a; /* Slate-900 */
-      --card: #ffffff;
+      --background: #ffffff;
+      --foreground: #020817;
       
-      /* Borders & Inputs */
-      --border: #e2e8f0; /* Slate-200 */
-      --radius: 0.5rem;  /* Slightly tighter radius for small elms */
+      --card: #ffffff;
+      --card-foreground: #020817;
+      
+      --popover: #ffffff;
+      --popover-foreground: #020817;
+      
+      --primary: #3b82f6;       /* Blue-500 */
+      --primary-foreground: #ffffff;
+      
+      --secondary: #f1f5f9;     /* Slate-100 */
+      --secondary-foreground: #0f172a;
+      
+      --muted: #f1f5f9;
+      --muted-foreground: #64748b;
+      
+      --accent: #f1f5f9;
+      --accent-foreground: #0f172a;
+      
+      --destructive: #ef4444;
+      --destructive-foreground: #f8fafc;
 
-      /* Theme Colors */
-      --primary: #3b82f6;        
+      --border: #e2e8f0;
+      --input: #e2e8f0;
+      --ring: #94a3b8;
+      
+      --radius: 0.5rem; /* rounded-md equivalent */
+
+      /* Custom Colors for Dashboard */
       --primary-soft: #eff6ff;   
       --primary-border: #dbeafe; 
-
-      --success: #10b981;        
       --success-soft: #ecfdf5;   
-      --success-border: #d1fae5; 
-
-      --warning: #f59e0b;        
       --warning-soft: #fffbeb;   
-      --warning-border: #fef3c7; 
-
-      --info: #0ea5e9;           
       --info-soft: #f0f9ff;      
-      --info-border: #e0f2fe;    
-
-      --purple: #8b5cf6;
       --purple-soft: #f5f3ff;
-      --purple-border: #ede9fe;
-
-      --rose: #f43f5e;
       --rose-soft: #fff1f2;
-      --rose-border: #ffe4e6;
 
       /* Sidebar */
       --sidebar-bg: #0f172a;     
@@ -55,7 +60,92 @@
     }
 
     * { margin:0; padding:0; box-sizing:border-box; font-family:'Inter', sans-serif; }
-    body { display:flex; height:100vh; background:var(--background); color:var(--foreground); overflow: hidden; }
+    body { display:flex; height:100vh; background:#f8fafc; color:var(--foreground); overflow: hidden; }
+
+    /* --- LAYOUT & UTILS --- */
+    .flex { display: flex; }
+    .items-center { align-items: center; }
+    .justify-between { justify-content: space-between; }
+    .gap-2 { gap: 0.5rem; }
+    .gap-4 { gap: 1rem; }
+    .mb-4 { margin-bottom: 1rem; }
+    .mb-6 { margin-bottom: 1.5rem; }
+    .w-full { width: 100%; }
+    
+    /* --- BUTTONS (Ported from button.tsx) --- */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      white-space: nowrap;
+      border-radius: var(--radius);
+      font-size: 0.875rem; /* text-sm */
+      font-weight: 500;    /* font-medium */
+      transition-colors: 0.2s;
+      cursor: pointer;
+      border: 1px solid transparent;
+      outline: none;
+      gap: 0.5rem; /* gap-2 */
+    }
+    
+    .btn:focus-visible {
+      outline: 2px solid var(--ring);
+      outline-offset: 2px;
+    }
+    .btn:disabled {
+      pointer-events: none;
+      opacity: 0.5;
+    }
+
+    /* Variants */
+    .btn-default {
+      background-color: var(--primary);
+      color: var(--primary-foreground);
+    }
+    .btn-default:hover {
+      background-color: #2563eb; /* primary/90 roughly */
+    }
+
+    .btn-destructive {
+      background-color: var(--destructive);
+      color: var(--destructive-foreground);
+    }
+    .btn-destructive:hover {
+      background-color: #dc2626;
+    }
+
+    .btn-outline {
+      border-color: var(--input);
+      background-color: var(--background);
+      color: var(--foreground); /* accent-foreground */
+    }
+    .btn-outline:hover {
+      background-color: var(--accent);
+      color: var(--accent-foreground);
+    }
+
+    .btn-secondary {
+      background-color: var(--secondary);
+      color: var(--secondary-foreground);
+    }
+    .btn-secondary:hover {
+      background-color: #e2e8f0; /* secondary/80 */
+    }
+
+    .btn-ghost {
+      background-color: transparent;
+      color: var(--foreground);
+    }
+    .btn-ghost:hover {
+      background-color: var(--accent);
+      color: var(--accent-foreground);
+    }
+
+    /* Sizes (from button.tsx) */
+    .h-10 { height: 2.5rem; padding: 0 1rem; } /* Default */
+    .h-9  { height: 2.25rem; padding: 0 0.75rem; font-size: 0.8rem; } /* sm */
+    .h-8  { height: 2rem; padding: 0 0.5rem; font-size: 0.75rem; } /* xs/compact custom */
+    .h-icon { height: 2.25rem; width: 2.25rem; padding: 0; } /* icon size */
 
     /* --- SIDEBAR --- */
     .sidebar {
@@ -66,143 +156,103 @@
       flex-direction: column;
       border-right: 1px solid #1e293b;
     }
-    .brand { padding: 1.25rem; border-bottom: 1px solid #1e293b; }
-    .brand h2 { font-size: 1.125rem; font-weight: 700; color: #fff; letter-spacing: -0.025em; }
-    .brand p { font-size: 0.65rem; color: #94a3b8; margin-top: 2px; font-weight: 500; letter-spacing: 0.5px; }
+    .brand { padding: 1.5rem; border-bottom: 1px solid #1e293b; }
+    .brand h2 { font-size: 1.25rem; font-weight: 700; color: #fff; letter-spacing: -0.025em; }
+    .brand p { font-size: 0.75rem; color: #94a3b8; margin-top: 4px; font-weight: 500; }
     
-    .sidebar ul { list-style:none; padding: 0.75rem; flex: 1; }
+    .sidebar ul { list-style:none; padding: 1rem 0.75rem; flex: 1; }
     .sidebar li {
-      padding: 0.6rem 0.85rem;
-      margin-bottom: 2px;
+      padding: 0.65rem 0.85rem;
+      margin-bottom: 4px;
       cursor:pointer;
-      border-radius: 0.375rem;
+      border-radius: var(--radius);
       color: #94a3b8;
-      font-size: 0.8rem;
+      font-size: 0.875rem;
       font-weight: 500;
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
       transition: all 0.2s;
     }
     .sidebar li:hover { background: var(--sidebar-hover); color: #fff; }
     .sidebar li.active { background: var(--sidebar-active); color: #fff; }
 
     /* --- CONTENT AREA --- */
-    .content { flex:1; padding: 1.5rem; overflow-y:auto; position: relative; }
+    .content { flex:1; padding: 2rem; overflow-y:auto; position: relative; }
     
-    h1 { font-size: 1.5rem; letter-spacing: -0.025em; color: var(--foreground); font-weight: 700; }
-    .text-muted { color: #64748b; font-size: 0.8rem; }
-    .section { display:none; animation: fadeIn 0.4s ease-out; }
+    h1 { font-size: 1.875rem; letter-spacing: -0.025em; color: var(--foreground); font-weight: 700; line-height: 1.2; }
+    .text-muted { color: var(--muted-foreground); font-size: 0.875rem; }
+    
+    .section { display:none; animation: fadeIn 0.3s ease-out; }
     .section.active { display:block; }
-    @keyframes fadeIn { from { opacity:0; transform: translateY(5px); } to { opacity:1; transform: translateY(0); } }
+    @keyframes fadeIn { from { opacity:0; transform: translateY(4px); } to { opacity:1; transform: translateY(0); } }
 
-    /* --- STAT CARDS --- */
+    /* --- INPUTS & SELECTS (Matching Button Height h-9) --- */
+    input, select {
+      display: flex;
+      height: 2.25rem; /* h-9 to match buttons */
+      width: 100%;
+      border-radius: var(--radius);
+      border: 1px solid var(--input);
+      background-color: transparent;
+      padding: 0 0.75rem;
+      font-size: 0.875rem;
+      transition: border-color 0.2s;
+      color: var(--foreground);
+    }
+    input:focus, select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 1px var(--primary); }
+    label { font-size: 0.875rem; font-weight: 500; margin-bottom: 0.375rem; display: block; color: var(--foreground); }
+
+    /* --- CARDS & STATS --- */
     .stats-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 0.75rem;
-      margin-bottom: 1.5rem;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
     }
     .stat-card {
-      position: relative;
       border-radius: var(--radius);
-      padding: 1rem;
+      padding: 1.25rem;
       border: 1px solid transparent;
-      transition: transform 0.2s;
       background: #fff;
       box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
     }
-    .stat-card:hover { transform: translateY(-2px); box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
-    
+    /* Variant Colors */
     .variant-primary { background: var(--primary-soft); border-color: var(--primary-border); }
-    .variant-primary .icon-box { background: rgba(255,255,255,0.6); color: var(--primary); }
-    .variant-success { background: var(--success-soft); border-color: var(--success-border); }
-    .variant-success .icon-box { background: rgba(255,255,255,0.6); color: var(--success); }
-    .variant-warning { background: var(--warning-soft); border-color: var(--warning-border); }
-    .variant-warning .icon-box { background: rgba(255,255,255,0.6); color: var(--warning); }
-    .variant-info { background: var(--info-soft); border-color: var(--info-border); }
-    .variant-info .icon-box { background: rgba(255,255,255,0.6); color: var(--info); }
-    .variant-purple { background: var(--purple-soft); border-color: var(--purple-border); }
-    .variant-purple .icon-box { background: rgba(255,255,255,0.6); color: var(--purple); }
-    .variant-rose { background: var(--rose-soft); border-color: var(--rose-border); }
-    .variant-rose .icon-box { background: rgba(255,255,255,0.6); color: var(--rose); }
+    .variant-primary i { color: var(--primary); }
+    .variant-success { background: var(--success-soft); border-color: #d1fae5; }
+    .variant-success i { color: #10b981; }
+    .variant-warning { background: var(--warning-soft); border-color: #fef3c7; }
+    .variant-warning i { color: #f59e0b; }
+    .variant-info { background: var(--info-soft); border-color: #e0f2fe; }
+    .variant-info i { color: #0ea5e9; }
+    .variant-purple { background: var(--purple-soft); border-color: #ede9fe; }
+    .variant-purple i { color: #8b5cf6; }
+    .variant-rose { background: var(--rose-soft); border-color: #ffe4e6; }
+    .variant-rose i { color: #f43f5e; }
 
     .stat-header { display: flex; justify-content: space-between; align-items: flex-start; }
-    .stat-title { font-size: 0.75rem; font-weight: 600; color: #64748b; margin-bottom: 0.25rem; text-transform: uppercase; letter-spacing: 0.025em; }
-    .stat-value { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.025em; color: var(--foreground); line-height: 1; }
-    .icon-box { padding: 0.4rem; border-radius: 0.375rem; display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; }
+    .stat-title { font-size: 0.875rem; font-weight: 500; color: #64748b; margin-bottom: 0.25rem; }
+    .stat-value { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.025em; color: var(--foreground); }
+    .icon-box { padding: 0.5rem; border-radius: 0.5rem; background: rgba(255,255,255,0.5); }
 
-    /* --- CHARTS & CARDS --- */
-    .charts-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1rem;
-      margin-bottom: 1rem;
-    }
+    /* --- CHARTS & CONTAINERS --- */
     .card {
       background: var(--card);
       border: 1px solid var(--border);
       border-radius: var(--radius);
       box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-      padding: 1.25rem;
+      padding: 1.5rem;
     }
-    .chart-container { position: relative; height: 250px; width: 100%; }
-
-    /* --- COMPACT FORMS & INPUTS (UPDATED) --- */
-    input, select {
-      display: flex;
-      height: 1.75rem;       /* 28px Height */
-      width: 100%;
-      border-radius: 0.25rem;
-      border: 1px solid var(--border);
-      background-color: #fff;
-      padding: 0 0.5rem;
-      font-size: 0.75rem;    /* 12px Font */
-      transition: border-color 0.2s;
-      color: var(--foreground);
-    }
-    input:focus, select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 1px var(--primary-border); }
-    label { font-size: 0.7rem; font-weight: 600; margin-bottom: 0.15rem; display: block; color: #64748b; }
-
-    /* --- COMPACT BUTTONS (UPDATED) --- */
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 0.25rem;
-      font-size: 0.75rem;    /* 12px Font */
-      font-weight: 500;
-      height: 1.75rem;       /* 28px Height */
-      padding: 0 0.75rem;    /* Compact Padding */
-      cursor: pointer;
-      border: none;
-      transition: all 0.15s;
-      white-space: nowrap;
-      line-height: 1;
-    }
-    .btn-primary { background: var(--primary); color: white; }
-    .btn-primary:hover { background: #2563eb; }
-    .btn-outline { border: 1px solid var(--border); background: white; color: var(--foreground); }
-    .btn-outline:hover { background: #f1f5f9; border-color: #cbd5e1; }
-    
-    .btn-ghost { 
-        background: transparent; 
-        color: var(--foreground); 
-        padding: 0 0.4rem; 
-        height: 1.5rem; /* Even smaller for icons */
-        width: 1.5rem;
-        border-radius: 0.25rem;
-    }
-    .btn-ghost:hover { background: #f1f5f9; }
-    .btn-danger { color: #ef4444; }
-    .btn-danger:hover { background: #fee2e2; }
+    .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; }
+    .chart-container { position: relative; height: 300px; width: 100%; }
 
     /* --- TABLES --- */
-    .table-wrapper { border-radius: 0.375rem; border: 1px solid var(--border); overflow: hidden; }
-    table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
-    thead { background: #f8fafc; }
-    th { text-align: left; padding: 0.5rem 0.75rem; font-weight: 600; color: #64748b; border-bottom: 1px solid var(--border); text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.65rem; }
-    td { padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--border); vertical-align: middle; color: #334155; }
+    .table-wrapper { border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden; background: #fff; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+    thead { background: #f8fafc; border-bottom: 1px solid var(--border); }
+    th { text-align: left; padding: 0.75rem 1rem; font-weight: 500; color: var(--muted-foreground); height: 2.5rem; }
+    td { padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
     tr:last-child td { border-bottom: none; }
     tr:hover { background: #f8fafc; }
     
@@ -210,10 +260,9 @@
       display: inline-flex;
       align-items: center;
       border-radius: 9999px;
-      padding: 0.1rem 0.5rem;
-      font-size: 0.65rem;
-      font-weight: 600;
-      line-height: 1.2;
+      padding: 0.125rem 0.625rem;
+      font-size: 0.75rem;
+      font-weight: 500;
     }
 
     /* --- RESPONSIVE --- */
@@ -221,16 +270,16 @@
     @media(max-width: 768px) {
       body { flex-direction:column; overflow-y: auto; }
       .sidebar { width:100%; height: auto; border-right: none; border-bottom: 1px solid #1e293b; }
-      .brand { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 1rem; }
-      .sidebar ul { display: flex; overflow-x: auto; padding: 0.25rem 0.5rem; margin: 0; }
-      .sidebar li { white-space: nowrap; margin: 0 0.25rem; background: rgba(255,255,255,0.05); padding: 0.4rem 0.8rem; }
+      .brand { display: flex; justify-content: space-between; align-items: center; padding: 1rem; }
+      .sidebar ul { display: flex; overflow-x: auto; padding: 0.5rem; }
+      .sidebar li { white-space: nowrap; margin: 0 0.25rem; }
       .content { padding: 1rem; }
       .stats-grid { grid-template-columns: 1fr; }
     }
 
     /* Toast */
     #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 9999; }
-    .toast { background: #1e293b; color: #fff; padding: 8px 12px; border-radius: 6px; margin-top: 8px; display: flex; align-items: center; gap: 8px; font-size: 0.75rem; box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1); animation: slideIn 0.3s; }
+    .toast { background: #1e293b; color: #fff; padding: 12px 16px; border-radius: 8px; margin-top: 8px; display: flex; align-items: center; gap: 12px; font-size: 0.875rem; box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1); animation: slideIn 0.3s; }
     @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
   </style>
 
@@ -257,7 +306,7 @@
     <div id="toast-container"></div>
 
     <section id="dashboard" class="section active">
-      <div class="mb-4">
+      <div class="mb-6">
         <h1>Dashboard</h1>
         <p class="text-muted">Track and manage your Means of Verification</p>
       </div>
@@ -266,7 +315,7 @@
 
       <div class="charts-row">
         <div class="card">
-          <h3 class="font-bold mb-4" style="color:#334155; font-size:0.85rem;">Category Distribution</h3>
+          <h3 class="text-sm font-medium mb-4">Category Distribution</h3>
           <div class="chart-container">
             <canvas id="chartDonut"></canvas>
           </div>
@@ -274,8 +323,8 @@
 
         <div class="card">
           <div class="flex items-center justify-between mb-4">
-            <h3 class="font-bold" style="color:#334155; font-size:0.85rem;">Monthly Trend</h3>
-            <select id="chart-year-filter" style="width: 80px;"></select>
+            <h3 class="text-sm font-medium">Monthly Trend</h3>
+            <select id="chart-year-filter" style="width: 100px;"></select>
           </div>
           <div class="chart-container">
             <canvas id="chartBar"></canvas>
@@ -283,28 +332,26 @@
         </div>
       </div>
 
-      <div class="card mb-4">
-        <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
-            <h3 class="font-bold" style="color:#334155; font-size:0.85rem;">Quarterly Summary</h3>
-            <div class="flex gap-2 items-end">
-                <div style="width: 100px;">
-                    <label style="margin:0 0 2px 0;">Quarter</label>
-                    <select id="q-summary-filter">
-                        <option value="all">All</option>
-                        <option value="1">Q1</option>
-                        <option value="2">Q2</option>
-                        <option value="3">Q3</option>
-                        <option value="4">Q4</option>
-                    </select>
-                </div>
+      <div class="card mb-6">
+        <div class="flex items-center justify-between mb-4 flex-wrap gap-4">
+            <h3 class="text-sm font-medium">Quarterly Summary</h3>
+            <div class="flex gap-2 items-center">
+                <label style="margin:0;">Quarter:</label>
+                <select id="q-summary-filter" style="width:120px;">
+                    <option value="all">All</option>
+                    <option value="1">Q1</option>
+                    <option value="2">Q2</option>
+                    <option value="3">Q3</option>
+                    <option value="4">Q4</option>
+                </select>
             </div>
         </div>
         <div id="quarterly-table-container"></div>
       </div>
 
       <div class="card">
-        <h3 class="font-bold mb-3" id="form-title" style="color:#334155; font-size:0.85rem;">Add New MOV</h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3" style="display:grid; gap:0.75rem; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));">
+        <h3 class="text-sm font-medium mb-4" id="form-title">Add New MOV</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" style="display:grid; gap:1rem; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
           <div><label>Date</label><input type="date" id="input-date" /></div>
           <div><label>Type</label>
             <select id="input-type">
@@ -322,22 +369,22 @@
           <div><label>Remarks</label><input type="text" id="input-remarks" placeholder="Optional" /></div>
         </div>
         <div class="flex gap-2 mt-4 justify-end">
-             <label for="upload-excel" class="btn btn-outline" style="cursor:pointer;"><i class="fas fa-file-excel" style="margin-right:6px;"></i> Import Excel</label>
+             <label for="upload-excel" class="btn btn-outline h-9" style="cursor:pointer;"><i class="fas fa-file-excel"></i> Import Excel</label>
              <input type="file" id="upload-excel" accept=".xlsx,.xls" style="display:none;" />
-             <button id="cancel-edit" class="btn btn-outline" style="display:none;">Cancel</button>
-             <button id="add-mov" class="btn btn-primary">Save Record</button>
+             <button id="cancel-edit" class="btn btn-outline h-9" style="display:none;">Cancel</button>
+             <button id="add-mov" class="btn btn-default h-9">Save Record</button>
         </div>
       </div>
     </section>
 
     <section id="movs" class="section">
-      <div class="flex justify-between items-center mb-4">
+      <div class="flex justify-between items-center mb-6">
         <div>
             <h1>MOVs</h1>
             <p class="text-muted">View and manage all records</p>
         </div>
         <div class="flex gap-2">
-            <input type="text" id="global-search" placeholder="Search..." style="width:200px;">
+            <input type="text" id="global-search" placeholder="Search..." style="width:250px;">
         </div>
       </div>
       
@@ -346,7 +393,7 @@
             <table id="movs-table">
             <thead>
                 <tr>
-                <th width="30"><input type="checkbox" id="selectAll"></th>
+                <th width="40"><input type="checkbox" id="selectAll"></th>
                 <th style="cursor:pointer" onclick="sortTable('date')">Date <i class="fas fa-sort"></i></th>
                 <th style="cursor:pointer" onclick="sortTable('type')">Type <i class="fas fa-sort"></i></th>
                 <th>Title</th>
@@ -359,23 +406,23 @@
             </table>
         </div>
       </div>
-      <div class="flex justify-end mt-3">
-        <button id="deleteSelectedBtn" class="btn btn-danger btn-outline"><i class="fas fa-trash" style="margin-right:4px;"></i> Delete Selected</button>
+      <div class="flex justify-end mt-4">
+        <button id="deleteSelectedBtn" class="btn btn-destructive btn-outline h-9"><i class="fas fa-trash"></i> Delete Selected</button>
       </div>
     </section>
 
     <section id="reports" class="section">
-      <div class="mb-4">
+      <div class="mb-6">
         <h1>Reports</h1>
         <p class="text-muted">Generate and export reports</p>
       </div>
       
-      <div class="flex flex-wrap gap-2 items-end mb-4">
-        <div style="flex:1; min-width: 120px;">
+      <div class="flex flex-wrap gap-4 items-end mb-6">
+        <div style="flex:1; min-width: 150px;">
             <label>Year</label>
             <select id="filter-report-year"></select>
         </div>
-        <div style="flex:1; min-width: 120px;">
+        <div style="flex:1; min-width: 150px;">
             <label>Month</label>
             <select id="filter-report-month">
                 <option value="all">All Months</option>
@@ -387,7 +434,7 @@
                 <option value="10">November</option><option value="11">December</option>
             </select>
         </div>
-        <div style="flex:1; min-width: 120px;">
+        <div style="flex:1; min-width: 150px;">
             <label>Type</label>
             <select id="filter-report-type">
               <option value="all">All Types</option>
@@ -399,16 +446,16 @@
               <option value="Social Cards (PAU)">Social Cards (PAU)</option>
             </select>
         </div>
-        <button id="filter-report-btn" class="btn btn-primary" style="min-width: 80px;">Apply</button>
-        <button id="export-report-btn" class="btn btn-outline" style="min-width: 80px;"><i class="fas fa-file-download mr-1"></i> Export</button>
+        <button id="filter-report-btn" class="btn btn-default h-9">Apply</button>
+        <button id="export-report-btn" class="btn btn-outline h-9"><i class="fas fa-file-download"></i> Export</button>
       </div>
 
-      <div id="report-summary-area" style="display:none; background: var(--primary-soft); border: 1px solid var(--primary-border); border-radius: var(--radius); padding: 1rem; margin-bottom: 1rem;">
-         <div class="flex items-center gap-2 mb-3">
-             <i class="fas fa-chart-line" style="color:var(--primary); font-size: 0.9rem;"></i>
-             <h3 class="font-bold" style="color:var(--primary); font-size: 0.8rem;">Report Summary</h3>
+      <div id="report-summary-area" style="display:none; background: var(--primary-soft); border: 1px solid var(--primary-border); border-radius: var(--radius); padding: 1.5rem; margin-bottom: 1.5rem;">
+         <div class="flex items-center gap-2 mb-4">
+             <i class="fas fa-chart-line" style="color:var(--primary);"></i>
+             <h3 class="font-bold" style="color:var(--primary);">Report Summary</h3>
          </div>
-         <div class="grid" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: 0.5rem; text-align: center;">
+         <div class="grid" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 1rem; text-align: center;">
              </div>
       </div>
 
@@ -550,12 +597,12 @@ function updateCharts() {
       labels: TYPES,
       datasets: [{ data: TYPES.map(t => typeCounts[t]), backgroundColor: chartColors, borderWidth: 0 }]
     },
-    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { usePointStyle: true, font: {family: 'Inter', size:10} } } }, cutout: '65%' }
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { usePointStyle: true, font: {family: 'Inter', size:12} } } }, cutout: '65%' }
   });
 
   const ctxBar = document.getElementById('chartBar').getContext('2d');
   if(chartBarInstance) chartBarInstance.destroy();
-  const datasets = TYPES.map((t, i) => ({ label: t, data: [0,1,2,3,4,5,6,7,8,9,10,11].map(m => monthlyData[m][t]), backgroundColor: chartColors[i], borderRadius: 3 }));
+  const datasets = TYPES.map((t, i) => ({ label: t, data: [0,1,2,3,4,5,6,7,8,9,10,11].map(m => monthlyData[m][t]), backgroundColor: chartColors[i], borderRadius: 4 }));
 
   chartBarInstance = new Chart(ctxBar, {
     type: 'bar',
@@ -584,9 +631,9 @@ function renderQuarterlyTable() {
     for(let q=1; q<=4; q++) {
         if(qFilter !== 'all' && qFilter !== String(q)) continue;
         let rowTotal = 0;
-        html += `<tr><td class="font-bold">Q${q}</td>`;
+        html += `<tr><td style="font-weight:600;">Q${q}</td>`;
         TYPES.forEach(t => { html += `<td>${counts[q][t]}</td>`; rowTotal += counts[q][t]; });
-        html += `<td class="font-bold">${rowTotal}</td></tr>`;
+        html += `<td style="font-weight:600;">${rowTotal}</td></tr>`;
     }
     html += `</tbody></table></div>`;
     container.innerHTML = html;
@@ -635,9 +682,9 @@ function renderTable(data) {
   tbody.innerHTML = filtered.map(r => {
     let style = "background:#f1f5f9; color:#475569;";
     if(r.type.includes('IEC')) style = "background:var(--primary-soft); color:var(--primary);";
-    if(r.type.includes('News')) style = "background:var(--success-soft); color:var(--success);";
-    if(r.type.includes('Photo')) style = "background:var(--warning-soft); color:#b45309;";
-    if(r.type.includes('PILU')) style = "background:var(--info-soft); color:var(--info);";
+    if(r.type.includes('News')) style = "background:var(--success-soft); color:#10b981;";
+    if(r.type.includes('Photo')) style = "background:var(--warning-soft); color:#d97706;";
+    if(r.type.includes('PILU')) style = "background:var(--info-soft); color:#0ea5e9;";
     return `
     <tr data-id="${r.id}">
       <td><input type="checkbox" class="rowCheckbox"></td>
@@ -645,10 +692,10 @@ function renderTable(data) {
       <td><span class="badge" style="${style}">${r.type}</span></td>
       <td>${r.title}</td>
       <td>${r.responsible}</td>
-      <td>${r.link ? `<a href="${r.link}" target="_blank" class="text-sm" style="color:var(--primary)"><i class="fas fa-external-link-alt"></i> View</a>` : ''}</td>
-      <td style="white-space:nowrap;">
-        <button onclick="editItem('${r.id}')" class="btn-ghost"><i class="fas fa-pen"></i></button>
-        <button onclick="deleteItem('${r.id}')" class="btn-ghost" style="color:#ef4444;"><i class="fas fa-trash"></i></button>
+      <td>${r.link ? `<a href="${r.link}" target="_blank" class="btn btn-ghost h-8" style="color:var(--primary)"><i class="fas fa-external-link-alt"></i> View</a>` : ''}</td>
+      <td>
+        <button onclick="editItem('${r.id}')" class="btn btn-ghost h-icon"><i class="fas fa-pen"></i></button>
+        <button onclick="deleteItem('${r.id}')" class="btn btn-ghost h-icon" style="color:#ef4444;"><i class="fas fa-trash"></i></button>
       </td>
     </tr>`;
   }).join('');
@@ -689,15 +736,15 @@ document.getElementById('filter-report-btn').addEventListener('click', () => {
     const counts = {}; filteredReportData.forEach(r => counts[r.type] = (counts[r.type]||0) + 1);
     if(filteredReportData.length > 0) {
         summaryDiv.style.display = 'block';
-        let html = `<div style="background:#fff; padding:0.5rem; border-radius:0.375rem; border:1px solid #e2e8f0;"><div style="font-weight:700; font-size:1.1rem; color:var(--primary); line-height:1;">${filteredReportData.length}</div><div style="font-size:0.65rem; color:#64748b;">Total</div></div>`;
+        let html = `<div style="background:#fff; padding:1rem; border-radius:0.5rem; border:1px solid #e2e8f0;"><div style="font-weight:700; font-size:1.25rem; color:var(--primary);">${filteredReportData.length}</div><div style="font-size:0.75rem; color:#64748b;">Total</div></div>`;
         for(let t in counts) {
-            html += `<div style="background:#fff; padding:0.5rem; border-radius:0.375rem; border:1px solid #e2e8f0;"><div style="font-weight:700; font-size:1.1rem; color:#0f172a; line-height:1;">${counts[t]}</div><div style="font-size:0.65rem; color:#64748b;">${t}</div></div>`;
+            html += `<div style="background:#fff; padding:1rem; border-radius:0.5rem; border:1px solid #e2e8f0;"><div style="font-weight:700; font-size:1.25rem; color:#0f172a;">${counts[t]}</div><div style="font-size:0.75rem; color:#64748b;">${t}</div></div>`;
         }
         summaryDiv.querySelector('.grid').innerHTML = html;
     } else { summaryDiv.style.display = 'none'; }
     const tbody = document.querySelector('#report-table tbody');
     if(filteredReportData.length === 0) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:2rem;">No records found.</td></tr>'; return; }
-    tbody.innerHTML = filteredReportData.map(r => `<tr><td>${r.date}</td><td>${r.type}</td><td>${r.title}</td><td>${r.responsible}</td><td>${r.link ? '<a href="'+r.link+'" target="_blank">View</a>' : '-'}</td><td>${r.remarks}</td></tr>`).join('');
+    tbody.innerHTML = filteredReportData.map(r => `<tr><td>${r.date}</td><td>${r.type}</td><td>${r.title}</td><td>${r.responsible}</td><td>${r.link ? '<a href="'+r.link+'" target="_blank" class="btn btn-ghost h-8" style="color:var(--primary)">View</a>' : '-'}</td><td>${r.remarks}</td></tr>`).join('');
 });
 
 document.getElementById('export-report-btn').addEventListener('click', () => {
