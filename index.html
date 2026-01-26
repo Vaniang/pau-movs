@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>PAU-MOVs Dashboard</title>
   <link rel="icon" type="image/png" href="PAU MOVs.png" />
-  
+   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -53,10 +53,10 @@
       --rose-soft: #fff1f2;
 
       /* Sidebar */
-      --sidebar-bg: #0f172a;     
-      --sidebar-fg: #f8fafc;     
-      --sidebar-hover: #1e293b;  
-      --sidebar-active: #3b82f6; 
+      --sidebar-bg: #0f172a;      
+      --sidebar-fg: #f8fafc;      
+      --sidebar-hover: #1e293b;   
+      --sidebar-active: #3b82f6;  
     }
 
     * { margin:0; padding:0; box-sizing:border-box; font-family:'Inter', sans-serif; }
@@ -384,6 +384,15 @@
             <p class="text-muted">View and manage all records</p>
         </div>
         <div class="flex gap-2">
+            <select id="movs-filter-type" style="width:180px;">
+                <option value="all">All Types</option>
+                <option value="IEC Videos">IEC Videos</option>
+                <option value="News Release">News Release</option>
+                <option value="Photo Release">Photo Release</option>
+                <option value="PILU EduAksyon">PILU EduAksyon</option>
+                <option value="Social Cards (others)">Social Cards (others)</option>
+                <option value="Social Cards (PAU)">Social Cards (PAU)</option>
+            </select>
             <input type="text" id="global-search" placeholder="Search..." style="width:250px;">
         </div>
       </div>
@@ -677,7 +686,15 @@ document.getElementById('cancel-edit').addEventListener('click', resetForm);
 function renderTable(data) {
   const tbody = document.querySelector('#movs-table tbody');
   const search = document.getElementById('global-search').value.toLowerCase();
-  const filtered = data.filter(d => d.title.toLowerCase().includes(search) || d.responsible.toLowerCase().includes(search));
+  // UPDATED: Get the value from the new filter dropdown
+  const typeFilter = document.getElementById('movs-filter-type').value;
+
+  const filtered = data.filter(d => {
+    const matchesSearch = d.title.toLowerCase().includes(search) || d.responsible.toLowerCase().includes(search);
+    // UPDATED: Check if type matches or if filter is set to 'all'
+    const matchesType = typeFilter === 'all' || d.type === typeFilter;
+    return matchesSearch && matchesType;
+  });
 
   tbody.innerHTML = filtered.map(r => {
     let style = "background:#f1f5f9; color:#475569;";
@@ -701,6 +718,8 @@ function renderTable(data) {
   }).join('');
 }
 document.getElementById('global-search').addEventListener('input', () => renderTable(movsData));
+// UPDATED: Add event listener for the new filter dropdown
+document.getElementById('movs-filter-type').addEventListener('change', () => renderTable(movsData));
 
 window.editItem = (id) => {
   const r = movsData.find(d => d.id === id);
