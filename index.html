@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>PAU-MOVs Dashboard</title>
   <link rel="icon" type="image/png" href="PAU MOVs.png" />
-   
+  
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -51,13 +51,12 @@
       --info-soft: #f0f9ff;      
       --purple-soft: #f5f3ff;
       --rose-soft: #fff1f2;
-      --indigo-soft: #e0e7ff; /* New for Press Release */
 
       /* Sidebar */
-      --sidebar-bg: #0f172a;      
-      --sidebar-fg: #f8fafc;      
-      --sidebar-hover: #1e293b;   
-      --sidebar-active: #3b82f6;  
+      --sidebar-bg: #0f172a;     
+      --sidebar-fg: #f8fafc;     
+      --sidebar-hover: #1e293b;  
+      --sidebar-active: #3b82f6; 
     }
 
     * { margin:0; padding:0; box-sizing:border-box; font-family:'Inter', sans-serif; }
@@ -231,9 +230,6 @@
     .variant-purple i { color: #8b5cf6; }
     .variant-rose { background: var(--rose-soft); border-color: #ffe4e6; }
     .variant-rose i { color: #f43f5e; }
-    /* New Variant for Press Release */
-    .variant-indigo { background: var(--indigo-soft); border-color: #c7d2fe; }
-    .variant-indigo i { color: #4338ca; }
 
     .stat-header { display: flex; justify-content: space-between; align-items: flex-start; }
     .stat-title { font-size: 0.875rem; font-weight: 500; color: #64748b; margin-bottom: 0.25rem; }
@@ -361,7 +357,7 @@
             <select id="input-type">
               <option value="IEC Videos">IEC Videos</option>
               <option value="News Release">News Release</option>
-              <option value="Press Release">Press Release</option> <option value="Photo Release">Photo Release</option>
+              <option value="Photo Release">Photo Release</option>
               <option value="PILU EduAksyon">PILU EduAksyon</option>
               <option value="Social Cards (others)">Social Cards (others)</option>
               <option value="Social Cards (PAU)">Social Cards (PAU)</option>
@@ -403,7 +399,7 @@
                 <th>Title</th>
                 <th>Responsible</th>
                 <th>Link</th>
-                <th>Remarks</th> <th>Actions</th>
+                <th>Actions</th>
                 </tr>
             </thead>
             <tbody></tbody>
@@ -444,7 +440,7 @@
               <option value="all">All Types</option>
               <option value="IEC Videos">IEC Videos</option>
               <option value="News Release">News Release</option>
-              <option value="Press Release">Press Release</option> <option value="Photo Release">Photo Release</option>
+              <option value="Photo Release">Photo Release</option>
               <option value="PILU EduAksyon">PILU EduAksyon</option>
               <option value="Social Cards (others)">Social Cards (others)</option>
               <option value="Social Cards (PAU)">Social Cards (PAU)</option>
@@ -505,7 +501,6 @@ const movsColl = db.collection('movs');
 const CONFIG = {
   'IEC Videos': { variant: 'variant-primary', icon: 'fa-video' },
   'News Release': { variant: 'variant-success', icon: 'fa-newspaper' },
-  'Press Release': { variant: 'variant-indigo', icon: 'fa-bullhorn' }, // Added Config for Press Release
   'Photo Release': { variant: 'variant-warning', icon: 'fa-camera' },
   'PILU EduAksyon': { variant: 'variant-info', icon: 'fa-book-open' },
   'Social Cards (others)': { variant: 'variant-purple', icon: 'fa-th-large' },
@@ -592,16 +587,7 @@ function updateCharts() {
     }
   });
 
-  // Added extra color for Press Release
-  const chartColors = [
-      'hsl(220, 70%, 50%)', // IEC (Blue)
-      'hsl(160, 60%, 45%)', // News (Green)
-      'hsl(243, 75%, 59%)', // Press (Indigo) - NEW
-      'hsl(38, 92%, 50%)',  // Photo (Orange/Yellow)
-      'hsl(200, 80%, 50%)', // PILU (Light Blue)
-      'hsl(280, 65%, 60%)', // Social Others (Purple)
-      'hsl(350, 80%, 60%)'  // Social PAU (Rose)
-  ];
+  const chartColors = ['hsl(220, 70%, 50%)', 'hsl(160, 60%, 45%)', 'hsl(38, 92%, 50%)', 'hsl(280, 65%, 60%)', 'hsl(350, 80%, 60%)', 'hsl(200, 80%, 50%)'];
 
   const ctxDonut = document.getElementById('chartDonut').getContext('2d');
   if(chartDonutInstance) chartDonutInstance.destroy();
@@ -696,8 +682,7 @@ function renderTable(data) {
   tbody.innerHTML = filtered.map(r => {
     let style = "background:#f1f5f9; color:#475569;";
     if(r.type.includes('IEC')) style = "background:var(--primary-soft); color:var(--primary);";
-    if(r.type === 'News Release') style = "background:var(--success-soft); color:#10b981;";
-    if(r.type === 'Press Release') style = "background:var(--indigo-soft); color:#4338ca;"; // Style for Press Release
+    if(r.type.includes('News')) style = "background:var(--success-soft); color:#10b981;";
     if(r.type.includes('Photo')) style = "background:var(--warning-soft); color:#d97706;";
     if(r.type.includes('PILU')) style = "background:var(--info-soft); color:#0ea5e9;";
     return `
@@ -708,7 +693,7 @@ function renderTable(data) {
       <td>${r.title}</td>
       <td>${r.responsible}</td>
       <td>${r.link ? `<a href="${r.link}" target="_blank" class="btn btn-ghost h-8" style="color:var(--primary)"><i class="fas fa-external-link-alt"></i> View</a>` : ''}</td>
-      <td>${r.remarks || ''}</td> <td>
+      <td>
         <button onclick="editItem('${r.id}')" class="btn btn-ghost h-icon"><i class="fas fa-pen"></i></button>
         <button onclick="deleteItem('${r.id}')" class="btn btn-ghost h-icon" style="color:#ef4444;"><i class="fas fa-trash"></i></button>
       </td>
