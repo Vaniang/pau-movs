@@ -593,8 +593,68 @@ function updateApp() {
   updateCharts();
   renderQuarterlyTable();
   renderTable(movsData);
+  
+  // ADD THIS LINE: Automatically generate report on load
+  generateReport(); 
 }
 
+  // REPORTS LOGIC
+// 1. Define the function so we can call it manually
+function generateReport() {
+    const yVal = document.getElementById('filter-report-year').value;
+    // Default to 'all' if the element value is empty/loading
+    const mVal = document.getElementById('filter-report-month').value || 'all'; 
+    const tVal = document.getElementById('filter-report-type').value || 'all';
+
+    // If dropdowns aren't populated yet, stop
+    if (!yVal) return; 
+
+    filteredReportData = movsData.filter(r => {
+        const d = parseDate(r.sortDate || r.date);
+        if(d.getFullYear().toString() !== yVal) return false;
+        if(mVal !== 'all' && d.getMonth().toString() !== mVal) return false;
+        if(tVal !== 'all' && r.type !== tVal) return false;
+        return true;
+    });
+
+    const summaryDiv = document.getElementById('report-summary-area');
+    const counts = {}; 
+    filteredReportData.forEach(r => counts[r.type] = (counts[r.type]||0) + 1);
+    
+    // Render Summary Box
+    if(filteredReportData.length > 0) {
+        summaryDiv.style.display = 'block';
+        let html = `<div style="background:#fff; padding:1rem; border-radius:0.5rem; border:1px solid #e2e8f0;"><div style="font-weight:700; font-size:1.25rem; color:var(--primary);">${filteredReportData.length}</div><div style="font-size:0.75rem; color:#64748b;">Total</div></div>`;
+        for(let t in counts) {
+            html += `<div style="background:#fff; padding:1rem; border-radius:0.5rem; border:1px solid #e2e8f0;"><div style="font-weight:700; font-size:1.25rem; color:#0f172a;">${counts[t]}</div><div style="font-size:0.75rem; color:#64748b;">${t}</div></div>`;
+        }
+        summaryDiv.querySelector('.grid').innerHTML = html;
+    } else { 
+        summaryDiv.style.display = 'none'; 
+    }
+
+    // Render Table
+    const tbody = document.querySelector('#report-table tbody');
+    if(filteredReportData.length === 0) { 
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:2rem;">No records found for this selection.</td></tr>'; 
+        return; 
+    }
+    
+    tbody.innerHTML = filteredReportData.map(r => `
+        <tr>
+            <td>${r.date}</td>
+            <td>${r.type}</td>
+            <td>${r.title}</td>
+            <td>${r.responsible}</td>
+            <td>${r.link ? '<a href="'+r.link+'" target="_blank" class="btn btn-ghost h-8" style="color:var(--primary)">View</a>' : '-'}</td>
+            <td>${r.remarks}</td>
+        </tr>
+    `).join('');
+}
+
+// 2. Attach the listener
+document.getElementById('filter-report-btn').addEventListener('click', generateReport);
+  
 // --- 4. UTILS ---
 function parseDate(s) {
   if (!s) return new Date();
@@ -828,14 +888,31 @@ document.getElementById('export-report-btn').addEventListener('click', () => {
 function populateYearDropdowns() {
   const years = [...new Set(movsData.map(r => parseDate(r.sortDate || r.date).getFullYear()))].sort((a,b)=>b-a);
   if(years.length === 0) years.push(new Date().getFullYear());
+  
   const chartsSel = document.getElementById('chart-year-filter');
   const reportSel = document.getElementById('filter-report-year');
+  
+  // Capture current values to prevent resetting on every update
   const savedYear = localStorage.getItem(STORAGE_KEY_YEAR);
-  const yearToSelect = savedYear || chartsSel.value || years[0];
+  const currentReportYear = reportSel.value; 
+
   const ops = years.map(y => `<option value="${y}">${y}</option>`).join('');
-  chartsSel.innerHTML = ops; reportSel.innerHTML = ops;
-  if(years.includes(parseInt(yearToSelect))) chartsSel.value = yearToSelect; else chartsSel.value = years[0];
-  if(!reportSel.value) reportSel.value = years[0];
+  chartsSel.innerHTML = ops;
+  reportSel.innerHTML = ops;
+
+  // Chart Dropdown Logic
+  const yearToSelect = savedYear || chartsSel.value || years[0];
+  if(years.includes(parseInt(yearToSelect))) chartsSel.value = yearToSelect; 
+  else chartsSel.value = years[0];
+
+  // Report Dropdown Logic (Target 2026/Current Year)
+  if (currentReportYear && years.includes(parseInt(currentReportYear))) {
+      reportSel.value = currentReportYear; // Keep user selection if valid
+  } else {
+      const thisYear = new Date().getFullYear(); // 2026
+      // Default to 2026 if available, otherwise use the latest year
+      reportSel.value = years.includes(thisYear) ? thisYear : years[0];
+  }
 }
 
 function showToast(msg, type='success') {
