@@ -157,25 +157,44 @@
         visibility: hidden; height: 0; overflow: hidden; 
       }
       
-      /* 3. Hide Non-Print Sections */
-      #dashboard, #movs, #add-mov-section { display: none !important; }
+      /* 3. Logic: If DASHBOARD is active, hide reports. If REPORTS is active, hide dashboard. */
+      /* However, since we want specific layouts, we usually target based on which print button was clicked.
+         But since CSS doesn't know which button was clicked, we rely on the ACTIVE section.
+      */
 
-      /* 4. Show Reports Section Only */
-      .content, #reports { 
+      /* Case A: Printing Dashboard (Default Print Behavior) */
+      #dashboard.active {
+         display: block !important;
+         visibility: visible !important;
+         height: auto !important;
+         overflow: visible !important;
+         position: absolute; top: 0; left: 0; width: 100%;
+      }
+      /* Hide Dashboard interactive elements */
+      #dashboard.active #add-mov-section,
+      #dashboard.active #chart-year-filter,
+      #dashboard.active #q-summary-filter { display: none !important; }
+      #dashboard.active .card { border: 1px solid #000; box-shadow: none; break-inside: avoid; margin-bottom: 20px; }
+      #dashboard.active .stats-grid { grid-template-columns: repeat(3, 1fr) !important; }
+
+
+      /* Case B: Printing Reports (Special Layout) */
+      #reports.active { 
         visibility: visible !important; 
         height: auto !important; 
         padding: 0 !important; margin: 0 !important; 
         overflow: visible !important;
         position: absolute; top: 0; left: 0; width: 100%;
+        display: block !important;
       }
-
-      /* 5. Hide Filters/Headers within Report */
+      
+      /* Hide Filters/Headers within Report */
       #reports h1, #reports p.text-muted, 
       #reports .flex.flex-wrap.gap-4 { 
         display: none !important; 
       }
 
-      /* 6. Ensure Summary & Table are Visible */
+      /* Ensure Summary & Table are Visible */
       #report-summary-area, #report-table, .table-wrapper {
         visibility: visible !important;
         display: block !important;
@@ -189,7 +208,7 @@
         background: none !important;
       }
 
-      /* 7. Table Styling for Print */
+      /* Table Styling for Print */
       table { width: 100% !important; border-collapse: collapse !important; font-size: 10pt; }
       th, td { 
         border: 1px solid #000 !important; 
@@ -198,14 +217,13 @@
       }
       th { background-color: #eee !important; -webkit-print-color-adjust: exact; }
 
-      /* 8. LINK WRAPPING MAGIC */
-      /* This ensures the URL breaks to fit the paper */
+      /* LINK WRAPPING MAGIC */
       .print-link-cell a {
         text-decoration: none !important;
         color: #000 !important;
-        font-family: 'Courier New', monospace; /* Monospace makes URLs easier to read */
+        font-family: 'Courier New', monospace;
         font-size: 9pt;
-        word-break: break-all !important; /* Forces break at any character */
+        word-break: break-all !important;
         overflow-wrap: break-word !important;
         display: block;
       }
@@ -240,6 +258,9 @@
           <h1>Dashboard</h1>
           <p class="text-muted">Track and manage your Means of Verification</p>
         </div>
+        <button id="print-dashboard-btn" class="btn btn-outline h-9">
+             <i class="fas fa-print"></i> Print Dashboard
+        </button>
       </div>
 
       <div class="stats-grid" id="stats-container"></div>
@@ -719,7 +740,10 @@ function generateReport() {
 // 2. Event Listener calls the function
 document.getElementById('filter-report-btn').addEventListener('click', generateReport);
 
-// PRINT BUTTON EVENT LISTENER
+// PRINT BUTTON EVENT LISTENERS
+document.getElementById('print-dashboard-btn').addEventListener('click', () => {
+    window.print();
+});
 document.getElementById('print-report-btn').addEventListener('click', () => {
     window.print();
 });
