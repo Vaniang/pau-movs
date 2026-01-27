@@ -11,39 +11,24 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <style>
-    /* --- 1. DESIGN TOKENS (Shadcn/Lovable System) --- */
+    /* --- 1. DESIGN TOKENS --- */
     :root {
       --background: #ffffff;
       --foreground: #020817;
-      
       --card: #ffffff;
-      --card-foreground: #020817;
-      
-      --popover: #ffffff;
-      --popover-foreground: #020817;
-      
-      --primary: #3b82f6;       /* Blue-500 */
+      --primary: #3b82f6;       
       --primary-foreground: #ffffff;
-      
-      --secondary: #f1f5f9;     /* Slate-100 */
+      --secondary: #f1f5f9;     
       --secondary-foreground: #0f172a;
-      
       --muted: #f1f5f9;
       --muted-foreground: #64748b;
-      
-      --accent: #f1f5f9;
-      --accent-foreground: #0f172a;
-      
       --destructive: #ef4444;
       --destructive-foreground: #f8fafc;
-
       --border: #e2e8f0;
       --input: #e2e8f0;
-      --ring: #94a3b8;
-      
-      --radius: 0.5rem; /* rounded-md equivalent */
+      --radius: 0.5rem; 
 
-      /* Custom Colors for Dashboard */
+      /* Custom Colors */
       --primary-soft: #eff6ff;   
       --primary-border: #dbeafe; 
       --success-soft: #ecfdf5;   
@@ -55,7 +40,7 @@
       /* Sidebar */
       --sidebar-bg: #0f172a;      
       --sidebar-fg: #f8fafc;      
-      --sidebar-hover: #1e293b;   
+      --sidebar-hover: #1e293b;    
       --sidebar-active: #3b82f6;  
     }
 
@@ -72,178 +57,67 @@
     .mb-6 { margin-bottom: 1.5rem; }
     .w-full { width: 100%; }
     
-    /* --- BUTTONS (Ported from button.tsx) --- */
+    /* --- BUTTONS --- */
     .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      white-space: nowrap;
-      border-radius: var(--radius);
-      font-size: 0.875rem; /* text-sm */
-      font-weight: 500;    /* font-medium */
-      transition-colors: 0.2s;
-      cursor: pointer;
-      border: 1px solid transparent;
-      outline: none;
-      gap: 0.5rem; /* gap-2 */
+      display: inline-flex; align-items: center; justify-content: center;
+      white-space: nowrap; border-radius: var(--radius);
+      font-size: 0.875rem; font-weight: 500; transition-colors: 0.2s;
+      cursor: pointer; border: 1px solid transparent; outline: none; gap: 0.5rem;
     }
-    
-    .btn:focus-visible {
-      outline: 2px solid var(--ring);
-      outline-offset: 2px;
-    }
-    .btn:disabled {
-      pointer-events: none;
-      opacity: 0.5;
-    }
+    .btn:disabled { pointer-events: none; opacity: 0.5; }
+    .btn-default { background-color: var(--primary); color: var(--primary-foreground); }
+    .btn-default:hover { background-color: #2563eb; }
+    .btn-destructive { background-color: var(--destructive); color: var(--destructive-foreground); }
+    .btn-outline { border-color: var(--input); background-color: var(--background); color: var(--foreground); }
+    .btn-outline:hover { background-color: var(--accent); color: var(--accent-foreground); }
+    .btn-ghost { background-color: transparent; color: var(--foreground); }
+    .btn-ghost:hover { background-color: #f1f5f9; }
 
-    /* Variants */
-    .btn-default {
-      background-color: var(--primary);
-      color: var(--primary-foreground);
-    }
-    .btn-default:hover {
-      background-color: #2563eb; /* primary/90 roughly */
-    }
-
-    .btn-destructive {
-      background-color: var(--destructive);
-      color: var(--destructive-foreground);
-    }
-    .btn-destructive:hover {
-      background-color: #dc2626;
-    }
-
-    .btn-outline {
-      border-color: var(--input);
-      background-color: var(--background);
-      color: var(--foreground); /* accent-foreground */
-    }
-    .btn-outline:hover {
-      background-color: var(--accent);
-      color: var(--accent-foreground);
-    }
-
-    .btn-secondary {
-      background-color: var(--secondary);
-      color: var(--secondary-foreground);
-    }
-    .btn-secondary:hover {
-      background-color: #e2e8f0; /* secondary/80 */
-    }
-
-    .btn-ghost {
-      background-color: transparent;
-      color: var(--foreground);
-    }
-    .btn-ghost:hover {
-      background-color: var(--accent);
-      color: var(--accent-foreground);
-    }
-
-    /* Sizes (from button.tsx) */
-    .h-10 { height: 2.5rem; padding: 0 1rem; } /* Default */
-    .h-9  { height: 2.25rem; padding: 0 0.75rem; font-size: 0.8rem; } /* sm */
-    .h-8  { height: 2rem; padding: 0 0.5rem; font-size: 0.75rem; } /* xs/compact custom */
-    .h-icon { height: 2.25rem; width: 2.25rem; padding: 0; } /* icon size */
+    .h-10 { height: 2.5rem; padding: 0 1rem; }
+    .h-9  { height: 2.25rem; padding: 0 0.75rem; font-size: 0.8rem; }
+    .h-8  { height: 2rem; padding: 0 0.5rem; font-size: 0.75rem; }
+    .h-icon { height: 2.25rem; width: 2.25rem; padding: 0; }
 
     /* --- SIDEBAR --- */
-    .sidebar {
-      width: 260px;
-      background: var(--sidebar-bg);
-      color: var(--sidebar-fg);
-      display: flex;
-      flex-direction: column;
-      border-right: 1px solid #1e293b;
-    }
+    .sidebar { width: 260px; background: var(--sidebar-bg); color: var(--sidebar-fg); display: flex; flex-direction: column; border-right: 1px solid #1e293b; }
     .brand { padding: 1.5rem; border-bottom: 1px solid #1e293b; }
-    .brand h2 { font-size: 1.25rem; font-weight: 700; color: #fff; letter-spacing: -0.025em; }
+    .brand h2 { font-size: 1.25rem; font-weight: 700; color: #fff; }
     .brand p { font-size: 0.75rem; color: #94a3b8; margin-top: 4px; font-weight: 500; }
-    
     .sidebar ul { list-style:none; padding: 1rem 0.75rem; flex: 1; }
-    .sidebar li {
-      padding: 0.65rem 0.85rem;
-      margin-bottom: 4px;
-      cursor:pointer;
-      border-radius: var(--radius);
-      color: #94a3b8;
-      font-size: 0.875rem;
-      font-weight: 500;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      transition: all 0.2s;
-    }
+    .sidebar li { padding: 0.65rem 0.85rem; margin-bottom: 4px; cursor:pointer; border-radius: var(--radius); color: #94a3b8; font-size: 0.875rem; font-weight: 500; display: flex; align-items: center; gap: 12px; transition: all 0.2s; }
     .sidebar li:hover { background: var(--sidebar-hover); color: #fff; }
     .sidebar li.active { background: var(--sidebar-active); color: #fff; }
 
     /* --- CONTENT AREA --- */
     .content { flex:1; padding: 2rem; overflow-y:auto; position: relative; }
-    
-    h1 { font-size: 1.875rem; letter-spacing: -0.025em; color: var(--foreground); font-weight: 700; line-height: 1.2; }
+    h1 { font-size: 1.875rem; color: var(--foreground); font-weight: 700; line-height: 1.2; }
     .text-muted { color: var(--muted-foreground); font-size: 0.875rem; }
-    
     .section { display:none; animation: fadeIn 0.3s ease-out; }
     .section.active { display:block; }
     @keyframes fadeIn { from { opacity:0; transform: translateY(4px); } to { opacity:1; transform: translateY(0); } }
 
-    /* --- INPUTS & SELECTS (Matching Button Height h-9) --- */
-    input, select {
-      display: flex;
-      height: 2.25rem; /* h-9 to match buttons */
-      width: 100%;
-      border-radius: var(--radius);
-      border: 1px solid var(--input);
-      background-color: transparent;
-      padding: 0 0.75rem;
-      font-size: 0.875rem;
-      transition: border-color 0.2s;
-      color: var(--foreground);
-    }
-    input:focus, select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 1px var(--primary); }
+    /* --- INPUTS --- */
+    input, select { display: flex; height: 2.25rem; width: 100%; border-radius: var(--radius); border: 1px solid var(--input); background-color: transparent; padding: 0 0.75rem; font-size: 0.875rem; color: var(--foreground); }
+    input:focus, select:focus { outline: none; border-color: var(--primary); }
     label { font-size: 0.875rem; font-weight: 500; margin-bottom: 0.375rem; display: block; color: var(--foreground); }
 
     /* --- CARDS & STATS --- */
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 1rem;
-      margin-bottom: 2rem;
-    }
-    .stat-card {
-      border-radius: var(--radius);
-      padding: 1.25rem;
-      border: 1px solid transparent;
-      background: #fff;
-      box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-    }
-    /* Variant Colors */
-    .variant-primary { background: var(--primary-soft); border-color: var(--primary-border); }
-    .variant-primary i { color: var(--primary); }
-    .variant-success { background: var(--success-soft); border-color: #d1fae5; }
-    .variant-success i { color: #10b981; }
-    .variant-warning { background: var(--warning-soft); border-color: #fef3c7; }
-    .variant-warning i { color: #f59e0b; }
-    .variant-info { background: var(--info-soft); border-color: #e0f2fe; }
-    .variant-info i { color: #0ea5e9; }
-    .variant-purple { background: var(--purple-soft); border-color: #ede9fe; }
-    .variant-purple i { color: #8b5cf6; }
-    .variant-rose { background: var(--rose-soft); border-color: #ffe4e6; }
-    .variant-rose i { color: #f43f5e; }
-
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+    .stat-card { border-radius: var(--radius); padding: 1.25rem; background: #fff; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); }
+    .variant-primary { background: var(--primary-soft); border-color: var(--primary-border); } .variant-primary i { color: var(--primary); }
+    .variant-success { background: var(--success-soft); border-color: #d1fae5; } .variant-success i { color: #10b981; }
+    .variant-warning { background: var(--warning-soft); border-color: #fef3c7; } .variant-warning i { color: #f59e0b; }
+    .variant-info { background: var(--info-soft); border-color: #e0f2fe; } .variant-info i { color: #0ea5e9; }
+    .variant-purple { background: var(--purple-soft); border-color: #ede9fe; } .variant-purple i { color: #8b5cf6; }
+    .variant-rose { background: var(--rose-soft); border-color: #ffe4e6; } .variant-rose i { color: #f43f5e; }
+    
     .stat-header { display: flex; justify-content: space-between; align-items: flex-start; }
     .stat-title { font-size: 0.875rem; font-weight: 500; color: #64748b; margin-bottom: 0.25rem; }
-    .stat-value { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.025em; color: var(--foreground); }
+    .stat-value { font-size: 1.5rem; font-weight: 700; color: var(--foreground); }
     .icon-box { padding: 0.5rem; border-radius: 0.5rem; background: rgba(255,255,255,0.5); }
 
     /* --- CHARTS & CONTAINERS --- */
-    .card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-      padding: 1.5rem;
-    }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); padding: 1.5rem; }
     .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; }
     .chart-container { position: relative; height: 300px; width: 100%; }
 
@@ -253,82 +127,89 @@
     thead { background: #f8fafc; border-bottom: 1px solid var(--border); }
     th { text-align: left; padding: 0.75rem 1rem; font-weight: 500; color: var(--muted-foreground); height: 2.5rem; }
     td { padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
-    tr:last-child td { border-bottom: none; }
-    tr:hover { background: #f8fafc; }
-    
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      border-radius: 9999px;
-      padding: 0.125rem 0.625rem;
-      font-size: 0.75rem;
-      font-weight: 500;
-    }
+    .badge { display: inline-flex; align-items: center; border-radius: 9999px; padding: 0.125rem 0.625rem; font-size: 0.75rem; font-weight: 500; }
 
-    /* --- RESPONSIVE --- */
+    /* Toasts */
+    #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 9999; }
+    .toast { background: #1e293b; color: #fff; padding: 12px 16px; border-radius: 8px; margin-top: 8px; display: flex; align-items: center; gap: 12px; font-size: 0.875rem; animation: slideIn 0.3s; }
+    @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+
+    /* Responsive */
     @media(max-width: 1024px) { .charts-row { grid-template-columns: 1fr; } }
     @media(max-width: 768px) {
       body { flex-direction:column; overflow-y: auto; }
       .sidebar { width:100%; height: auto; border-right: none; border-bottom: 1px solid #1e293b; }
       .brand { display: flex; justify-content: space-between; align-items: center; padding: 1rem; }
       .sidebar ul { display: flex; overflow-x: auto; padding: 0.5rem; }
-      .sidebar li { white-space: nowrap; margin: 0 0.25rem; }
       .content { padding: 1rem; }
       .stats-grid { grid-template-columns: 1fr; }
     }
 
-    /* Toast */
-    #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 9999; }
-    .toast { background: #1e293b; color: #fff; padding: 12px 16px; border-radius: 8px; margin-top: 8px; display: flex; align-items: center; gap: 12px; font-size: 0.875rem; box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1); animation: slideIn 0.3s; }
-    @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+    /* ========================================= */
+    /* ===        PRINT STYLES (A4)          === */
+    /* ========================================= */
+    @media print {
+      /* 1. Page Setup */
+      @page { size: A4; margin: 1cm; }
+      
+      /* 2. Hide Everything by Default */
+      body, .sidebar, #toast-container, .btn, input, select, label { 
+        visibility: hidden; height: 0; overflow: hidden; 
+      }
+      
+      /* 3. Hide Non-Print Sections */
+      #dashboard, #movs, #add-mov-section { display: none !important; }
 
-    /* --- PRINT STYLES --- */
-  @media print {
-    /* Hide non-essential elements */
-    .sidebar, 
-    .btn, 
-    select, 
-    input, 
-    #toast-container,
-    #add-mov-section, /* Hides the Add Form */
-    #chart-year-filter, /* Hides dropdowns */
-    #q-summary-filter { 
-      display: none !important; 
-    }
+      /* 4. Show Reports Section Only */
+      .content, #reports { 
+        visibility: visible !important; 
+        height: auto !important; 
+        padding: 0 !important; margin: 0 !important; 
+        overflow: visible !important;
+        position: absolute; top: 0; left: 0; width: 100%;
+      }
 
-    /* Reset Layout for Paper */
-    body { 
-      height: auto; 
-      overflow: visible; 
-      background: white;
-    }
-    
-    .content { 
-      padding: 0; 
-      margin: 0; 
-      width: 100%; 
-      height: auto; 
-      overflow: visible; 
-    }
+      /* 5. Hide Filters/Headers within Report */
+      #reports h1, #reports p.text-muted, 
+      #reports .flex.flex-wrap.gap-4 { 
+        display: none !important; 
+      }
 
-    /* Ensure Cards look good on paper */
-    .card, .stat-card {
-      break-inside: avoid; /* Prevents cutting cards in half */
-      box-shadow: none;
-      border: 1px solid #ddd;
-      margin-bottom: 20px;
-    }
+      /* 6. Ensure Summary & Table are Visible */
+      #report-summary-area, #report-table, .table-wrapper {
+        visibility: visible !important;
+        display: block !important;
+        border: none !important;
+        box-shadow: none !important;
+      }
+      
+      #report-summary-area {
+        border: 1px solid #000 !important;
+        margin-bottom: 20px !important;
+        background: none !important;
+      }
 
-    /* Adjust Grid for print */
-    .stats-grid {
-      grid-template-columns: repeat(3, 1fr) !important; /* Force 3 columns on paper */
+      /* 7. Table Styling for Print */
+      table { width: 100% !important; border-collapse: collapse !important; font-size: 10pt; }
+      th, td { 
+        border: 1px solid #000 !important; 
+        padding: 5px !important; 
+        color: #000 !important;
+      }
+      th { background-color: #eee !important; -webkit-print-color-adjust: exact; }
+
+      /* 8. LINK WRAPPING MAGIC */
+      /* This ensures the URL breaks to fit the paper */
+      .print-link-cell a {
+        text-decoration: none !important;
+        color: #000 !important;
+        font-family: 'Courier New', monospace; /* Monospace makes URLs easier to read */
+        font-size: 9pt;
+        word-break: break-all !important; /* Forces break at any character */
+        overflow-wrap: break-word !important;
+        display: block;
+      }
     }
-    
-    /* Hide empty space from hidden filters */
-    .flex.items-center.justify-between.mb-4 {
-      justify-content: flex-start;
-    }
-  }
   </style>
 
   <script src="https://www.gstatic.com/firebasejs/11.0.0/firebase-app-compat.js"></script>
@@ -359,9 +240,6 @@
           <h1>Dashboard</h1>
           <p class="text-muted">Track and manage your Means of Verification</p>
         </div>
-        <button id="print-btn" class="btn btn-outline h-9">
-          <i class="fas fa-print"></i> Print Dashboard
-        </button>
       </div>
 
       <div class="stats-grid" id="stats-container"></div>
@@ -369,24 +247,19 @@
       <div class="charts-row">
         <div class="card">
           <h3 class="text-sm font-medium mb-4">Category Distribution</h3>
-          <div class="chart-container">
-            <canvas id="chartDonut"></canvas>
-          </div>
+          <div class="chart-container"><canvas id="chartDonut"></canvas></div>
         </div>
-
         <div class="card">
           <div class="flex items-center justify-between mb-4">
             <h3 class="text-sm font-medium">Monthly Trend</h3>
             <select id="chart-year-filter" style="width: 100px;"></select>
           </div>
-          <div class="chart-container">
-            <canvas id="chartBar"></canvas>
-          </div>
+          <div class="chart-container"><canvas id="chartBar"></canvas></div>
         </div>
       </div>
 
       <div class="card mb-6">
-        <div class="flex items-center justify-between mb-4 flex-wrap gap-4">
+         <div class="flex items-center justify-between mb-4 flex-wrap gap-4">
              <h3 class="text-sm font-medium">Quarterly Summary</h3>
              <div class="flex gap-2 items-center">
                  <label style="margin:0;">Quarter:</label>
@@ -432,10 +305,7 @@
 
     <section id="movs" class="section">
       <div class="flex justify-between items-center mb-6">
-        <div>
-            <h1>MOVs</h1>
-            <p class="text-muted">View and manage all records</p>
-        </div>
+        <div><h1>MOVs</h1><p class="text-muted">View and manage all records</p></div>
         <div class="flex gap-2">
             <select id="movs-filter-type" style="width:180px;">
                 <option value="all">All Types</option>
@@ -457,7 +327,7 @@
                 <tr>
                 <th width="40"><input type="checkbox" id="selectAll"></th>
                 <th style="cursor:pointer" onclick="sortTable('date')">Date <i class="fas fa-sort"></i></th>
-                <th style="cursor:pointer" onclick="sortTable('type')">Type <i class="fas fa-sort"></i></th>
+                <th>Type</th>
                 <th>Title</th>
                 <th>Responsible</th>
                 <th>Link</th>
@@ -481,8 +351,7 @@
       
       <div class="flex flex-wrap gap-4 items-end mb-6">
         <div style="flex:1; min-width: 150px;">
-            <label>Year</label>
-            <select id="filter-report-year"></select>
+            <label>Year</label><select id="filter-report-year"></select>
         </div>
         <div style="flex:1; min-width: 150px;">
             <label>Month</label>
@@ -508,8 +377,13 @@
               <option value="Social Cards (PAU)">Social Cards (PAU)</option>
             </select>
         </div>
+        
         <button id="filter-report-btn" class="btn btn-default h-9">Apply</button>
         <button id="export-report-btn" class="btn btn-outline h-9"><i class="fas fa-file-download"></i> Export</button>
+        
+        <button id="print-report-btn" class="btn btn-outline h-9">
+            <i class="fas fa-print"></i> Print Report
+        </button>
       </div>
 
       <div id="report-summary-area" style="display:none; background: var(--primary-soft); border: 1px solid var(--primary-border); border-radius: var(--radius); padding: 1.5rem; margin-bottom: 1.5rem;">
@@ -517,8 +391,7 @@
              <i class="fas fa-chart-line" style="color:var(--primary);"></i>
              <h3 class="font-bold" style="color:var(--primary);">Report Summary</h3>
          </div>
-         <div class="grid" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 1rem; text-align: center;">
-             </div>
+         <div class="grid" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 1rem; text-align: center;"></div>
       </div>
 
       <div class="card" style="padding:0;">
@@ -575,7 +448,6 @@ let editingId = null;
 let chartDonutInstance = null;
 let chartBarInstance = null;
 let filteredReportData = [];
-const STORAGE_KEY_YEAR = 'pau_dashboard_year';
 
 // --- 3. INIT ---
 window.addEventListener('load', () => {
@@ -593,68 +465,8 @@ function updateApp() {
   updateCharts();
   renderQuarterlyTable();
   renderTable(movsData);
-  
-  // ADD THIS LINE: Automatically generate report on load
-  generateReport(); 
 }
 
-  // REPORTS LOGIC
-// 1. Define the function so we can call it manually
-function generateReport() {
-    const yVal = document.getElementById('filter-report-year').value;
-    // Default to 'all' if the element value is empty/loading
-    const mVal = document.getElementById('filter-report-month').value || 'all'; 
-    const tVal = document.getElementById('filter-report-type').value || 'all';
-
-    // If dropdowns aren't populated yet, stop
-    if (!yVal) return; 
-
-    filteredReportData = movsData.filter(r => {
-        const d = parseDate(r.sortDate || r.date);
-        if(d.getFullYear().toString() !== yVal) return false;
-        if(mVal !== 'all' && d.getMonth().toString() !== mVal) return false;
-        if(tVal !== 'all' && r.type !== tVal) return false;
-        return true;
-    });
-
-    const summaryDiv = document.getElementById('report-summary-area');
-    const counts = {}; 
-    filteredReportData.forEach(r => counts[r.type] = (counts[r.type]||0) + 1);
-    
-    // Render Summary Box
-    if(filteredReportData.length > 0) {
-        summaryDiv.style.display = 'block';
-        let html = `<div style="background:#fff; padding:1rem; border-radius:0.5rem; border:1px solid #e2e8f0;"><div style="font-weight:700; font-size:1.25rem; color:var(--primary);">${filteredReportData.length}</div><div style="font-size:0.75rem; color:#64748b;">Total</div></div>`;
-        for(let t in counts) {
-            html += `<div style="background:#fff; padding:1rem; border-radius:0.5rem; border:1px solid #e2e8f0;"><div style="font-weight:700; font-size:1.25rem; color:#0f172a;">${counts[t]}</div><div style="font-size:0.75rem; color:#64748b;">${t}</div></div>`;
-        }
-        summaryDiv.querySelector('.grid').innerHTML = html;
-    } else { 
-        summaryDiv.style.display = 'none'; 
-    }
-
-    // Render Table
-    const tbody = document.querySelector('#report-table tbody');
-    if(filteredReportData.length === 0) { 
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:2rem;">No records found for this selection.</td></tr>'; 
-        return; 
-    }
-    
-    tbody.innerHTML = filteredReportData.map(r => `
-        <tr>
-            <td>${r.date}</td>
-            <td>${r.type}</td>
-            <td>${r.title}</td>
-            <td>${r.responsible}</td>
-            <td>${r.link ? '<a href="'+r.link+'" target="_blank" class="btn btn-ghost h-8" style="color:var(--primary)">View</a>' : '-'}</td>
-            <td>${r.remarks}</td>
-        </tr>
-    `).join('');
-}
-
-// 2. Attach the listener
-document.getElementById('filter-report-btn').addEventListener('click', generateReport);
-  
 // --- 4. UTILS ---
 function parseDate(s) {
   if (!s) return new Date();
@@ -677,10 +489,7 @@ function renderStatsCards() {
     html += `
       <div class="stat-card ${conf.variant}">
         <div class="stat-header">
-           <div>
-             <div class="stat-title">${t}</div>
-             <div class="stat-value">${counts[t]}</div>
-           </div>
+           <div><div class="stat-title">${t}</div><div class="stat-value">${counts[t]}</div></div>
            <div class="icon-box"><i class="fas ${conf.icon}"></i></div>
         </div>
       </div>`;
@@ -719,7 +528,7 @@ function updateCharts() {
       labels: TYPES,
       datasets: [{ data: TYPES.map(t => typeCounts[t]), backgroundColor: chartColors, borderWidth: 0 }]
     },
-    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { usePointStyle: true, font: {family: 'Inter', size:12} } } }, cutout: '65%' }
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right' } }, cutout: '65%' }
   });
 
   const ctxBar = document.getElementById('chartBar').getContext('2d');
@@ -729,7 +538,7 @@ function updateCharts() {
   chartBarInstance = new Chart(ctxBar, {
     type: 'bar',
     data: { labels: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'], datasets: datasets },
-    options: { responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true, grid: { display: false } }, y: { stacked: true, grid: { color: '#f1f5f9' }, border: {display: false} } }, plugins: { legend: { display: false } } }
+    options: { responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true }, y: { stacked: true } } }
   });
 }
 
@@ -762,7 +571,7 @@ function renderQuarterlyTable() {
 }
 
 // EVENTS
-document.getElementById('chart-year-filter').addEventListener('change', (e) => { localStorage.setItem(STORAGE_KEY_YEAR, e.target.value); updateCharts(); renderQuarterlyTable(); });
+document.getElementById('chart-year-filter').addEventListener('change', () => { updateCharts(); renderQuarterlyTable(); });
 document.getElementById('q-summary-filter').addEventListener('change', renderQuarterlyTable);
 
 // CRUD
@@ -799,12 +608,10 @@ document.getElementById('cancel-edit').addEventListener('click', resetForm);
 function renderTable(data) {
   const tbody = document.querySelector('#movs-table tbody');
   const search = document.getElementById('global-search').value.toLowerCase();
-  // UPDATED: Get the value from the new filter dropdown
   const typeFilter = document.getElementById('movs-filter-type').value;
 
   const filtered = data.filter(d => {
     const matchesSearch = d.title.toLowerCase().includes(search) || d.responsible.toLowerCase().includes(search);
-    // UPDATED: Check if type matches or if filter is set to 'all'
     const matchesType = typeFilter === 'all' || d.type === typeFilter;
     return matchesSearch && matchesType;
   });
@@ -831,7 +638,6 @@ function renderTable(data) {
   }).join('');
 }
 document.getElementById('global-search').addEventListener('input', () => renderTable(movsData));
-// UPDATED: Add event listener for the new filter dropdown
 document.getElementById('movs-filter-type').addEventListener('change', () => renderTable(movsData));
 
 window.editItem = (id) => {
@@ -852,11 +658,12 @@ window.editItem = (id) => {
 };
 window.deleteItem = async (id) => { if(confirm('Delete?')) { await movsColl.doc(id).delete(); showToast('Deleted'); } };
 
-// REPORTS LOGIC
+// --- REPORTS LOGIC ---
 document.getElementById('filter-report-btn').addEventListener('click', () => {
     const yVal = document.getElementById('filter-report-year').value;
     const mVal = document.getElementById('filter-report-month').value;
     const tVal = document.getElementById('filter-report-type').value;
+
     filteredReportData = movsData.filter(r => {
         const d = parseDate(r.sortDate || r.date);
         if(d.getFullYear().toString() !== yVal) return false;
@@ -864,8 +671,11 @@ document.getElementById('filter-report-btn').addEventListener('click', () => {
         if(tVal !== 'all' && r.type !== tVal) return false;
         return true;
     });
+
+    // Summary Logic
     const summaryDiv = document.getElementById('report-summary-area');
     const counts = {}; filteredReportData.forEach(r => counts[r.type] = (counts[r.type]||0) + 1);
+    
     if(filteredReportData.length > 0) {
         summaryDiv.style.display = 'block';
         let html = `<div style="background:#fff; padding:1rem; border-radius:0.5rem; border:1px solid #e2e8f0;"><div style="font-weight:700; font-size:1.25rem; color:var(--primary);">${filteredReportData.length}</div><div style="font-size:0.75rem; color:#64748b;">Total</div></div>`;
@@ -873,10 +683,36 @@ document.getElementById('filter-report-btn').addEventListener('click', () => {
             html += `<div style="background:#fff; padding:1rem; border-radius:0.5rem; border:1px solid #e2e8f0;"><div style="font-weight:700; font-size:1.25rem; color:#0f172a;">${counts[t]}</div><div style="font-size:0.75rem; color:#64748b;">${t}</div></div>`;
         }
         summaryDiv.querySelector('.grid').innerHTML = html;
-    } else { summaryDiv.style.display = 'none'; }
+    } else { 
+        summaryDiv.style.display = 'none'; 
+    }
+
+    // Table Logic
     const tbody = document.querySelector('#report-table tbody');
-    if(filteredReportData.length === 0) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:2rem;">No records found.</td></tr>'; return; }
-    tbody.innerHTML = filteredReportData.map(r => `<tr><td>${r.date}</td><td>${r.type}</td><td>${r.title}</td><td>${r.responsible}</td><td>${r.link ? '<a href="'+r.link+'" target="_blank" class="btn btn-ghost h-8" style="color:var(--primary)">View</a>' : '-'}</td><td>${r.remarks}</td></tr>`).join('');
+    if(filteredReportData.length === 0) { 
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:2rem;">No records found.</td></tr>'; 
+        return; 
+    }
+    
+    // UPDATED RENDER: We now render the FULL LINK TEXT inside the <a> tag
+    // The CSS class "print-link-cell" handles the wrapping on print
+    tbody.innerHTML = filteredReportData.map(r => `
+        <tr>
+            <td style="white-space:nowrap;">${r.date}</td>
+            <td>${r.type}</td>
+            <td>${r.title}</td>
+            <td>${r.responsible}</td>
+            <td class="print-link-cell">
+                ${r.link ? `<a href="${r.link}" target="_blank" style="color:var(--primary); text-decoration:underline;">${r.link}</a>` : '-'}
+            </td>
+            <td>${r.remarks}</td>
+        </tr>
+    `).join('');
+});
+
+// PRINT BUTTON EVENT LISTENER
+document.getElementById('print-report-btn').addEventListener('click', () => {
+    window.print();
 });
 
 document.getElementById('export-report-btn').addEventListener('click', () => {
@@ -888,31 +724,9 @@ document.getElementById('export-report-btn').addEventListener('click', () => {
 function populateYearDropdowns() {
   const years = [...new Set(movsData.map(r => parseDate(r.sortDate || r.date).getFullYear()))].sort((a,b)=>b-a);
   if(years.length === 0) years.push(new Date().getFullYear());
-  
-  const chartsSel = document.getElementById('chart-year-filter');
-  const reportSel = document.getElementById('filter-report-year');
-  
-  // Capture current values to prevent resetting on every update
-  const savedYear = localStorage.getItem(STORAGE_KEY_YEAR);
-  const currentReportYear = reportSel.value; 
-
   const ops = years.map(y => `<option value="${y}">${y}</option>`).join('');
-  chartsSel.innerHTML = ops;
-  reportSel.innerHTML = ops;
-
-  // Chart Dropdown Logic
-  const yearToSelect = savedYear || chartsSel.value || years[0];
-  if(years.includes(parseInt(yearToSelect))) chartsSel.value = yearToSelect; 
-  else chartsSel.value = years[0];
-
-  // Report Dropdown Logic (Target 2026/Current Year)
-  if (currentReportYear && years.includes(parseInt(currentReportYear))) {
-      reportSel.value = currentReportYear; // Keep user selection if valid
-  } else {
-      const thisYear = new Date().getFullYear(); // 2026
-      // Default to 2026 if available, otherwise use the latest year
-      reportSel.value = years.includes(thisYear) ? thisYear : years[0];
-  }
+  document.getElementById('chart-year-filter').innerHTML = ops;
+  document.getElementById('filter-report-year').innerHTML = ops;
 }
 
 function showToast(msg, type='success') {
@@ -948,11 +762,6 @@ document.getElementById('deleteSelectedBtn').addEventListener('click', async () 
   showToast('Deleted'); document.getElementById('selectAll').checked = false;
 });
 document.getElementById('selectAll').addEventListener('change', function() { document.querySelectorAll('.rowCheckbox').forEach(cb => cb.checked = this.checked); });
-
-  // PRINT FUNCTIONALITY
-document.getElementById('print-btn').addEventListener('click', () => {
-  window.print();
-});
 </script>
 </body>
 </html>
