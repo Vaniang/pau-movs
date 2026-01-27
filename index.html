@@ -148,68 +148,88 @@
     /* ========================================= */
     /* ===        PRINT STYLES (A4)          === */
     /* ========================================= */
+
+    /* ========================================= */
+    /* ===        FIXED PRINT STYLES         === */
+    /* ========================================= */
     @media print {
       /* 1. Page Setup */
       @page { size: A4; margin: 1cm; }
-      
-      /* 2. Hide Everything by Default */
-      body, .sidebar, #toast-container, .btn, input, select, label { 
-        visibility: hidden; height: 0; overflow: hidden; 
-      }
-      
-      /* 3. Logic: If DASHBOARD is active, hide reports. If REPORTS is active, hide dashboard. */
-      /* However, since we want specific layouts, we usually target based on which print button was clicked.
-         But since CSS doesn't know which button was clicked, we rely on the ACTIVE section.
-      */
 
-      /* Case A: Printing Dashboard (Default Print Behavior) */
-      #dashboard.active {
-         display: block !important;
-         visibility: visible !important;
-         height: auto !important;
-         overflow: visible !important;
-         position: absolute; top: 0; left: 0; width: 100%;
-      }
-      /* Hide Dashboard interactive elements */
-      #dashboard.active #add-mov-section,
-      #dashboard.active #chart-year-filter,
-      #dashboard.active #q-summary-filter { display: none !important; }
-      #dashboard.active .card { border: 1px solid #000; box-shadow: none; break-inside: avoid; margin-bottom: 20px; }
-      #dashboard.active .stats-grid { grid-template-columns: repeat(3, 1fr) !important; }
-
-
-      /* Case B: Printing Reports (Special Layout) */
-      #reports.active { 
-        visibility: visible !important; 
-        height: auto !important; 
-        padding: 0 !important; margin: 0 !important; 
+      /* 2. GLOBAL VISIBILITY RESETS */
+      /* Do NOT hide the body. Instead, reset it. */
+      body { 
+        visibility: visible !important;
+        background: white !important;
+        color: black !important;
+        height: auto !important;
+        width: 100% !important;
         overflow: visible !important;
-        position: absolute; top: 0; left: 0; width: 100%;
-        display: block !important;
       }
       
-      /* Hide Filters/Headers within Report */
-      #reports h1, #reports p.text-muted, 
-      #reports .flex.flex-wrap.gap-4 { 
+      /* 3. Hide UI Elements explicitly */
+      .sidebar, 
+      #toast-container, 
+      .btn, 
+      input, 
+      select, 
+      label,
+      button { 
         display: none !important; 
       }
 
-      /* Ensure Summary & Table are Visible */
-      #report-summary-area, #report-table, .table-wrapper {
-        visibility: visible !important;
+      /* 4. Reset Content Wrapper */
+      .content {
+        margin: 0 !important; 
+        padding: 0 !important;
+        width: 100% !important;
+        height: auto !important;
+        overflow: visible !important;
+        display: block !important;
+      }
+
+      /* 5. Section Logic: Hide all, show active */
+      .section { display: none !important; }
+      .section.active { display: block !important; }
+
+      /* --- REPORT SPECIFIC PRINTING --- */
+      /* When printing Reports, hide the title/filters to show ONLY Summary & Table */
+      #reports.active h1, 
+      #reports.active p.text-muted, 
+      #reports.active .flex.flex-wrap.gap-4 { 
+        display: none !important; 
+      }
+
+      #reports.active #report-summary-area, 
+      #reports.active .table-wrapper {
         display: block !important;
         border: none !important;
         box-shadow: none !important;
       }
-      
-      #report-summary-area {
-        border: 1px solid #000 !important;
+
+      #reports.active #report-summary-area {
+        border: 1px solid #000 !important; /* Keep border for summary */
         margin-bottom: 20px !important;
-        background: none !important;
       }
 
-      /* Table Styling for Print */
-      table { width: 100% !important; border-collapse: collapse !important; font-size: 10pt; }
+      /* --- DASHBOARD SPECIFIC PRINTING --- */
+      #dashboard.active .card {
+         border: 1px solid #000;
+         box-shadow: none;
+         break-inside: avoid;
+         margin-bottom: 20px;
+      }
+      /* Force 3 columns for stats on paper */
+      #dashboard.active .stats-grid {
+         grid-template-columns: repeat(3, 1fr) !important;
+      }
+
+      /* --- TABLE & LINK STYLES --- */
+      table { 
+        width: 100% !important; 
+        border-collapse: collapse !important; 
+        font-size: 10pt; 
+      }
       th, td { 
         border: 1px solid #000 !important; 
         padding: 5px !important; 
@@ -217,13 +237,13 @@
       }
       th { background-color: #eee !important; -webkit-print-color-adjust: exact; }
 
-      /* LINK WRAPPING MAGIC */
+      /* FORCE LONG LINKS TO WRAP */
       .print-link-cell a {
         text-decoration: none !important;
         color: #000 !important;
         font-family: 'Courier New', monospace;
         font-size: 9pt;
-        word-break: break-all !important;
+        word-break: break-all !important; /* Breaks long URLs */
         overflow-wrap: break-word !important;
         display: block;
       }
