@@ -281,6 +281,54 @@
     #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 9999; }
     .toast { background: #1e293b; color: #fff; padding: 12px 16px; border-radius: 8px; margin-top: 8px; display: flex; align-items: center; gap: 12px; font-size: 0.875rem; box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1); animation: slideIn 0.3s; }
     @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+
+    /* --- PRINT STYLES --- */
+  @media print {
+    /* Hide non-essential elements */
+    .sidebar, 
+    .btn, 
+    select, 
+    input, 
+    #toast-container,
+    #add-mov-section, /* Hides the Add Form */
+    #chart-year-filter, /* Hides dropdowns */
+    #q-summary-filter { 
+      display: none !important; 
+    }
+
+    /* Reset Layout for Paper */
+    body { 
+      height: auto; 
+      overflow: visible; 
+      background: white;
+    }
+    
+    .content { 
+      padding: 0; 
+      margin: 0; 
+      width: 100%; 
+      height: auto; 
+      overflow: visible; 
+    }
+
+    /* Ensure Cards look good on paper */
+    .card, .stat-card {
+      break-inside: avoid; /* Prevents cutting cards in half */
+      box-shadow: none;
+      border: 1px solid #ddd;
+      margin-bottom: 20px;
+    }
+
+    /* Adjust Grid for print */
+    .stats-grid {
+      grid-template-columns: repeat(3, 1fr) !important; /* Force 3 columns on paper */
+    }
+    
+    /* Hide empty space from hidden filters */
+    .flex.items-center.justify-between.mb-4 {
+      justify-content: flex-start;
+    }
+  }
   </style>
 
   <script src="https://www.gstatic.com/firebasejs/11.0.0/firebase-app-compat.js"></script>
@@ -306,13 +354,18 @@
     <div id="toast-container"></div>
 
     <section id="dashboard" class="section active">
-      <div class="mb-6">
-        <h1>Dashboard</h1>
-        <p class="text-muted">Track and manage your Means of Verification</p>
+      <div class="flex justify-between items-center mb-6">
+        <div>
+          <h1>Dashboard</h1>
+          <p class="text-muted">Track and manage your Means of Verification</p>
+        </div>
+        <button id="print-btn" class="btn btn-outline h-9">
+          <i class="fas fa-print"></i> Print Dashboard
+        </button>
       </div>
 
       <div class="stats-grid" id="stats-container"></div>
-
+      
       <div class="charts-row">
         <div class="card">
           <h3 class="text-sm font-medium mb-4">Category Distribution</h3>
@@ -334,22 +387,22 @@
 
       <div class="card mb-6">
         <div class="flex items-center justify-between mb-4 flex-wrap gap-4">
-            <h3 class="text-sm font-medium">Quarterly Summary</h3>
-            <div class="flex gap-2 items-center">
-                <label style="margin:0;">Quarter:</label>
-                <select id="q-summary-filter" style="width:120px;">
-                    <option value="all">All</option>
-                    <option value="1">Q1</option>
-                    <option value="2">Q2</option>
-                    <option value="3">Q3</option>
-                    <option value="4">Q4</option>
-                </select>
-            </div>
-        </div>
-        <div id="quarterly-table-container"></div>
+             <h3 class="text-sm font-medium">Quarterly Summary</h3>
+             <div class="flex gap-2 items-center">
+                 <label style="margin:0;">Quarter:</label>
+                 <select id="q-summary-filter" style="width:120px;">
+                     <option value="all">All</option>
+                     <option value="1">Q1</option>
+                     <option value="2">Q2</option>
+                     <option value="3">Q3</option>
+                     <option value="4">Q4</option>
+                 </select>
+             </div>
+         </div>
+         <div id="quarterly-table-container"></div>
       </div>
 
-      <div class="card">
+      <div class="card" id="add-mov-section">
         <h3 class="text-sm font-medium mb-4" id="form-title">Add New MOV</h3>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" style="display:grid; gap:1rem; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
           <div><label>Date</label><input type="date" id="input-date" /></div>
@@ -369,10 +422,10 @@
           <div><label>Remarks</label><input type="text" id="input-remarks" placeholder="Optional" /></div>
         </div>
         <div class="flex gap-2 mt-4 justify-end">
-             <label for="upload-excel" class="btn btn-outline h-9" style="cursor:pointer;"><i class="fas fa-file-excel"></i> Import Excel</label>
-             <input type="file" id="upload-excel" accept=".xlsx,.xls" style="display:none;" />
-             <button id="cancel-edit" class="btn btn-outline h-9" style="display:none;">Cancel</button>
-             <button id="add-mov" class="btn btn-default h-9">Save Record</button>
+              <label for="upload-excel" class="btn btn-outline h-9" style="cursor:pointer;"><i class="fas fa-file-excel"></i> Import Excel</label>
+              <input type="file" id="upload-excel" accept=".xlsx,.xls" style="display:none;" />
+              <button id="cancel-edit" class="btn btn-outline h-9" style="display:none;">Cancel</button>
+              <button id="add-mov" class="btn btn-default h-9">Save Record</button>
         </div>
       </div>
     </section>
@@ -818,6 +871,11 @@ document.getElementById('deleteSelectedBtn').addEventListener('click', async () 
   showToast('Deleted'); document.getElementById('selectAll').checked = false;
 });
 document.getElementById('selectAll').addEventListener('change', function() { document.querySelectorAll('.rowCheckbox').forEach(cb => cb.checked = this.checked); });
+
+  // PRINT FUNCTIONALITY
+document.getElementById('print-btn').addEventListener('click', () => {
+  window.print();
+});
 </script>
 </body>
 </html>
