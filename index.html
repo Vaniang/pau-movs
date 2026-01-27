@@ -356,7 +356,7 @@
         <div style="flex:1; min-width: 150px;">
             <label>Month</label>
             <select id="filter-report-month">
-                <option value="all">All Months</option>
+                <option value="all" selected>All Months</option>
                 <option value="0">January</option><option value="1">February</option>
                 <option value="2">March</option><option value="3">April</option>
                 <option value="4">May</option><option value="5">June</option>
@@ -368,7 +368,7 @@
         <div style="flex:1; min-width: 150px;">
             <label>Type</label>
             <select id="filter-report-type">
-              <option value="all">All Types</option>
+              <option value="all" selected>All Types</option>
               <option value="IEC Videos">IEC Videos</option>
               <option value="News Release">News Release</option>
               <option value="Photo Release">Photo Release</option>
@@ -465,6 +465,9 @@ function updateApp() {
   updateCharts();
   renderQuarterlyTable();
   renderTable(movsData);
+  
+  // *** AUTO GENERATE REPORT ON LOAD ***
+  generateReport(); 
 }
 
 // --- 4. UTILS ---
@@ -659,7 +662,9 @@ window.editItem = (id) => {
 window.deleteItem = async (id) => { if(confirm('Delete?')) { await movsColl.doc(id).delete(); showToast('Deleted'); } };
 
 // --- REPORTS LOGIC ---
-document.getElementById('filter-report-btn').addEventListener('click', () => {
+
+// 1. EXTRACT REPORT GENERATION LOGIC
+function generateReport() {
     const yVal = document.getElementById('filter-report-year').value;
     const mVal = document.getElementById('filter-report-month').value;
     const tVal = document.getElementById('filter-report-type').value;
@@ -676,6 +681,9 @@ document.getElementById('filter-report-btn').addEventListener('click', () => {
     const summaryDiv = document.getElementById('report-summary-area');
     const counts = {}; filteredReportData.forEach(r => counts[r.type] = (counts[r.type]||0) + 1);
     
+    // Always show summary if we ran the filter, even if count is 0, 
+    // but typically if count > 0 we show grid. 
+    // If 0, we can hide or show "0 results".
     if(filteredReportData.length > 0) {
         summaryDiv.style.display = 'block';
         let html = `<div style="background:#fff; padding:1rem; border-radius:0.5rem; border:1px solid #e2e8f0;"><div style="font-weight:700; font-size:1.25rem; color:var(--primary);">${filteredReportData.length}</div><div style="font-size:0.75rem; color:#64748b;">Total</div></div>`;
@@ -690,12 +698,10 @@ document.getElementById('filter-report-btn').addEventListener('click', () => {
     // Table Logic
     const tbody = document.querySelector('#report-table tbody');
     if(filteredReportData.length === 0) { 
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:2rem;">No records found.</td></tr>'; 
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:2rem;">No records found for ' + yVal + '.</td></tr>'; 
         return; 
     }
     
-    // UPDATED RENDER: We now render the FULL LINK TEXT inside the <a> tag
-    // The CSS class "print-link-cell" handles the wrapping on print
     tbody.innerHTML = filteredReportData.map(r => `
         <tr>
             <td style="white-space:nowrap;">${r.date}</td>
@@ -708,7 +714,10 @@ document.getElementById('filter-report-btn').addEventListener('click', () => {
             <td>${r.remarks}</td>
         </tr>
     `).join('');
-});
+}
+
+// 2. Event Listener calls the function
+document.getElementById('filter-report-btn').addEventListener('click', generateReport);
 
 // PRINT BUTTON EVENT LISTENER
 document.getElementById('print-report-btn').addEventListener('click', () => {
@@ -723,10 +732,20 @@ document.getElementById('export-report-btn').addEventListener('click', () => {
 
 function populateYearDropdowns() {
   const years = [...new Set(movsData.map(r => parseDate(r.sortDate || r.date).getFullYear()))].sort((a,b)=>b-a);
-  if(years.length === 0) years.push(new Date().getFullYear());
+  const currentYear = new Date().getFullYear();
+  
+  // Ensure Current Year (2026) is always in the list, even if no data exists yet
+  if(!years.includes(currentYear)) {
+      years.unshift(currentYear);
+  }
+
   const ops = years.map(y => `<option value="${y}">${y}</option>`).join('');
   document.getElementById('chart-year-filter').innerHTML = ops;
-  document.getElementById('filter-report-year').innerHTML = ops;
+  
+  // Set Report Year to Current Year (2026) by default
+  const reportSel = document.getElementById('filter-report-year');
+  reportSel.innerHTML = ops;
+  reportSel.value = currentYear;
 }
 
 function showToast(msg, type='success') {
