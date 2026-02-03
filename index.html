@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>PAU-MOVs Dashboard</title>
-  <link rel="icon" type="image/png" href="PAU MOVs.png" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📊</text></svg>">
    
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -13,24 +13,17 @@
   <style>
     /* --- 1. DESIGN TOKENS --- */
     :root {
-      --background: #ffffff;
-      --foreground: #020817;
+      --background: #f1f5f9;
+      --foreground: #0f172a;
       --card: #ffffff;
-      --primary: #3b82f6;       
+      --primary: #3b82f6;        
       --primary-foreground: #ffffff;
-      --secondary: #f1f5f9;     
-      --secondary-foreground: #0f172a;
-      --muted: #f1f5f9;
-      --muted-foreground: #64748b;
-      --destructive: #ef4444;
-      --destructive-foreground: #f8fafc;
       --border: #e2e8f0;
-      --input: #e2e8f0;
       --radius: 0.5rem; 
+      --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
 
-      /* Custom Colors */
+      /* Colors */
       --primary-soft: #eff6ff;   
-      --primary-border: #dbeafe; 
       --success-soft: #ecfdf5;   
       --warning-soft: #fffbeb;   
       --info-soft: #f0f9ff;      
@@ -38,234 +31,219 @@
       --rose-soft: #fff1f2;
 
       /* Sidebar */
-      --sidebar-bg: #0f172a;      
-      --sidebar-fg: #f8fafc;      
-      --sidebar-hover: #1e293b;    
+      --sidebar-bg: #1e293b;       
+      --sidebar-fg: #94a3b8;       
+      --sidebar-hover: #334155;     
       --sidebar-active: #3b82f6;  
+      --sidebar-active-fg: #ffffff;
     }
 
     * { margin:0; padding:0; box-sizing:border-box; font-family:'Inter', sans-serif; }
-    body { display:flex; height:100vh; background:#f8fafc; color:var(--foreground); overflow: hidden; }
+    body { display:flex; height:100vh; background:var(--background); color:var(--foreground); overflow: hidden; }
 
     /* --- LAYOUT & UTILS --- */
     .flex { display: flex; }
     .items-center { align-items: center; }
     .justify-between { justify-content: space-between; }
+    .justify-end { justify-content: flex-end; }
     .gap-2 { gap: 0.5rem; }
     .gap-4 { gap: 1rem; }
     .mb-4 { margin-bottom: 1rem; }
     .mb-6 { margin-bottom: 1.5rem; }
+    .mt-4 { margin-top: 1rem; }
     .w-full { width: 100%; }
+    .text-sm { font-size: 0.875rem; }
+    .font-medium { font-weight: 500; }
+    .text-muted { color: #64748b; font-size: 0.875rem; }
     
+    /* --- LOADING SPINNER --- */
+    #loading-overlay {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(255,255,255,0.8); z-index: 9999;
+        display: flex; justify-content: center; align-items: center;
+        backdrop-filter: blur(2px);
+    }
+    .spinner {
+        width: 40px; height: 40px;
+        border: 4px solid #e2e8f0; border-top: 4px solid var(--primary);
+        border-radius: 50%; animation: spin 1s linear infinite;
+    }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
     /* --- BUTTONS --- */
     .btn {
       display: inline-flex; align-items: center; justify-content: center;
-      white-space: nowrap; border-radius: var(--radius);
-      font-size: 0.875rem; font-weight: 500; transition-colors: 0.2s;
-      cursor: pointer; border: 1px solid transparent; outline: none; gap: 0.5rem;
+      border-radius: var(--radius); font-size: 0.875rem; font-weight: 500;
+      transition: all 0.2s; cursor: pointer; border: 1px solid transparent; gap: 0.5rem;
     }
-    .btn:disabled { pointer-events: none; opacity: 0.5; }
-    .btn-default { background-color: var(--primary); color: var(--primary-foreground); }
+    .btn:active { transform: translateY(1px); }
+    .btn-default { background-color: var(--primary); color: var(--primary-foreground); box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05); }
     .btn-default:hover { background-color: #2563eb; }
-    .btn-destructive { background-color: var(--destructive); color: var(--destructive-foreground); }
-    .btn-outline { border-color: var(--input); background-color: var(--background); color: var(--foreground); }
-    .btn-outline:hover { background-color: var(--accent); color: var(--accent-foreground); }
-    .btn-ghost { background-color: transparent; color: var(--foreground); }
-    .btn-ghost:hover { background-color: #f1f5f9; }
+    .btn-destructive { background-color: #ef4444; color: white; }
+    .btn-destructive:hover { background-color: #dc2626; }
+    .btn-outline { border-color: #cbd5e1; background: white; color: var(--foreground); }
+    .btn-outline:hover { background-color: #f8fafc; border-color: #94a3b8; }
+    .btn-ghost { background: transparent; color: var(--foreground); }
+    .btn-ghost:hover { background: #f1f5f9; }
 
-    .h-10 { height: 2.5rem; padding: 0 1rem; }
-    .h-9  { height: 2.25rem; padding: 0 0.75rem; font-size: 0.8rem; }
-    .h-8  { height: 2rem; padding: 0 0.5rem; font-size: 0.75rem; }
-    .h-icon { height: 2.25rem; width: 2.25rem; padding: 0; }
+    .h-9  { height: 2.25rem; padding: 0 0.75rem; }
+    .h-icon { height: 2rem; width: 2rem; padding: 0; border-radius: 50%; }
 
     /* --- SIDEBAR --- */
-    .sidebar { width: 260px; background: var(--sidebar-bg); color: var(--sidebar-fg); display: flex; flex-direction: column; border-right: 1px solid #1e293b; }
-    .brand { padding: 1.5rem; border-bottom: 1px solid #1e293b; }
-    .brand h2 { font-size: 1.25rem; font-weight: 700; color: #fff; }
-    .brand p { font-size: 0.75rem; color: #94a3b8; margin-top: 4px; font-weight: 500; }
+    .sidebar { width: 260px; background: var(--sidebar-bg); color: var(--sidebar-fg); display: flex; flex-direction: column; flex-shrink: 0; transition: width 0.3s; }
+    .brand { padding: 1.5rem; border-bottom: 1px solid #334155; background: #0f172a; }
+    .brand h2 { font-size: 1.25rem; font-weight: 700; color: white; display:flex; align-items:center; gap:10px; }
+    .brand p { font-size: 0.75rem; color: #94a3b8; margin-top: 4px; }
     .sidebar ul { list-style:none; padding: 1rem 0.75rem; flex: 1; }
-    .sidebar li { padding: 0.65rem 0.85rem; margin-bottom: 4px; cursor:pointer; border-radius: var(--radius); color: #94a3b8; font-size: 0.875rem; font-weight: 500; display: flex; align-items: center; gap: 12px; transition: all 0.2s; }
-    .sidebar li:hover { background: var(--sidebar-hover); color: #fff; }
-    .sidebar li.active { background: var(--sidebar-active); color: #fff; }
+    .sidebar li { 
+        padding: 0.75rem 1rem; margin-bottom: 4px; cursor:pointer; 
+        border-radius: var(--radius); font-size: 0.875rem; font-weight: 500; 
+        display: flex; align-items: center; gap: 12px; transition: all 0.2s; 
+    }
+    .sidebar li:hover { background: var(--sidebar-hover); color: white; }
+    .sidebar li.active { background: var(--sidebar-active); color: var(--sidebar-active-fg); box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.5); }
+    .sidebar li i { width: 20px; text-align: center; }
 
     /* --- CONTENT AREA --- */
-    .content { flex:1; padding: 2rem; overflow-y:auto; position: relative; }
-    h1 { font-size: 1.875rem; color: var(--foreground); font-weight: 700; line-height: 1.2; }
-    .text-muted { color: var(--muted-foreground); font-size: 0.875rem; }
-    .section { display:none; animation: fadeIn 0.3s ease-out; }
+    .content { flex:1; padding: 2rem; overflow-y:auto; position: relative; scroll-behavior: smooth; }
+    h1 { font-size: 1.875rem; color: var(--foreground); font-weight: 700; letter-spacing: -0.025em; }
+    
+    .section { display:none; animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
     .section.active { display:block; }
-    @keyframes fadeIn { from { opacity:0; transform: translateY(4px); } to { opacity:1; transform: translateY(0); } }
+    @keyframes fadeIn { from { opacity:0; transform: translateY(10px); } to { opacity:1; transform: translateY(0); } }
 
     /* --- INPUTS --- */
-    input, select { display: flex; height: 2.25rem; width: 100%; border-radius: var(--radius); border: 1px solid var(--input); background-color: transparent; padding: 0 0.75rem; font-size: 0.875rem; color: var(--foreground); }
-    input:focus, select:focus { outline: none; border-color: var(--primary); }
-    label { font-size: 0.875rem; font-weight: 500; margin-bottom: 0.375rem; display: block; color: var(--foreground); }
+    input, select { 
+        height: 2.5rem; width: 100%; border-radius: var(--radius); 
+        border: 1px solid var(--border); background: white; 
+        padding: 0 0.75rem; font-size: 0.875rem; color: var(--foreground); transition: border 0.2s; 
+    }
+    input:focus, select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 2px var(--primary-soft); }
+    label { font-size: 0.875rem; font-weight: 500; margin-bottom: 0.375rem; display: block; color: #475569; }
 
     /* --- CARDS & STATS --- */
-    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
-    .stat-card { border-radius: var(--radius); padding: 1.25rem; background: #fff; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); }
-    .variant-primary { background: var(--primary-soft); border-color: var(--primary-border); } .variant-primary i { color: var(--primary); }
-    .variant-success { background: var(--success-soft); border-color: #d1fae5; } .variant-success i { color: #10b981; }
-    .variant-warning { background: var(--warning-soft); border-color: #fef3c7; } .variant-warning i { color: #f59e0b; }
-    .variant-info { background: var(--info-soft); border-color: #e0f2fe; } .variant-info i { color: #0ea5e9; }
-    .variant-purple { background: var(--purple-soft); border-color: #ede9fe; } .variant-purple i { color: #8b5cf6; }
-    .variant-rose { background: var(--rose-soft); border-color: #ffe4e6; } .variant-rose i { color: #f43f5e; }
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+    .stat-card { border-radius: 0.75rem; padding: 1.5rem; background: #fff; box-shadow: var(--shadow); border: 1px solid var(--border); position: relative; overflow: hidden; transition: transform 0.2s; }
+    .stat-card:hover { transform: translateY(-2px); }
+    
+    .variant-primary { border-left: 4px solid var(--primary); } 
+    .variant-success { border-left: 4px solid #10b981; }
+    .variant-warning { border-left: 4px solid #f59e0b; }
+    .variant-info { border-left: 4px solid #0ea5e9; }
+    .variant-purple { border-left: 4px solid #8b5cf6; }
+    .variant-rose { border-left: 4px solid #f43f5e; }
     
     .stat-header { display: flex; justify-content: space-between; align-items: flex-start; }
-    .stat-title { font-size: 0.875rem; font-weight: 500; color: #64748b; margin-bottom: 0.25rem; }
-    .stat-value { font-size: 1.5rem; font-weight: 700; color: var(--foreground); }
-    .icon-box { padding: 0.5rem; border-radius: 0.5rem; background: rgba(255,255,255,0.5); }
+    .stat-title { font-size: 0.875rem; font-weight: 600; color: #64748b; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    .stat-value { font-size: 2rem; font-weight: 700; color: var(--foreground); line-height: 1; }
+    .icon-box { 
+        width: 48px; height: 48px; border-radius: 12px; 
+        display: flex; align-items: center; justify-content: center; font-size: 1.25rem; 
+        background: #f8fafc; color: #64748b; 
+    }
 
-    /* --- CHARTS & CONTAINERS --- */
-    .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); padding: 1.5rem; }
+    /* --- CHARTS --- */
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 0.75rem; box-shadow: var(--shadow); padding: 1.5rem; }
     .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; }
     .chart-container { position: relative; height: 300px; width: 100%; }
 
     /* --- TABLES --- */
-    .table-wrapper { border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden; background: #fff; }
+    .table-container { 
+        border-radius: 0.75rem; border: 1px solid var(--border); 
+        overflow: hidden; background: #fff; box-shadow: var(--shadow);
+    }
+    .table-scroll { overflow-x: auto; max-height: 600px; overflow-y: auto; }
+    
     table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
-    thead { background: #f8fafc; border-bottom: 1px solid var(--border); }
-    th { text-align: left; padding: 0.75rem 1rem; font-weight: 500; color: var(--muted-foreground); height: 2.5rem; }
-    td { padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
-    .badge { display: inline-flex; align-items: center; border-radius: 9999px; padding: 0.125rem 0.625rem; font-size: 0.75rem; font-weight: 500; }
+    thead { background: #f8fafc; position: sticky; top: 0; z-index: 10; }
+    th { text-align: left; padding: 1rem; font-weight: 600; color: #475569; border-bottom: 1px solid var(--border); white-space: nowrap; background: #f8fafc; /* essential for sticky */ }
+    td { padding: 0.875rem 1rem; border-bottom: 1px solid var(--border); vertical-align: middle; color: #334155; }
+    tbody tr:hover { background: #f8fafc; }
+    
+    .badge { display: inline-flex; align-items: center; border-radius: 9999px; padding: 0.25rem 0.75rem; font-size: 0.75rem; font-weight: 600; }
 
     /* Toasts */
-    #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 9999; }
-    .toast { background: #1e293b; color: #fff; padding: 12px 16px; border-radius: 8px; margin-top: 8px; display: flex; align-items: center; gap: 12px; font-size: 0.875rem; animation: slideIn 0.3s; }
-    @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+    #toast-container { position: fixed; bottom: 30px; right: 30px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
+    .toast { 
+        background: #1e293b; color: #fff; padding: 12px 20px; 
+        border-radius: 8px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); 
+        display: flex; align-items: center; gap: 12px; font-size: 0.875rem; 
+        animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1); 
+    }
+    @keyframes slideIn { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
     /* Responsive */
     @media(max-width: 1024px) { .charts-row { grid-template-columns: 1fr; } }
     @media(max-width: 768px) {
       body { flex-direction:column; overflow-y: auto; }
-      .sidebar { width:100%; height: auto; border-right: none; border-bottom: 1px solid #1e293b; }
+      .sidebar { width:100%; height: auto; border-right: none; border-bottom: 1px solid var(--border); }
       .brand { display: flex; justify-content: space-between; align-items: center; padding: 1rem; }
-      .sidebar ul { display: flex; overflow-x: auto; padding: 0.5rem; }
+      .sidebar ul { display: flex; overflow-x: auto; padding: 0.5rem; gap: 5px; }
+      .sidebar li { white-space: nowrap; padding: 0.5rem 1rem; margin: 0; }
       .content { padding: 1rem; }
       .stats-grid { grid-template-columns: 1fr; }
+      #add-mov-section .grid { grid-template-columns: 1fr !important; }
     }
 
     /* ========================================= */
     /* ===        PRINT STYLES (A4)          === */
     /* ========================================= */
-
-    /* ========================================= */
-    /* ===        FIXED PRINT STYLES         === */
-    /* ========================================= */
     @media print {
-      /* 1. Page Setup */
-      @page { size: A4; margin: 1cm; }
-
-      /* 2. GLOBAL VISIBILITY RESETS */
-      /* Do NOT hide the body. Instead, reset it. */
-      body { 
-        visibility: visible !important;
-        background: white !important;
-        color: black !important;
-        height: auto !important;
-        width: 100% !important;
-        overflow: visible !important;
-      }
+      @page { size: A4; margin: 10mm; }
+      body { visibility: hidden !important; background: white !important; color: black !important; height: auto !important; width: 100% !important; display: block !important; }
       
-      /* 3. Hide UI Elements explicitly */
-      .sidebar, 
-      #toast-container, 
-      .btn, 
-      input, 
-      select, 
-      label,
-      button { 
-        display: none !important; 
-      }
+      /* Hide Non-Printables */
+      .sidebar, #toast-container, #loading-overlay, .btn, input, select, label, button, .icon-box { display: none !important; }
 
-      /* 4. Reset Content Wrapper */
-      .content {
-        margin: 0 !important; 
-        padding: 0 !important;
-        width: 100% !important;
-        height: auto !important;
-        overflow: visible !important;
-        display: block !important;
-      }
-
-      /* 5. Section Logic: Hide all, show active */
+      /* Show Content */
+      .content { margin: 0 !important; padding: 0 !important; width: 100% !important; visibility: visible !important; }
+      
+      /* Sections */
       .section { display: none !important; }
-      .section.active { display: block !important; }
+      .section.active { display: block !important; visibility: visible !important; }
 
-      /* --- REPORT SPECIFIC PRINTING --- */
-      /* When printing Reports, hide the title/filters to show ONLY Summary & Table */
-      #reports.active h1, 
-      #reports.active p.text-muted, 
-      #reports.active .flex.flex-wrap.gap-4 { 
-        display: none !important; 
-      }
+      /* Dashboard Specifics */
+      #dashboard.active .stats-grid { grid-template-columns: repeat(3, 1fr) !important; gap: 10px; margin-bottom: 20px; }
+      #dashboard.active .stat-card { border: 1px solid #ccc; box-shadow: none; break-inside: avoid; padding: 10px; }
+      #dashboard.active .stat-value { font-size: 1.5rem; }
+      #dashboard.active .card { border: none; box-shadow: none; padding: 0; margin-bottom: 20px; break-inside: avoid; }
+      #dashboard.active #add-mov-section { display: none !important; }
 
-      #reports.active #report-summary-area, 
-      #reports.active .table-wrapper {
-        display: block !important;
-        border: none !important;
-        box-shadow: none !important;
-      }
-
-      #reports.active #report-summary-area {
-        border: 1px solid #000 !important; /* Keep border for summary */
-        margin-bottom: 20px !important;
-      }
-
-      /* --- DASHBOARD SPECIFIC PRINTING --- */
-      #dashboard.active .card {
-         border: 1px solid #000;
-         box-shadow: none;
-         break-inside: avoid;
-         margin-bottom: 20px;
-      }
-      /* Force 3 columns for stats on paper */
-      #dashboard.active .stats-grid {
-         grid-template-columns: repeat(3, 1fr) !important;
-      }
-
-      /* --- TABLE & LINK STYLES --- */
-      table { 
-        width: 100% !important; 
-        border-collapse: collapse !important; 
-        font-size: 10pt; 
-      }
-      th, td { 
-        border: 1px solid #000 !important; 
-        padding: 5px !important; 
-        color: #000 !important;
-      }
+      /* Report Specifics */
+      #reports.active h1, #reports.active p.text-muted, #reports.active .flex.flex-wrap { display: none !important; }
+      #report-summary-area { display: block !important; border: 1px solid #000 !important; margin-bottom: 20px !important; break-inside: avoid; }
+      
+      /* Table Clean Up */
+      .table-container { border: none; box-shadow: none; }
+      .table-scroll { overflow: visible; max-height: none; }
+      table { width: 100% !important; border-collapse: collapse !important; font-size: 9pt; }
+      th, td { border: 1px solid #000 !important; padding: 4px !important; color: #000 !important; }
       th { background-color: #eee !important; -webkit-print-color-adjust: exact; }
-
-      /* FORCE LONG LINKS TO WRAP */
-      .print-link-cell a {
-        text-decoration: none !important;
-        color: #000 !important;
-        font-family: 'Courier New', monospace;
-        font-size: 9pt;
-        word-break: break-all !important; /* Breaks long URLs */
-        overflow-wrap: break-word !important;
-        display: block;
-      }
+      
+      .print-link-cell a { text-decoration: none !important; color: #000 !important; font-family: monospace; font-size: 8pt; word-break: break-all !important; }
     }
   </style>
 
-  <script src="https://www.gstatic.com/firebasejs/11.0.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 
+  <div id="loading-overlay">
+      <div class="spinner"></div>
+  </div>
+
   <div class="sidebar">
     <div class="brand">
-      <h2>PAU-MOVs</h2>
+      <h2><i class="fas fa-chart-simple" style="color:#3b82f6;"></i> PAU-MOVs</h2>
       <p>Means of Verification Tracker</p>
     </div>
     <ul>
       <li class="active" data-section="dashboard"><i class="fas fa-th-large"></i> Dashboard</li>
-      <li data-section="movs"><i class="fas fa-table"></i> MOVs</li>
-      <li data-section="reports"><i class="fas fa-chart-pie"></i> Reports</li>
+      <li data-section="movs"><i class="fas fa-table"></i> MOVs Data</li>
+      <li data-section="reports"><i class="fas fa-file-invoice"></i> Reports</li>
     </ul>
   </div>
 
@@ -276,10 +254,10 @@
       <div class="flex justify-between items-center mb-6">
         <div>
           <h1>Dashboard</h1>
-          <p class="text-muted">Track and manage your Means of Verification</p>
+          <p class="text-muted">Overview of your verification data</p>
         </div>
         <button id="print-dashboard-btn" class="btn btn-outline h-9">
-             <i class="fas fa-print"></i> Print Dashboard
+             <i class="fas fa-print"></i> Print View
         </button>
       </div>
 
@@ -287,12 +265,12 @@
       
       <div class="charts-row">
         <div class="card">
-          <h3 class="text-sm font-medium mb-4">Category Distribution</h3>
+          <h3 class="text-sm font-medium mb-4" style="color:#64748b; text-transform:uppercase;">Category Distribution</h3>
           <div class="chart-container"><canvas id="chartDonut"></canvas></div>
         </div>
         <div class="card">
           <div class="flex items-center justify-between mb-4">
-            <h3 class="text-sm font-medium">Monthly Trend</h3>
+            <h3 class="text-sm font-medium" style="color:#64748b; text-transform:uppercase;">Monthly Trend</h3>
             <select id="chart-year-filter" style="width: 100px;"></select>
           </div>
           <div class="chart-container"><canvas id="chartBar"></canvas></div>
@@ -301,24 +279,26 @@
 
       <div class="card mb-6">
          <div class="flex items-center justify-between mb-4 flex-wrap gap-4">
-             <h3 class="text-sm font-medium">Quarterly Summary</h3>
+             <h3 class="text-sm font-medium" style="color:#64748b; text-transform:uppercase;">Quarterly Summary</h3>
              <div class="flex gap-2 items-center">
                  <label style="margin:0;">Quarter:</label>
                  <select id="q-summary-filter" style="width:120px;">
-                     <option value="all">All</option>
-                     <option value="1">Q1</option>
-                     <option value="2">Q2</option>
-                     <option value="3">Q3</option>
-                     <option value="4">Q4</option>
+                     <option value="all">All Quarters</option>
+                     <option value="1">Q1 (Jan-Mar)</option>
+                     <option value="2">Q2 (Apr-Jun)</option>
+                     <option value="3">Q3 (Jul-Sep)</option>
+                     <option value="4">Q4 (Oct-Dec)</option>
                  </select>
              </div>
          </div>
          <div id="quarterly-table-container"></div>
       </div>
 
-      <div class="card" id="add-mov-section">
-        <h3 class="text-sm font-medium mb-4" id="form-title">Add New MOV</h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" style="display:grid; gap:1rem; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+      <div class="card" id="add-mov-section" style="border-top: 4px solid var(--primary);">
+        <h3 class="text-sm font-medium mb-4" id="form-title" style="font-size:1.1rem; color:var(--primary); display:flex; align-items:center; gap:8px;">
+            <i class="fas fa-plus-circle"></i> Add New Record
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" style="display:grid; gap:1rem; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
           <div><label>Date</label><input type="date" id="input-date" /></div>
           <div><label>Type</label>
             <select id="input-type">
@@ -330,23 +310,23 @@
               <option value="Social Cards (PAU)">Social Cards (PAU)</option>
             </select>
           </div>
-          <div><label>Title</label><input type="text" id="input-title" placeholder="Enter title..." /></div>
-          <div><label>Responsible</label><input type="text" id="input-responsible" placeholder="Name..." /></div>
-          <div><label>Link</label><input type="url" id="input-link" placeholder="http://..." /></div>
-          <div><label>Remarks</label><input type="text" id="input-remarks" placeholder="Optional" /></div>
+          <div><label>Title / Topic</label><input type="text" id="input-title" placeholder="Enter title..." /></div>
+          <div><label>Responsible Person</label><input type="text" id="input-responsible" placeholder="Name..." /></div>
+          <div><label>Link (URL)</label><input type="url" id="input-link" placeholder="https://..." /></div>
+          <div><label>Remarks</label><input type="text" id="input-remarks" placeholder="Optional notes" /></div>
         </div>
-        <div class="flex gap-2 mt-4 justify-end">
-              <label for="upload-excel" class="btn btn-outline h-9" style="cursor:pointer;"><i class="fas fa-file-excel"></i> Import Excel</label>
+        <div class="flex gap-2 mt-4 justify-end border-t pt-4" style="border-color:#f1f5f9;">
+              <label for="upload-excel" class="btn btn-outline h-9" style="cursor:pointer; color:#10b981; border-color:#10b981;"><i class="fas fa-file-excel"></i> Import Excel</label>
               <input type="file" id="upload-excel" accept=".xlsx,.xls" style="display:none;" />
               <button id="cancel-edit" class="btn btn-outline h-9" style="display:none;">Cancel</button>
-              <button id="add-mov" class="btn btn-default h-9">Save Record</button>
+              <button id="add-mov" class="btn btn-default h-9"><i class="fas fa-save"></i> Save Record</button>
         </div>
       </div>
     </section>
 
     <section id="movs" class="section">
-      <div class="flex justify-between items-center mb-6">
-        <div><h1>MOVs</h1><p class="text-muted">View and manage all records</p></div>
+      <div class="flex justify-between items-center mb-6 flex-wrap gap-4">
+        <div><h1>MOVs Data</h1><p class="text-muted">Master list of all verification records</p></div>
         <div class="flex gap-2">
             <select id="movs-filter-type" style="width:180px;">
                 <option value="all">All Types</option>
@@ -357,22 +337,22 @@
                 <option value="Social Cards (others)">Social Cards (others)</option>
                 <option value="Social Cards (PAU)">Social Cards (PAU)</option>
             </select>
-            <input type="text" id="global-search" placeholder="Search..." style="width:250px;">
+            <input type="text" id="global-search" placeholder="Search title or name..." style="width:250px;">
         </div>
       </div>
       
-      <div class="card" style="padding:0;">
-        <div class="table-wrapper" style="border:none;">
+      <div class="table-container">
+        <div class="table-scroll">
             <table id="movs-table">
             <thead>
                 <tr>
-                <th width="40"><input type="checkbox" id="selectAll"></th>
-                <th style="cursor:pointer" onclick="sortTable('date')">Date <i class="fas fa-sort"></i></th>
+                <th width="40" style="text-align:center;"><input type="checkbox" id="selectAll" style="width:16px; height:16px;"></th>
+                <th style="cursor:pointer" onclick="sortTable('date')">Date <i class="fas fa-sort" style="font-size:10px; opacity:0.5;"></i></th>
                 <th>Type</th>
                 <th>Title</th>
                 <th>Responsible</th>
                 <th>Link</th>
-                <th>Actions</th>
+                <th style="text-align:right;">Actions</th>
                 </tr>
             </thead>
             <tbody></tbody>
@@ -380,63 +360,62 @@
         </div>
       </div>
       <div class="flex justify-end mt-4">
-        <button id="deleteSelectedBtn" class="btn btn-destructive btn-outline h-9"><i class="fas fa-trash"></i> Delete Selected</button>
+        <button id="deleteSelectedBtn" class="btn btn-destructive h-9"><i class="fas fa-trash-alt"></i> Delete Selected</button>
       </div>
     </section>
 
     <section id="reports" class="section">
       <div class="mb-6">
-        <h1>Reports</h1>
-        <p class="text-muted">Generate and export reports</p>
+        <h1>Reports Generator</h1>
+        <p class="text-muted">Generate summaries and export specific datasets</p>
       </div>
       
-      <div class="flex flex-wrap gap-4 items-end mb-6">
-        <div style="flex:1; min-width: 150px;">
-            <label>Year</label><select id="filter-report-year"></select>
+      <div class="card mb-6" style="padding: 1.5rem;">
+        <div class="flex flex-wrap gap-4 items-end">
+            <div style="flex:1; min-width: 150px;">
+                <label>Year</label><select id="filter-report-year"></select>
+            </div>
+            <div style="flex:1; min-width: 150px;">
+                <label>Month</label>
+                <select id="filter-report-month">
+                    <option value="all" selected>All Months</option>
+                    <option value="0">January</option><option value="1">February</option>
+                    <option value="2">March</option><option value="3">April</option>
+                    <option value="4">May</option><option value="5">June</option>
+                    <option value="6">July</option><option value="7">August</option>
+                    <option value="8">September</option><option value="9">October</option>
+                    <option value="10">November</option><option value="11">December</option>
+                </select>
+            </div>
+            <div style="flex:1; min-width: 150px;">
+                <label>Type</label>
+                <select id="filter-report-type">
+                <option value="all" selected>All Types</option>
+                <option value="IEC Videos">IEC Videos</option>
+                <option value="News Release">News Release</option>
+                <option value="Photo Release">Photo Release</option>
+                <option value="PILU EduAksyon">PILU EduAksyon</option>
+                <option value="Social Cards (others)">Social Cards (others)</option>
+                <option value="Social Cards (PAU)">Social Cards (PAU)</option>
+                </select>
+            </div>
+            
+            <button id="filter-report-btn" class="btn btn-default h-9"><i class="fas fa-filter"></i> Apply Filter</button>
+            <button id="export-report-btn" class="btn btn-outline h-9"><i class="fas fa-file-download"></i> Export Excel</button>
+            <button id="print-report-btn" class="btn btn-outline h-9"><i class="fas fa-print"></i> Print</button>
         </div>
-        <div style="flex:1; min-width: 150px;">
-            <label>Month</label>
-            <select id="filter-report-month">
-                <option value="all" selected>All Months</option>
-                <option value="0">January</option><option value="1">February</option>
-                <option value="2">March</option><option value="3">April</option>
-                <option value="4">May</option><option value="5">June</option>
-                <option value="6">July</option><option value="7">August</option>
-                <option value="8">September</option><option value="9">October</option>
-                <option value="10">November</option><option value="11">December</option>
-            </select>
-        </div>
-        <div style="flex:1; min-width: 150px;">
-            <label>Type</label>
-            <select id="filter-report-type">
-              <option value="all" selected>All Types</option>
-              <option value="IEC Videos">IEC Videos</option>
-              <option value="News Release">News Release</option>
-              <option value="Photo Release">Photo Release</option>
-              <option value="PILU EduAksyon">PILU EduAksyon</option>
-              <option value="Social Cards (others)">Social Cards (others)</option>
-              <option value="Social Cards (PAU)">Social Cards (PAU)</option>
-            </select>
-        </div>
-        
-        <button id="filter-report-btn" class="btn btn-default h-9">Apply</button>
-        <button id="export-report-btn" class="btn btn-outline h-9"><i class="fas fa-file-download"></i> Export</button>
-        
-        <button id="print-report-btn" class="btn btn-outline h-9">
-            <i class="fas fa-print"></i> Print Report
-        </button>
       </div>
 
-      <div id="report-summary-area" style="display:none; background: var(--primary-soft); border: 1px solid var(--primary-border); border-radius: var(--radius); padding: 1.5rem; margin-bottom: 1.5rem;">
+      <div id="report-summary-area" style="display:none; background: var(--primary-soft); border: 1px solid #dbeafe; border-radius: var(--radius); padding: 1.5rem; margin-bottom: 1.5rem;">
          <div class="flex items-center gap-2 mb-4">
-             <i class="fas fa-chart-line" style="color:var(--primary);"></i>
-             <h3 class="font-bold" style="color:var(--primary);">Report Summary</h3>
+             <i class="fas fa-chart-pie" style="color:var(--primary); font-size:1.2rem;"></i>
+             <h3 class="font-bold" style="color:#1e3a8a;">Report Summary</h3>
          </div>
-         <div class="grid" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 1rem; text-align: center;"></div>
+         <div class="grid" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1rem; text-align: center;"></div>
       </div>
 
-      <div class="card" style="padding:0;">
-        <div class="table-wrapper" style="border:none;">
+      <div class="table-container">
+        <div class="table-scroll">
             <table id="report-table">
             <thead>
                 <tr>
@@ -449,7 +428,7 @@
                 </tr>
             </thead>
             <tbody>
-                <tr><td colspan="6" style="text-align:center; padding: 2rem; color: #94a3b8;">Apply filters to view data</td></tr>
+                <tr><td colspan="6" style="text-align:center; padding: 3rem; color: #94a3b8;"><i class="fas fa-search" style="font-size:2rem; margin-bottom:10px;"></i><br>Apply filters to view report data</td></tr>
             </tbody>
             </table>
         </div>
@@ -469,18 +448,25 @@ const firebaseConfig = {
   appId: "1:502537936923:web:5f7c97f1469efc9a9b18be",
   measurementId: "G-SCJBGH476G"
 };
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-const movsColl = db.collection('movs');
+
+let db, movsColl;
+try {
+    firebase.initializeApp(firebaseConfig);
+    db = firebase.firestore();
+    movsColl = db.collection('movs');
+} catch (error) {
+    console.error("Firebase Init Error:", error);
+    alert("Database connection failed. Please check your internet connection.");
+}
 
 // --- 2. CONFIG & STATE ---
 const CONFIG = {
-  'IEC Videos': { variant: 'variant-primary', icon: 'fa-video' },
-  'News Release': { variant: 'variant-success', icon: 'fa-newspaper' },
-  'Photo Release': { variant: 'variant-warning', icon: 'fa-camera' },
-  'PILU EduAksyon': { variant: 'variant-info', icon: 'fa-book-open' },
-  'Social Cards (others)': { variant: 'variant-purple', icon: 'fa-th-large' },
-  'Social Cards (PAU)': { variant: 'variant-rose', icon: 'fa-users' }
+  'IEC Videos': { variant: 'variant-primary', icon: 'fa-video', color: '#3b82f6', bg: '#eff6ff' },
+  'News Release': { variant: 'variant-success', icon: 'fa-newspaper', color: '#10b981', bg: '#ecfdf5' },
+  'Photo Release': { variant: 'variant-warning', icon: 'fa-camera', color: '#f59e0b', bg: '#fffbeb' },
+  'PILU EduAksyon': { variant: 'variant-info', icon: 'fa-book-open', color: '#0ea5e9', bg: '#f0f9ff' },
+  'Social Cards (others)': { variant: 'variant-purple', icon: 'fa-layer-group', color: '#8b5cf6', bg: '#f5f3ff' },
+  'Social Cards (PAU)': { variant: 'variant-rose', icon: 'fa-users', color: '#f43f5e', bg: '#fff1f2' }
 };
 const TYPES = Object.keys(CONFIG);
 
@@ -493,11 +479,21 @@ let filteredReportData = [];
 // --- 3. INIT ---
 window.addEventListener('load', () => {
   document.getElementById('input-date').value = new Date().toISOString().split('T')[0];
-  movsColl.orderBy('sortDate', 'desc').onSnapshot(snap => {
-    movsData = [];
-    snap.forEach(doc => movsData.push({ id: doc.id, ...doc.data() }));
-    updateApp();
-  });
+  
+  if (movsColl) {
+      movsColl.orderBy('sortDate', 'desc').onSnapshot(snap => {
+        movsData = [];
+        snap.forEach(doc => movsData.push({ id: doc.id, ...doc.data() }));
+        updateApp();
+        document.getElementById('loading-overlay').style.display = 'none'; // Hide Loader
+      }, error => {
+          console.error(error);
+          document.getElementById('loading-overlay').style.display = 'none';
+          showToast('Error fetching data', 'error');
+      });
+  } else {
+      document.getElementById('loading-overlay').style.display = 'none';
+  }
 });
 
 function updateApp() {
@@ -506,8 +502,6 @@ function updateApp() {
   updateCharts();
   renderQuarterlyTable();
   renderTable(movsData);
-  
-  // *** AUTO GENERATE REPORT ON LOAD ***
   generateReport(); 
 }
 
@@ -533,16 +527,22 @@ function renderStatsCards() {
     html += `
       <div class="stat-card ${conf.variant}">
         <div class="stat-header">
-           <div><div class="stat-title">${t}</div><div class="stat-value">${counts[t]}</div></div>
-           <div class="icon-box"><i class="fas ${conf.icon}"></i></div>
+           <div>
+               <div class="stat-title">${t}</div>
+               <div class="stat-value">${counts[t]}</div>
+           </div>
+           <div class="icon-box" style="background:${conf.bg}; color:${conf.color};">
+               <i class="fas ${conf.icon}"></i>
+           </div>
         </div>
       </div>`;
   });
+  // Total Card
   html += `
-    <div class="stat-card variant-primary" style="grid-column: span 1 / -1;">
+    <div class="stat-card" style="border-left: 4px solid #334155; grid-column: span 1;">
         <div class="stat-header">
-           <div><div class="stat-title">Total IEC Produced</div><div class="stat-value">${movsData.length}</div></div>
-           <div class="icon-box"><i class="fas fa-chart-line"></i></div>
+           <div><div class="stat-title">Total Records</div><div class="stat-value">${movsData.length}</div></div>
+           <div class="icon-box" style="background:#f1f5f9; color:#334155;"><i class="fas fa-database"></i></div>
         </div>
     </div>`;
   container.innerHTML = html;
@@ -562,27 +562,38 @@ function updateCharts() {
     }
   });
 
-  const chartColors = ['hsl(220, 70%, 50%)', 'hsl(160, 60%, 45%)', 'hsl(38, 92%, 50%)', 'hsl(280, 65%, 60%)', 'hsl(350, 80%, 60%)', 'hsl(200, 80%, 50%)'];
+  const chartColors = ['#3b82f6', '#10b981', '#f59e0b', '#0ea5e9', '#8b5cf6', '#f43f5e'];
 
+  // Donut
   const ctxDonut = document.getElementById('chartDonut').getContext('2d');
   if(chartDonutInstance) chartDonutInstance.destroy();
   chartDonutInstance = new Chart(ctxDonut, {
     type: 'doughnut',
     data: {
       labels: TYPES,
-      datasets: [{ data: TYPES.map(t => typeCounts[t]), backgroundColor: chartColors, borderWidth: 0 }]
+      datasets: [{ data: TYPES.map(t => typeCounts[t]), backgroundColor: chartColors, borderWidth: 2, borderColor: '#ffffff' }]
     },
-    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right' } }, cutout: '65%' }
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { usePointStyle: true } } }, cutout: '70%' }
   });
 
+  // Bar
   const ctxBar = document.getElementById('chartBar').getContext('2d');
   if(chartBarInstance) chartBarInstance.destroy();
-  const datasets = TYPES.map((t, i) => ({ label: t, data: [0,1,2,3,4,5,6,7,8,9,10,11].map(m => monthlyData[m][t]), backgroundColor: chartColors[i], borderRadius: 4 }));
+  const datasets = TYPES.map((t, i) => ({ 
+      label: t, 
+      data: [0,1,2,3,4,5,6,7,8,9,10,11].map(m => monthlyData[m][t]), 
+      backgroundColor: chartColors[i], 
+      borderRadius: 4 
+  }));
 
   chartBarInstance = new Chart(ctxBar, {
     type: 'bar',
     data: { labels: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'], datasets: datasets },
-    options: { responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true }, y: { stacked: true } } }
+    options: { 
+        responsive: true, maintainAspectRatio: false, 
+        scales: { x: { stacked: true, grid: {display:false} }, y: { stacked: true, border: {display:false} } },
+        plugins: { legend: { display: false } }
+    }
   });
 }
 
@@ -600,16 +611,30 @@ function renderQuarterlyTable() {
         }
     });
 
-    let html = `<div class="table-wrapper"><table><thead><tr><th>Quarter</th>`;
+    let html = `<div class="table-container"><table class="table"><thead><tr><th>Quarter</th>`;
     TYPES.forEach(t => html += `<th>${t}</th>`);
-    html += `<th>Total</th></tr></thead><tbody>`;
+    html += `<th style="text-align:right">Total</th></tr></thead><tbody>`;
+    
+    let grandTotal = 0;
     for(let q=1; q<=4; q++) {
         if(qFilter !== 'all' && qFilter !== String(q)) continue;
         let rowTotal = 0;
-        html += `<tr><td style="font-weight:600;">Q${q}</td>`;
+        html += `<tr><td style="font-weight:700; color:var(--primary);">Q${q}</td>`;
         TYPES.forEach(t => { html += `<td>${counts[q][t]}</td>`; rowTotal += counts[q][t]; });
-        html += `<td style="font-weight:600;">${rowTotal}</td></tr>`;
+        html += `<td style="font-weight:700; text-align:right;">${rowTotal}</td></tr>`;
+        grandTotal += rowTotal;
     }
+    // Footer Row
+    if(qFilter === 'all') {
+         html += `<tr style="background:#f8fafc; border-top:2px solid #e2e8f0;"><td><strong>Total</strong></td>`;
+         TYPES.forEach(t => {
+             let colTotal = 0;
+             for(let q=1; q<=4; q++) colTotal += counts[q][t];
+             html += `<td><strong>${colTotal}</strong></td>`;
+         });
+         html += `<td style="text-align:right; font-size:1.1em; color:var(--primary);"><strong>${grandTotal}</strong></td></tr>`;
+    }
+
     html += `</tbody></table></div>`;
     container.innerHTML = html;
 }
@@ -620,6 +645,11 @@ document.getElementById('q-summary-filter').addEventListener('change', renderQua
 
 // CRUD
 document.getElementById('add-mov').addEventListener('click', async () => {
+  const btn = document.getElementById('add-mov');
+  const originalText = btn.innerHTML;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+  btn.disabled = true;
+
   const rec = {
     date: document.getElementById('input-date').value,
     type: document.getElementById('input-type').value,
@@ -628,12 +658,21 @@ document.getElementById('add-mov').addEventListener('click', async () => {
     link: document.getElementById('input-link').value,
     remarks: document.getElementById('input-remarks').value
   };
-  if(!rec.title) return showToast('Title is required', 'error');
+
+  if(!rec.title) {
+      showToast('Title is required', 'error');
+      btn.innerHTML = originalText; btn.disabled = false;
+      return;
+  }
+
   try {
-    if(editingId) { await movsColl.doc(editingId).update({ ...rec, sortDate: parseDate(rec.date), updatedAt: firebase.firestore.FieldValue.serverTimestamp() }); showToast('Updated'); }
-    else { await movsColl.add({ ...rec, sortDate: parseDate(rec.date), createdAt: firebase.firestore.FieldValue.serverTimestamp() }); showToast('Added'); }
+    if(editingId) { await movsColl.doc(editingId).update({ ...rec, sortDate: parseDate(rec.date), updatedAt: firebase.firestore.FieldValue.serverTimestamp() }); showToast('Record Updated Successfully'); }
+    else { await movsColl.add({ ...rec, sortDate: parseDate(rec.date), createdAt: firebase.firestore.FieldValue.serverTimestamp() }); showToast('New Record Added'); }
     resetForm();
   } catch(e) { showToast(e.message, 'error'); }
+  finally {
+      btn.innerHTML = originalText; btn.disabled = false;
+  }
 });
 
 function resetForm() {
@@ -642,8 +681,8 @@ function resetForm() {
   document.getElementById('input-link').value = '';
   document.getElementById('input-remarks').value = '';
   editingId = null;
-  document.getElementById('add-mov').textContent = 'Save Record';
-  document.getElementById('form-title').textContent = 'Add New MOV';
+  document.getElementById('add-mov').innerHTML = '<i class="fas fa-save"></i> Save Record';
+  document.getElementById('form-title').innerHTML = '<i class="fas fa-plus-circle"></i> Add New Record';
   document.getElementById('cancel-edit').style.display = 'none';
 }
 document.getElementById('cancel-edit').addEventListener('click', resetForm);
@@ -655,28 +694,24 @@ function renderTable(data) {
   const typeFilter = document.getElementById('movs-filter-type').value;
 
   const filtered = data.filter(d => {
-    const matchesSearch = d.title.toLowerCase().includes(search) || d.responsible.toLowerCase().includes(search);
+    const matchesSearch = (d.title||'').toLowerCase().includes(search) || (d.responsible||'').toLowerCase().includes(search);
     const matchesType = typeFilter === 'all' || d.type === typeFilter;
     return matchesSearch && matchesType;
   });
 
   tbody.innerHTML = filtered.map(r => {
-    let style = "background:#f1f5f9; color:#475569;";
-    if(r.type.includes('IEC')) style = "background:var(--primary-soft); color:var(--primary);";
-    if(r.type.includes('News')) style = "background:var(--success-soft); color:#10b981;";
-    if(r.type.includes('Photo')) style = "background:var(--warning-soft); color:#d97706;";
-    if(r.type.includes('PILU')) style = "background:var(--info-soft); color:#0ea5e9;";
+    const conf = CONFIG[r.type] || CONFIG['IEC Videos'];
     return `
     <tr data-id="${r.id}">
-      <td><input type="checkbox" class="rowCheckbox"></td>
-      <td>${r.date}</td>
-      <td><span class="badge" style="${style}">${r.type}</span></td>
-      <td>${r.title}</td>
+      <td style="text-align:center;"><input type="checkbox" class="rowCheckbox" style="width:16px; height:16px;"></td>
+      <td style="white-space:nowrap;">${r.date}</td>
+      <td><span class="badge" style="background:${conf.bg}; color:${conf.color};">${r.type}</span></td>
+      <td style="font-weight:500;">${r.title}</td>
       <td>${r.responsible}</td>
-      <td>${r.link ? `<a href="${r.link}" target="_blank" class="btn btn-ghost h-8" style="color:var(--primary)"><i class="fas fa-external-link-alt"></i> View</a>` : ''}</td>
-      <td>
-        <button onclick="editItem('${r.id}')" class="btn btn-ghost h-icon"><i class="fas fa-pen"></i></button>
-        <button onclick="deleteItem('${r.id}')" class="btn btn-ghost h-icon" style="color:#ef4444;"><i class="fas fa-trash"></i></button>
+      <td>${r.link ? `<a href="${r.link}" target="_blank" class="btn btn-ghost h-9" style="color:var(--primary); font-size:0.8rem;"><i class="fas fa-external-link-alt"></i> Link</a>` : '-'}</td>
+      <td style="text-align:right; white-space:nowrap;">
+        <button onclick="editItem('${r.id}')" class="btn btn-ghost h-icon" title="Edit"><i class="fas fa-pen"></i></button>
+        <button onclick="deleteItem('${r.id}')" class="btn btn-ghost h-icon" style="color:#ef4444;" title="Delete"><i class="fas fa-trash-alt"></i></button>
       </td>
     </tr>`;
   }).join('');
@@ -694,17 +729,27 @@ window.editItem = (id) => {
     document.getElementById('input-link').value = r.link;
     document.getElementById('input-remarks').value = r.remarks;
     editingId = id;
-    document.getElementById('add-mov').textContent = 'Update Record';
-    document.getElementById('form-title').textContent = 'Edit Record';
+    document.getElementById('add-mov').innerHTML = '<i class="fas fa-check"></i> Update Record';
+    document.getElementById('form-title').innerHTML = '<i class="fas fa-edit"></i> Edit Record';
     document.getElementById('cancel-edit').style.display = 'inline-block';
-    document.querySelector('[data-section="dashboard"]').click();
+    
+    // Switch to Dashboard and scroll to form
+    const dashLink = document.querySelector('[data-section="dashboard"]');
+    dashLink.click();
+    setTimeout(() => {
+        document.getElementById('add-mov-section').scrollIntoView({ behavior: 'smooth' });
+    }, 100);
   }
 };
-window.deleteItem = async (id) => { if(confirm('Delete?')) { await movsColl.doc(id).delete(); showToast('Deleted'); } };
+
+window.deleteItem = async (id) => { 
+    if(confirm('Are you sure you want to delete this record? This cannot be undone.')) { 
+        await movsColl.doc(id).delete(); 
+        showToast('Record Deleted', 'success'); 
+    } 
+};
 
 // --- REPORTS LOGIC ---
-
-// 1. EXTRACT REPORT GENERATION LOGIC
 function generateReport() {
     const yVal = document.getElementById('filter-report-year').value;
     const mVal = document.getElementById('filter-report-month').value;
@@ -722,14 +767,17 @@ function generateReport() {
     const summaryDiv = document.getElementById('report-summary-area');
     const counts = {}; filteredReportData.forEach(r => counts[r.type] = (counts[r.type]||0) + 1);
     
-    // Always show summary if we ran the filter, even if count is 0, 
-    // but typically if count > 0 we show grid. 
-    // If 0, we can hide or show "0 results".
     if(filteredReportData.length > 0) {
         summaryDiv.style.display = 'block';
-        let html = `<div style="background:#fff; padding:1rem; border-radius:0.5rem; border:1px solid #e2e8f0;"><div style="font-weight:700; font-size:1.25rem; color:var(--primary);">${filteredReportData.length}</div><div style="font-size:0.75rem; color:#64748b;">Total</div></div>`;
+        let html = `<div style="background:#fff; padding:1rem; border-radius:0.5rem; border:1px solid #e2e8f0; box-shadow:0 1px 2px rgba(0,0,0,0.05);">
+                        <div style="font-weight:700; font-size:1.5rem; color:var(--primary); line-height:1;">${filteredReportData.length}</div>
+                        <div style="font-size:0.75rem; color:#64748b; font-weight:600; text-transform:uppercase;">Total Records</div>
+                    </div>`;
         for(let t in counts) {
-            html += `<div style="background:#fff; padding:1rem; border-radius:0.5rem; border:1px solid #e2e8f0;"><div style="font-weight:700; font-size:1.25rem; color:#0f172a;">${counts[t]}</div><div style="font-size:0.75rem; color:#64748b;">${t}</div></div>`;
+            html += `<div style="background:#fff; padding:1rem; border-radius:0.5rem; border:1px solid #e2e8f0; box-shadow:0 1px 2px rgba(0,0,0,0.05);">
+                        <div style="font-weight:700; font-size:1.5rem; color:#0f172a; line-height:1;">${counts[t]}</div>
+                        <div style="font-size:0.75rem; color:#64748b; font-weight:500;">${t}</div>
+                     </div>`;
         }
         summaryDiv.querySelector('.grid').innerHTML = html;
     } else { 
@@ -739,7 +787,7 @@ function generateReport() {
     // Table Logic
     const tbody = document.querySelector('#report-table tbody');
     if(filteredReportData.length === 0) { 
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:2rem;">No records found for ' + yVal + '.</td></tr>'; 
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:3rem; color:#94a3b8;">No records found matching filters.</td></tr>'; 
         return; 
     }
     
@@ -747,29 +795,23 @@ function generateReport() {
         <tr>
             <td style="white-space:nowrap;">${r.date}</td>
             <td>${r.type}</td>
-            <td>${r.title}</td>
+            <td style="font-weight:500;">${r.title}</td>
             <td>${r.responsible}</td>
-            <td class="print-link-cell">
-                ${r.link ? `<a href="${r.link}" target="_blank" style="color:var(--primary); text-decoration:underline;">${r.link}</a>` : '-'}
+            <td class="print-link-cell" style="max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                ${r.link ? `<a href="${r.link}" target="_blank" style="color:var(--primary); text-decoration:none;">${r.link}</a>` : '-'}
             </td>
             <td>${r.remarks}</td>
         </tr>
     `).join('');
 }
 
-// 2. Event Listener calls the function
 document.getElementById('filter-report-btn').addEventListener('click', generateReport);
 
-// PRINT BUTTON EVENT LISTENERS
-document.getElementById('print-dashboard-btn').addEventListener('click', () => {
-    window.print();
-});
-document.getElementById('print-report-btn').addEventListener('click', () => {
-    window.print();
-});
+document.getElementById('print-dashboard-btn').addEventListener('click', () => window.print());
+document.getElementById('print-report-btn').addEventListener('click', () => window.print());
 
 document.getElementById('export-report-btn').addEventListener('click', () => {
-    if(filteredReportData.length === 0) return showToast('No data', 'error');
+    if(filteredReportData.length === 0) return showToast('No data to export', 'error');
     const ws = XLSX.utils.json_to_sheet(filteredReportData.map(r => ({ Date: r.date, Type: r.type, Title: r.title, Responsible: r.responsible, Link: r.link, Remarks: r.remarks })));
     const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Report"); XLSX.writeFile(wb, "Report_Export.xlsx");
 });
@@ -777,19 +819,16 @@ document.getElementById('export-report-btn').addEventListener('click', () => {
 function populateYearDropdowns() {
   const years = [...new Set(movsData.map(r => parseDate(r.sortDate || r.date).getFullYear()))].sort((a,b)=>b-a);
   const currentYear = new Date().getFullYear();
-  
-  // Ensure Current Year (2026) is always in the list, even if no data exists yet
-  if(!years.includes(currentYear)) {
-      years.unshift(currentYear);
-  }
+  if(!years.includes(currentYear)) years.unshift(currentYear);
 
   const ops = years.map(y => `<option value="${y}">${y}</option>`).join('');
   document.getElementById('chart-year-filter').innerHTML = ops;
   
-  // Set Report Year to Current Year (2026) by default
   const reportSel = document.getElementById('filter-report-year');
-  reportSel.innerHTML = ops;
-  reportSel.value = currentYear;
+  if(reportSel.innerHTML === '') {
+      reportSel.innerHTML = ops;
+      reportSel.value = currentYear;
+  }
 }
 
 function showToast(msg, type='success') {
@@ -802,29 +841,71 @@ document.querySelectorAll('.sidebar li').forEach(item => {
   item.addEventListener('click', () => {
     document.querySelectorAll('.sidebar li').forEach(i=>i.classList.remove('active')); item.classList.add('active');
     document.querySelectorAll('.section').forEach(s=>s.classList.remove('active')); document.getElementById(item.dataset.section).classList.add('active');
+    // Mobile: Close menu logic could go here if hamburger added
   });
 });
 
 document.getElementById('upload-excel').addEventListener('change', async (e) => {
     const file = e.target.files[0]; if(!file) return;
     try {
+        document.getElementById('loading-overlay').style.display = 'flex';
         const data = await file.arrayBuffer(); const workbook = XLSX.read(data, {type:'array'});
         const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
-        let count = 0; for(let r of json) {
-           await movsColl.add({ date: r.Date||new Date().toISOString().split('T')[0], type: r.Type||'IEC Videos', title: r.Title||'Imported', responsible: r.Responsible||'', link: r.Link||'', remarks: r.Remarks||'', sortDate: new Date(), createdAt: new Date() });
+        let count = 0; 
+        const batch = db.batch(); // Use batch for speed
+        
+        for(let r of json) {
+           const docRef = movsColl.doc();
+           batch.set(docRef, { 
+               date: r.Date||new Date().toISOString().split('T')[0], 
+               type: r.Type||'IEC Videos', 
+               title: r.Title||'Imported', 
+               responsible: r.Responsible||'', 
+               link: r.Link||'', 
+               remarks: r.Remarks||'', 
+               sortDate: new Date(), 
+               createdAt: new Date() 
+           });
            count++;
         }
-        showToast(`Imported ${count}`);
-    } catch(err) { showToast('Error', 'error'); }
+        await batch.commit();
+        showToast(`Successfully imported ${count} records`);
+    } catch(err) { 
+        showToast('Error importing file', 'error'); console.error(err); 
+    } finally {
+        document.getElementById('loading-overlay').style.display = 'none';
+        e.target.value = ''; // reset input
+    }
 });
+
 document.getElementById('deleteSelectedBtn').addEventListener('click', async () => {
   const checkboxes = document.querySelectorAll('.rowCheckbox:checked');
-  if(checkboxes.length === 0) return showToast('No items', 'error');
-  if(!confirm(`Delete ${checkboxes.length}?`)) return;
-  for(const cb of checkboxes) { await movsColl.doc(cb.closest('tr').dataset.id).delete(); }
-  showToast('Deleted'); document.getElementById('selectAll').checked = false;
+  if(checkboxes.length === 0) return showToast('No items selected', 'error');
+  if(!confirm(`Are you sure you want to delete ${checkboxes.length} records?`)) return;
+  
+  const batch = db.batch();
+  checkboxes.forEach(cb => { batch.delete(movsColl.doc(cb.closest('tr').dataset.id)); });
+  await batch.commit();
+  
+  showToast('Selected records deleted'); 
+  document.getElementById('selectAll').checked = false;
 });
-document.getElementById('selectAll').addEventListener('change', function() { document.querySelectorAll('.rowCheckbox').forEach(cb => cb.checked = this.checked); });
+
+document.getElementById('selectAll').addEventListener('change', function() { 
+    document.querySelectorAll('.rowCheckbox').forEach(cb => cb.checked = this.checked); 
+});
+
+let sortDirection = 1;
+window.sortTable = (col) => {
+    sortDirection *= -1;
+    // Simple frontend sort visual (data re-renders on updateApp anyway, so this is temporary visual sort)
+    // For robust app, better to query firestore or sort `movsData` array and re-render.
+    movsData.sort((a,b) => {
+        let valA = a[col], valB = b[col];
+        return (valA < valB ? -1 : 1) * sortDirection;
+    });
+    renderTable(movsData);
+}
 </script>
 </body>
 </html>
