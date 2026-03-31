@@ -122,8 +122,19 @@
     .chart-container { position: relative; height: 300px; width: 100%; }
 
     /* --- TABLES --- */
-    .table-wrapper { border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden; background: #fff; }
-    table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+    .table-wrapper { 
+      border-radius: var(--radius); 
+      border: 1px solid var(--border); 
+      overflow-x: auto; /* Allows horizontal scrolling */
+      -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+      background: #fff; 
+    }
+    table { 
+      width: 100%; 
+      border-collapse: collapse; 
+      font-size: 0.875rem; 
+      min-width: 700px; /* Prevents columns from shrinking too much before scrolling */
+    }
     thead { background: #f8fafc; border-bottom: 1px solid var(--border); }
     th { text-align: left; padding: 0.75rem 1rem; font-weight: 500; color: var(--muted-foreground); height: 2.5rem; }
     td { padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
@@ -135,6 +146,7 @@
     @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
 
     /* Responsive */
+   /* Responsive */
     @media(max-width: 1024px) { .charts-row { grid-template-columns: 1fr; } }
     @media(max-width: 768px) {
       body { flex-direction:column; overflow-y: auto; }
@@ -143,7 +155,28 @@
       .sidebar ul { display: flex; overflow-x: auto; padding: 0.5rem; }
       .content { padding: 1rem; }
       .stats-grid { grid-template-columns: 1fr; }
-    }
+      
+      /* --- NEW: Make MOVs and Reports headers responsive --- */
+      .section .flex.justify-between.items-center.mb-6 {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+      }
+      .section .flex.gap-2 {
+        width: 100%;
+        flex-direction: column;
+      }
+      /* Override the inline styles on your inputs/selects for mobile */
+      #movs-filter-type, #global-search, #filter-report-year, #filter-report-month, #filter-report-type {
+        width: 100% !important; 
+      }
+      .section .flex-wrap {
+        flex-direction: column;
+        align-items: flex-start !important;
+      }
+      .section .flex-wrap > div {
+        width: 100%;
+      }
 
     /* ========================================= */
     /* ===        PRINT STYLES (A4)          === */
