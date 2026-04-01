@@ -142,13 +142,22 @@
     th { text-align: left; padding: 0.75rem 1rem; font-weight: 500; color: var(--muted-foreground); height: 2.5rem; }
     
     /* Distribute column widths as percentages to keep it contained */
-    th:nth-child(1) { width: 5%; }  /* Checkbox */
-    th:nth-child(2) { width: 12%; } /* Date */
-    th:nth-child(3) { width: 15%; } /* Type */
-    th:nth-child(4) { width: 40%; } /* Title (Gets the largest share of space) */
-    th:nth-child(5) { width: 10%; } /* Responsible */
-    th:nth-child(6) { width: 8%; }  /* Link */
-    th:nth-child(7) { width: 10%; } /* Actions */
+   /* Distribute column widths specifically for the MOVs Table (7 columns) */
+    #movs-table th:nth-child(1) { width: 5%; }  /* Checkbox */
+    #movs-table th:nth-child(2) { width: 12%; } /* Date */
+    #movs-table th:nth-child(3) { width: 15%; } /* Type */
+    #movs-table th:nth-child(4) { width: 40%; } /* Title */
+    #movs-table th:nth-child(5) { width: 10%; } /* Responsible */
+    #movs-table th:nth-child(6) { width: 8%; }  /* Link */
+    #movs-table th:nth-child(7) { width: 10%; } /* Actions */
+
+    /* Distribute column widths specifically for the Reports Table (6 columns) */
+    #report-table th:nth-child(1) { width: 12%; } /* Date */
+    #report-table th:nth-child(2) { width: 15%; } /* Type */
+    #report-table th:nth-child(3) { width: 40%; } /* Title */
+    #report-table th:nth-child(4) { width: 10%; } /* Responsible */
+    #report-table th:nth-child(5) { width: 13%; } /* Link */
+    #report-table th:nth-child(6) { width: 10%; } /* Remarks */
 
     td { 
       padding: 0.75rem 1rem; 
@@ -166,7 +175,6 @@
     .toast { background: #1e293b; color: #fff; padding: 12px 16px; border-radius: 8px; margin-top: 8px; display: flex; align-items: center; gap: 12px; font-size: 0.875rem; animation: slideIn 0.3s; }
     @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
 
-    /* Responsive */
    /* Responsive */
     @media(max-width: 1024px) { .charts-row { grid-template-columns: 1fr; } }
     @media(max-width: 768px) {
@@ -198,7 +206,7 @@
       .section .flex-wrap > div {
         width: 100%;
       }
-
+    }
     /* ========================================= */
     /* ===        PRINT STYLES (A4)          === */
     /* ========================================= */
