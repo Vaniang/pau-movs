@@ -237,7 +237,50 @@
     th { text-align: left; padding: 0.78rem 0.9rem; font-weight: 600; color: var(--muted-foreground); white-space: nowrap; }
     th.sortable { cursor: pointer; user-select: none; }
     th.sortable:hover { color: var(--primary); }
-    td { padding: 0.78rem 0.9rem; border-bottom: 1px solid var(--border); vertical-align: top; overflow-wrap: anywhere; }
+    td {
+      padding: 0.78rem 0.9rem;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+      overflow-wrap: anywhere;
+      line-height: 1.45;
+    }
+
+    /* Justify descriptive table content for a cleaner, formal report layout. */
+    #movs-table td:nth-child(4),
+    #report-table td:nth-child(2),
+    #report-table td:nth-child(3),
+    #report-table td:nth-child(4),
+    #report-table td:nth-child(9) {
+      text-align: justify;
+      text-justify: inter-word;
+      hyphens: auto;
+    }
+
+    /* Keep dates, figures, links, selections and controls visually aligned. */
+    #movs-table th,
+    #report-table th,
+    #movs-table td:nth-child(1),
+    #movs-table td:nth-child(2),
+    #movs-table td:nth-child(3),
+    #movs-table td:nth-child(5),
+    #movs-table td:nth-child(6),
+    #movs-table td:nth-child(7),
+    #movs-table td:nth-child(8),
+    #movs-table td:nth-child(9),
+    #report-table td:nth-child(1),
+    #report-table td:nth-child(5),
+    #report-table td:nth-child(6),
+    #report-table td:nth-child(7),
+    #report-table td:nth-child(8),
+    .metric-value {
+      text-align: center;
+    }
+
+    #movs-table td:nth-child(4) .text-muted {
+      text-align: justify;
+      text-justify: inter-word;
+    }
+
     tbody tr:hover { background: #fbfdff; }
     .badge { display: inline-flex; align-items: center; gap: 0.3rem; border-radius: 9999px; padding: 0.18rem 0.62rem; font-size: 0.72rem; font-weight: 600; white-space: nowrap; }
     .edit-badge { background: #fff7ed; color: #c2410c; }
@@ -301,8 +344,31 @@
       #dashboard.active .card { border: 1px solid #000 !important; break-inside: avoid; margin-bottom: 0.8rem; }
       #reports.active > .mb-6, #reports.active .filter-bar { display: none !important; }
       table { min-width: 0 !important; width: 100% !important; table-layout: fixed; font-size: 8.5pt; }
-      th, td { border: 1px solid #000 !important; padding: 4px !important; color: #000 !important; word-break: break-word; }
-      th { background: #eee !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      th, td { border: 1px solid #000 !important; padding: 4px !important; color: #000 !important; word-break: break-word; line-height: 1.35; }
+      th { background: #eee !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; text-align: center !important; }
+      #movs-table td:nth-child(4),
+      #report-table td:nth-child(2),
+      #report-table td:nth-child(3),
+      #report-table td:nth-child(4),
+      #report-table td:nth-child(9) {
+        text-align: justify !important;
+        text-justify: inter-word;
+      }
+      #movs-table td:nth-child(1),
+      #movs-table td:nth-child(2),
+      #movs-table td:nth-child(3),
+      #movs-table td:nth-child(5),
+      #movs-table td:nth-child(6),
+      #movs-table td:nth-child(7),
+      #movs-table td:nth-child(8),
+      #movs-table td:nth-child(9),
+      #report-table td:nth-child(1),
+      #report-table td:nth-child(5),
+      #report-table td:nth-child(6),
+      #report-table td:nth-child(7),
+      #report-table td:nth-child(8) {
+        text-align: center !important;
+      }
       a { color: #000 !important; text-decoration: none !important; word-break: break-all; }
       .badge { border: 1px solid #000; color: #000 !important; background: #fff !important; }
       .chart-container { height: 240px; }
