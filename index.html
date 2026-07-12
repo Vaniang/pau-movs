@@ -573,7 +573,7 @@
 
         <div class="mb-6">
           <h1>Reports</h1>
-          <p class="text-muted">View real-time records and Facebook performance, generate filtered reports, export to Excel, or print an official copy.</p>
+          <p class="text-muted">View real-time records and Facebook performance, generate filtered reports, export to Excel, or print an official copy. Records are automatically arranged from newest to oldest.</p>
         </div>
 
         <div class="card mb-6">
@@ -1761,7 +1761,21 @@ function generateReport() {
         (month === 'all' || date.getMonth() === Number(month)) &&
         (type === 'all' || record.type === type);
     })
-    .sort((a, b) => (getRecordDate(a)?.getTime() || 0) - (getRecordDate(b)?.getTime() || 0));
+    .sort((a, b) => {
+      // Reports are displayed from the most recent MOV date to the oldest.
+      // When two records have the same MOV date, the record added most recently
+      // appears first.
+      const dateDifference =
+        (getRecordDate(b)?.getTime() || 0) -
+        (getRecordDate(a)?.getTime() || 0);
+
+      if (dateDifference !== 0) return dateDifference;
+
+      return (
+        (parseDate(b.createdAt)?.getTime() || 0) -
+        (parseDate(a.createdAt)?.getTime() || 0)
+      );
+    });
 
   renderReportSummary();
   renderReportTable();
