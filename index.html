@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#0b2f5b" />
-  <meta name="description" content="PAUMOVision — Public Affairs Unit Means of Verification Tracker" />
+  <meta name="description" content="PAUMOVision — Public Affairs Unit Means of Verification and Facebook Engagement Tracker" />
   <title>PAUMOVision | PAU Means of Verification Tracker</title>
 
   <link rel="icon" type="image/png" href="logo.png" />
@@ -225,12 +225,14 @@
 
     .charts-row { display: grid; grid-template-columns: 1fr 1.35fr; gap: 1.5rem; margin-bottom: 1.5rem; }
     .chart-container { position: relative; height: 310px; width: 100%; }
+    .engagement-note { margin-top: -0.8rem; margin-bottom: 1.5rem; padding: 0.8rem 1rem; border-left: 4px solid var(--gold); background: var(--gold-soft); border-radius: 0.45rem; font-size: 0.78rem; color: #6b5a24; }
+    .metric-value { font-variant-numeric: tabular-nums; font-weight: 600; white-space: nowrap; }
 
     .form-grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); }
     .form-wide { grid-column: span 2; }
 
     .table-wrapper { border-radius: var(--radius); border: 1px solid var(--border); overflow-x: auto; background: #fff; width: 100%; }
-    table { width: 100%; border-collapse: collapse; font-size: 0.84rem; min-width: 980px; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.84rem; min-width: 1220px; }
     thead { background: #f8fafc; border-bottom: 1px solid var(--border); }
     th { text-align: left; padding: 0.78rem 0.9rem; font-weight: 600; color: var(--muted-foreground); white-space: nowrap; }
     th.sortable { cursor: pointer; user-select: none; }
@@ -376,7 +378,7 @@
         <div class="section-header flex justify-between items-center mb-6">
           <div>
             <h1>Dashboard</h1>
-            <p class="text-muted">Monitor PAU outputs and Means of Verification by reporting year.</p>
+            <p class="text-muted">Monitor PAU outputs, Means of Verification, and Facebook engagement by reporting year.</p>
           </div>
           <div class="section-actions flex gap-2 items-center">
             <select id="dashboard-year-filter" aria-label="Dashboard reporting year" style="width: 120px;"></select>
@@ -387,6 +389,10 @@
         </div>
 
         <div id="stats-container" class="stats-grid"></div>
+        <div class="engagement-note">
+          <i class="fas fa-circle-info" aria-hidden="true"></i>
+          Cumulative Post Reach is the sum of the reach recorded for individual Facebook posts. It is not a unique count of people reached across the entire Page.
+        </div>
 
         <div class="charts-row">
           <div class="card">
@@ -403,6 +409,17 @@
             </div>
             <div class="chart-container"><canvas id="chartBar" aria-label="Monthly production trend chart" role="img"></canvas></div>
           </div>
+        </div>
+
+        <div class="card mb-6">
+          <div class="flex justify-between items-center mb-4 flex-wrap gap-3">
+            <div>
+              <h3 class="text-sm font-semibold">Monthly Facebook Performance</h3>
+              <p class="text-muted">Monthly totals of recorded reach, reactions, and shares.</p>
+            </div>
+            <span id="engagement-period-label" class="record-count"></span>
+          </div>
+          <div class="chart-container"><canvas id="chartEngagement" aria-label="Monthly Facebook engagement chart" role="img"></canvas></div>
         </div>
 
         <div class="card mb-6">
@@ -429,7 +446,7 @@
           <div class="flex justify-between items-center mb-4 flex-wrap gap-3">
             <div>
               <h3 id="form-title" class="text-sm font-semibold">Add New MOV Record</h3>
-              <p class="text-muted">All records refer to outputs already posted through the official Public Affairs Unit channel. Fields marked with an asterisk are required.</p>
+              <p class="text-muted">All records refer to outputs already posted through the official Public Affairs Unit Facebook page. Enter the latest available post insights. Fields marked with an asterisk are required.</p>
             </div>
             <span id="edit-indicator" class="badge edit-badge hidden">Editing existing record</span>
           </div>
@@ -454,6 +471,18 @@
             <div class="form-wide">
               <label for="input-link">MOV link</label>
               <input type="url" id="input-link" maxlength="1000" placeholder="https://..." />
+            </div>
+            <div>
+              <label for="input-reach">Reach</label>
+              <input type="number" id="input-reach" min="0" step="1" inputmode="numeric" value="0" placeholder="0" />
+            </div>
+            <div>
+              <label for="input-reactions">Reactions</label>
+              <input type="number" id="input-reactions" min="0" step="1" inputmode="numeric" value="0" placeholder="0" />
+            </div>
+            <div>
+              <label for="input-shares">Shares</label>
+              <input type="number" id="input-shares" min="0" step="1" inputmode="numeric" value="0" placeholder="0" />
             </div>
             <div class="form-wide">
               <label for="input-remarks">Remarks</label>
@@ -514,6 +543,9 @@
                   <th class="sortable" data-sort="date">Date <i class="fas fa-sort" aria-hidden="true"></i></th>
                   <th class="sortable" data-sort="type">Type <i class="fas fa-sort" aria-hidden="true"></i></th>
                   <th class="sortable" data-sort="title">Title / Details <i class="fas fa-sort" aria-hidden="true"></i></th>
+                  <th class="sortable" data-sort="reach">Reach <i class="fas fa-sort" aria-hidden="true"></i></th>
+                  <th class="sortable" data-sort="reactions">Reactions <i class="fas fa-sort" aria-hidden="true"></i></th>
+                  <th class="sortable" data-sort="shares">Shares <i class="fas fa-sort" aria-hidden="true"></i></th>
                   <th>Link</th>
                   <th>Actions</th>
                 </tr>
@@ -534,14 +566,14 @@
         <div class="print-report-header">
           <img src="logo.png" alt="PAUMOVision logo" />
           <p>Republic of the Philippines<br />Department of Education<br />Regional Office I<br />Public Affairs Unit</p>
-          <h2>PAUMOVision — Means of Verification Monitoring Report</h2>
+          <h2>PAUMOVision — MOV and Facebook Engagement Monitoring Report</h2>
           <p id="print-report-period"></p>
           <p id="print-generated-at"></p>
         </div>
 
         <div class="mb-6">
           <h1>Reports</h1>
-          <p class="text-muted">View real-time records, generate filtered reports, export to Excel, or print an official copy.</p>
+          <p class="text-muted">View real-time records and Facebook performance, generate filtered reports, export to Excel, or print an official copy.</p>
         </div>
 
         <div class="card mb-6">
@@ -577,7 +609,7 @@
         <div id="report-summary-area" class="card mb-6 hidden" style="background:var(--primary-soft); border-color:var(--primary-border);">
           <div class="flex items-center gap-2 mb-4">
             <i class="fas fa-chart-column" style="color:var(--primary);" aria-hidden="true"></i>
-            <h3 class="font-bold" style="color:var(--primary);">Report Summary</h3>
+            <h3 class="font-bold" style="color:var(--primary);">Output and Engagement Summary</h3>
           </div>
           <div id="report-summary-grid" class="grid" style="grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:1rem;text-align:center;"></div>
         </div>
@@ -591,12 +623,15 @@
                   <th>Type</th>
                   <th>Activity / Program</th>
                   <th>Title / Details</th>
+                  <th>Reach</th>
+                  <th>Reactions</th>
+                  <th>Shares</th>
                   <th>Link</th>
                   <th>Remarks</th>
                 </tr>
               </thead>
               <tbody>
-                <tr><td colspan="6" class="empty-state">Apply filters to generate the report.</td></tr>
+                <tr><td colspan="9" class="empty-state">Apply filters to generate the report.</td></tr>
               </tbody>
             </table>
           </div>
@@ -684,6 +719,7 @@ let archivedData = [];
 let editingId = null;
 let chartDonutInstance = null;
 let chartBarInstance = null;
+let chartEngagementInstance = null;
 let filteredReportData = [];
 let currentSort = { field: 'date', direction: 'desc' };
 let isSaving = false;
@@ -721,6 +757,12 @@ function createCell(text = '') {
   return td;
 }
 
+function createMetricCell(value) {
+  const td = createCell(formatMetric(value));
+  td.className = 'metric-value';
+  return td;
+}
+
 function createBadge(text, className = '') {
   const span = document.createElement('span');
   span.className = `badge ${className}`.trim();
@@ -750,6 +792,33 @@ function normalizeText(value) {
 
 function safeLower(value) {
   return normalizeText(value).toLowerCase();
+}
+
+const NUMBER_FORMATTER = new Intl.NumberFormat('en-PH');
+
+function parseMetricValue(value) {
+  if (value === null || value === undefined || normalizeText(value) === '') return 0;
+  const number = Number(String(value).replaceAll(',', '').trim());
+  return Number.isInteger(number) && number >= 0 ? number : null;
+}
+
+function getMetric(record, field) {
+  const value = parseMetricValue(record?.[field]);
+  return value === null ? 0 : value;
+}
+
+function formatMetric(value) {
+  const number = parseMetricValue(value);
+  return NUMBER_FORMATTER.format(number === null ? 0 : number);
+}
+
+function calculateEngagementTotals(records) {
+  return records.reduce((totals, record) => {
+    totals.reach += getMetric(record, 'reach');
+    totals.reactions += getMetric(record, 'reactions');
+    totals.shares += getMetric(record, 'shares');
+    return totals;
+  }, { reach: 0, reactions: 0, shares: 0 });
 }
 
 function getSafeUrl(value) {
@@ -1015,18 +1084,28 @@ function renderStatsCards() {
   records.forEach(record => {
     if (Object.hasOwn(counts, record.type)) counts[record.type] += 1;
   });
+  const totals = calculateEngagementTotals(records);
 
   const container = $('stats-container');
   container.replaceChildren();
 
-  const totalCard = document.createElement('div');
-  totalCard.className = 'stat-card variant-gold';
-  totalCard.innerHTML = `
-    <div class="stat-header">
-      <div><div class="stat-title">Total MOV Records</div><div class="stat-value">${records.length}</div></div>
-      <div class="icon-box"><i class="fas fa-folder-tree" aria-hidden="true"></i></div>
-    </div>`;
-  container.appendChild(totalCard);
+  const summaryCards = [
+    { label: 'Total MOV Records', value: records.length, icon: 'fa-folder-tree', variant: 'variant-gold' },
+    { label: 'Cumulative Post Reach', value: formatMetric(totals.reach), icon: 'fa-eye', variant: 'variant-primary' },
+    { label: 'Total Reactions', value: formatMetric(totals.reactions), icon: 'fa-heart', variant: 'variant-rose' },
+    { label: 'Total Shares', value: formatMetric(totals.shares), icon: 'fa-share-nodes', variant: 'variant-success' }
+  ];
+
+  summaryCards.forEach(summary => {
+    const card = document.createElement('div');
+    card.className = `stat-card ${summary.variant}`;
+    card.innerHTML = `
+      <div class="stat-header">
+        <div><div class="stat-title">${summary.label}</div><div class="stat-value">${summary.value}</div></div>
+        <div class="icon-box"><i class="fas ${summary.icon}" aria-hidden="true"></i></div>
+      </div>`;
+    container.appendChild(card);
+  });
 
   TYPES.forEach(type => {
     const config = CONFIG[type];
@@ -1099,26 +1178,69 @@ function updateCharts() {
       plugins: { legend: { position: 'bottom', labels: { boxWidth: 14, usePointStyle: true } } }
     }
   });
+
+  const monthlyEngagement = Array.from({ length: 12 }, () => ({ reach: 0, reactions: 0, shares: 0 }));
+  records.forEach(record => {
+    const date = getRecordDate(record);
+    if (!date) return;
+    const month = monthlyEngagement[date.getMonth()];
+    month.reach += getMetric(record, 'reach');
+    month.reactions += getMetric(record, 'reactions');
+    month.shares += getMetric(record, 'shares');
+  });
+
+  $('engagement-period-label').textContent = `Year ${selectedYear}`;
+  if (chartEngagementInstance) chartEngagementInstance.destroy();
+  chartEngagementInstance = new Chart($('chartEngagement').getContext('2d'), {
+    type: 'line',
+    data: {
+      labels: MONTH_NAMES.map(month => month.slice(0, 3)),
+      datasets: [
+        { label: 'Reach', data: monthlyEngagement.map(month => month.reach), borderColor: '#0b2f5b', backgroundColor: 'rgba(11,47,91,0.10)', yAxisID: 'yReach', tension: 0.3, fill: true },
+        { label: 'Reactions', data: monthlyEngagement.map(month => month.reactions), borderColor: '#e11d48', backgroundColor: 'rgba(225,29,72,0.08)', yAxisID: 'yEngagement', tension: 0.3 },
+        { label: 'Shares', data: monthlyEngagement.map(month => month.shares), borderColor: '#059669', backgroundColor: 'rgba(5,150,105,0.08)', yAxisID: 'yEngagement', tension: 0.3 }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      scales: {
+        x: { grid: { display: false } },
+        yReach: { type: 'linear', position: 'left', beginAtZero: true, ticks: { callback: value => NUMBER_FORMATTER.format(value) }, title: { display: true, text: 'Reach' } },
+        yEngagement: { type: 'linear', position: 'right', beginAtZero: true, grid: { drawOnChartArea: false }, ticks: { precision: 0, callback: value => NUMBER_FORMATTER.format(value) }, title: { display: true, text: 'Reactions / Shares' } }
+      },
+      plugins: {
+        legend: { position: 'bottom', labels: { boxWidth: 14, usePointStyle: true } },
+        tooltip: { callbacks: { label: context => `${context.dataset.label}: ${formatMetric(context.raw)}` } }
+      }
+    }
+  });
 }
 
 function renderQuarterlyTable() {
   const records = getDashboardRecords();
   const quarterFilter = $('q-summary-filter').value;
   const counts = Object.fromEntries([1,2,3,4].map(q => [q, Object.fromEntries(TYPES.map(type => [type, 0]))]));
+  const metrics = Object.fromEntries([1,2,3,4].map(q => [q, { reach: 0, reactions: 0, shares: 0 }]));
 
   records.forEach(record => {
     const date = getRecordDate(record);
     if (!date || !counts[Math.floor(date.getMonth() / 3) + 1] || !Object.hasOwn(counts[1], record.type)) return;
-    counts[Math.floor(date.getMonth() / 3) + 1][record.type] += 1;
+    const quarter = Math.floor(date.getMonth() / 3) + 1;
+    counts[quarter][record.type] += 1;
+    metrics[quarter].reach += getMetric(record, 'reach');
+    metrics[quarter].reactions += getMetric(record, 'reactions');
+    metrics[quarter].shares += getMetric(record, 'shares');
   });
 
   const wrapper = document.createElement('div');
   wrapper.className = 'table-wrapper';
   const table = document.createElement('table');
-  table.style.minWidth = '900px';
+  table.style.minWidth = '1280px';
   const thead = document.createElement('thead');
   const headRow = document.createElement('tr');
-  ['Quarter', ...TYPES, 'Total'].forEach(label => {
+  ['Quarter', ...TYPES, 'Total MOVs', 'Cumulative Reach', 'Reactions', 'Shares'].forEach(label => {
     const th = document.createElement('th');
     th.textContent = label;
     headRow.appendChild(th);
@@ -1141,6 +1263,9 @@ function renderQuarterlyTable() {
     const totalCell = createCell(total);
     totalCell.style.fontWeight = '700';
     row.appendChild(totalCell);
+    row.appendChild(createCell(formatMetric(metrics[quarter].reach)));
+    row.appendChild(createCell(formatMetric(metrics[quarter].reactions)));
+    row.appendChild(createCell(formatMetric(metrics[quarter].shares)));
     tbody.appendChild(row);
   });
 
@@ -1166,6 +1291,9 @@ function readFormRecord() {
     activity: normalizeText($('input-activity').value),
     title: normalizeText($('input-title').value),
     link: normalizeText($('input-link').value),
+    reach: parseMetricValue($('input-reach').value),
+    reactions: parseMetricValue($('input-reactions').value),
+    shares: parseMetricValue($('input-shares').value),
     remarks: normalizeText($('input-remarks').value)
   };
 }
@@ -1200,6 +1328,13 @@ function validateRecord(record) {
     $('input-link').classList.add('field-error');
   }
 
+  [['input-reach', record.reach, 'Reach'], ['input-reactions', record.reactions, 'Reactions'], ['input-shares', record.shares, 'Shares']].forEach(([id, value, label]) => {
+    if (value === null) {
+      errors.push(`${label} must be a whole number of zero or higher.`);
+      $(id).classList.add('field-error');
+    }
+  });
+
   return errors;
 }
 
@@ -1225,6 +1360,7 @@ async function saveRecord() {
     link: safeLink,
     sortDate: firebase.firestore.Timestamp.fromDate(date),
     archived: false,
+    metricsUpdatedAt: firebase.firestore.FieldValue.serverTimestamp(),
     updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
     updatedBy: currentUser.uid,
     updatedByName: currentDisplayName()
@@ -1268,6 +1404,9 @@ function resetForm() {
   $('input-activity').value = '';
   $('input-title').value = '';
   $('input-link').value = '';
+  $('input-reach').value = '0';
+  $('input-reactions').value = '0';
+  $('input-shares').value = '0';
   $('input-remarks').value = '';
   document.querySelectorAll('.field-error').forEach(element => element.classList.remove('field-error'));
   editingId = null;
@@ -1287,6 +1426,9 @@ function editItem(id) {
   $('input-activity').value = normalizeText(record.activity);
   $('input-title').value = normalizeText(record.title);
   $('input-link').value = normalizeText(record.link);
+  $('input-reach').value = String(getMetric(record, 'reach'));
+  $('input-reactions').value = String(getMetric(record, 'reactions'));
+  $('input-shares').value = String(getMetric(record, 'shares'));
   $('input-remarks').value = normalizeText(record.remarks);
 
   editingId = id;
@@ -1396,6 +1538,9 @@ function sortRecords(records, field, direction) {
     if (field === 'date') {
       valueA = getRecordDate(a)?.getTime() || 0;
       valueB = getRecordDate(b)?.getTime() || 0;
+    } else if (['reach', 'reactions', 'shares'].includes(field)) {
+      valueA = getMetric(a, field);
+      valueB = getMetric(b, field);
     } else {
       valueA = safeLower(a[field]);
       valueB = safeLower(b[field]);
@@ -1418,7 +1563,7 @@ function renderMovsTable() {
   if (!records.length) {
     const row = document.createElement('tr');
     const cell = document.createElement('td');
-    cell.colSpan = 6;
+    cell.colSpan = 9;
     cell.className = 'empty-state';
     cell.textContent = scope === 'archived' ? 'No archived records matched the selected filters.' : 'No active records matched the selected filters.';
     row.appendChild(cell);
@@ -1495,6 +1640,9 @@ function renderMovsTable() {
       createCell(formatDisplayDate(record.date || record.sortDate)),
       typeCell,
       titleCell,
+      createMetricCell(record.reach),
+      createMetricCell(record.reactions),
+      createMetricCell(record.shares),
       linkCell,
       actionsCell
     );
@@ -1636,7 +1784,14 @@ function renderReportSummary() {
     if (Object.hasOwn(counts, record.type)) counts[record.type] += 1;
   });
 
-  const cards = [['Total Records', filteredReportData.length], ...TYPES.filter(type => counts[type] > 0).map(type => [type, counts[type]])];
+  const totals = calculateEngagementTotals(filteredReportData);
+  const cards = [
+    ['Total Records', filteredReportData.length],
+    ['Cumulative Post Reach', formatMetric(totals.reach)],
+    ['Total Reactions', formatMetric(totals.reactions)],
+    ['Total Shares', formatMetric(totals.shares)],
+    ...TYPES.filter(type => counts[type] > 0).map(type => [type, counts[type]])
+  ];
   cards.forEach(([label, value]) => {
     const card = document.createElement('div');
     card.style.cssText = 'background:#fff;padding:1rem;border-radius:.55rem;border:1px solid #dbe4ef;';
@@ -1658,7 +1813,7 @@ function renderReportTable() {
   if (!filteredReportData.length) {
     const row = document.createElement('tr');
     const cell = document.createElement('td');
-    cell.colSpan = 6;
+    cell.colSpan = 9;
     cell.className = 'empty-state';
     cell.textContent = 'No records were found for the selected reporting filters.';
     row.appendChild(cell);
@@ -1686,6 +1841,9 @@ function renderReportTable() {
       createCell(record.type || '-'),
       createCell(record.activity || '-'),
       createCell(record.title || '-'),
+      createMetricCell(record.reach),
+      createMetricCell(record.reactions),
+      createMetricCell(record.shares),
       linkCell,
       createCell(record.remarks || '-')
     );
@@ -1722,6 +1880,9 @@ function exportReport() {
     'Output Type': record.type || '',
     'Activity / Program / KRA': record.activity || '',
     'Title / Details': record.title || '',
+    Reach: getMetric(record, 'reach'),
+    Reactions: getMetric(record, 'reactions'),
+    Shares: getMetric(record, 'shares'),
     'MOV Link': record.link || '',
     Remarks: record.remarks || ''
   }));
@@ -1729,7 +1890,7 @@ function exportReport() {
   const worksheet = XLSX.utils.json_to_sheet(rows);
   worksheet['!cols'] = [
     { wch: 13 }, { wch: 23 }, { wch: 30 }, { wch: 45 },
-    { wch: 45 }, { wch: 35 }
+    { wch: 14 }, { wch: 14 }, { wch: 14 }, { wch: 45 }, { wch: 35 }
   ];
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, worksheet, 'MOV Report');
@@ -1772,6 +1933,9 @@ async function importExcel(event) {
       const title = normalizeText(row.Title ?? row['Title / Details'] ?? row.title);
       const linkValue = normalizeText(row.Link ?? row['MOV Link'] ?? row.link);
       const safeLink = linkValue ? getSafeUrl(linkValue) : '';
+      const reach = parseMetricValue(row.Reach ?? row['Post Reach'] ?? row['Facebook Reach'] ?? 0);
+      const reactions = parseMetricValue(row.Reactions ?? row.Reaction ?? row['Total Reactions'] ?? 0);
+      const shares = parseMetricValue(row.Shares ?? row.Share ?? row['Total Shares'] ?? 0);
       const rowNumber = index + 2;
       const reasons = [];
 
@@ -1779,6 +1943,9 @@ async function importExcel(event) {
       if (!TYPES.includes(type)) reasons.push('Invalid Output Type');
       if (!title) reasons.push('Missing Title');
       if (linkValue && !safeLink) reasons.push('Invalid MOV Link');
+      if (reach === null) reasons.push('Reach must be a non-negative whole number');
+      if (reactions === null) reasons.push('Reactions must be a non-negative whole number');
+      if (shares === null) reasons.push('Shares must be a non-negative whole number');
 
       const isoDate = dateToISO(date);
       const duplicateKey = `${isoDate}|${safeLower(type)}|${safeLower(title)}`;
@@ -1795,9 +1962,13 @@ async function importExcel(event) {
         type,
         title,
         activity: normalizeText(row.Activity ?? row['Activity / Program / KRA'] ?? ''),
+        reach,
+        reactions,
+        shares,
         link: safeLink,
         remarks: normalizeText(row.Remarks ?? row.remarks ?? ''),
         sortDate: firebase.firestore.Timestamp.fromDate(date),
+        metricsUpdatedAt: firebase.firestore.FieldValue.serverTimestamp(),
         archived: false
       });
     });
