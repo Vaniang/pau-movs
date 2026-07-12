@@ -238,10 +238,7 @@
     td { padding: 0.78rem 0.9rem; border-bottom: 1px solid var(--border); vertical-align: top; overflow-wrap: anywhere; }
     tbody tr:hover { background: #fbfdff; }
     .badge { display: inline-flex; align-items: center; gap: 0.3rem; border-radius: 9999px; padding: 0.18rem 0.62rem; font-size: 0.72rem; font-weight: 600; white-space: nowrap; }
-    .status-draft { background: #f1f5f9; color: #475569; }
-    .status-review { background: #fff7ed; color: #c2410c; }
-    .status-verified { background: #ecfdf5; color: #047857; }
-    .status-revision { background: #fef2f2; color: #b91c1c; }
+    .edit-badge { background: #fff7ed; color: #c2410c; }
     .empty-state { text-align: center; padding: 2.25rem !important; color: #94a3b8; }
 
     .filter-bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(155px, 1fr)); gap: 0.75rem; align-items: end; }
@@ -432,9 +429,9 @@
           <div class="flex justify-between items-center mb-4 flex-wrap gap-3">
             <div>
               <h3 id="form-title" class="text-sm font-semibold">Add New MOV Record</h3>
-              <p class="text-muted">Fields marked with an asterisk are required.</p>
+              <p class="text-muted">All records refer to outputs already posted through the official Public Affairs Unit channel. Fields marked with an asterisk are required.</p>
             </div>
-            <span id="edit-indicator" class="badge status-review hidden">Editing existing record</span>
+            <span id="edit-indicator" class="badge edit-badge hidden">Editing existing record</span>
           </div>
 
           <div class="form-grid">
@@ -446,28 +443,6 @@
               <label for="input-type">Output type *</label>
               <select id="input-type"></select>
             </div>
-            <div>
-              <label for="input-platform">Platform</label>
-              <select id="input-platform">
-                <option value="">Not specified</option>
-                <option value="Facebook">Facebook</option>
-                <option value="Website">Website</option>
-                <option value="YouTube">YouTube</option>
-                <option value="Print">Print</option>
-                <option value="Internal Distribution">Internal Distribution</option>
-                <option value="Multiple Platforms">Multiple Platforms</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
-            <div>
-              <label for="input-status">Verification status *</label>
-              <select id="input-status">
-                <option value="Draft">Draft</option>
-                <option value="For Review">For Review</option>
-                <option value="Verified">Verified</option>
-                <option value="Needs Revision">Needs Revision</option>
-              </select>
-            </div>
             <div class="form-wide">
               <label for="input-activity">Activity / Program / KRA</label>
               <input type="text" id="input-activity" maxlength="180" placeholder="Related activity, program, target, or performance indicator" />
@@ -476,17 +451,13 @@
               <label for="input-title">Title / Details *</label>
               <input type="text" id="input-title" maxlength="300" placeholder="Enter the title or description of the output" />
             </div>
-            <div>
-              <label for="input-responsible">Responsible personnel *</label>
-              <input type="text" id="input-responsible" maxlength="120" placeholder="Name of assigned personnel" />
-            </div>
-            <div>
+            <div class="form-wide">
               <label for="input-link">MOV link</label>
               <input type="url" id="input-link" maxlength="1000" placeholder="https://..." />
             </div>
             <div class="form-wide">
               <label for="input-remarks">Remarks</label>
-              <textarea id="input-remarks" maxlength="600" placeholder="Optional notes, verification comments, or follow-up action"></textarea>
+              <textarea id="input-remarks" maxlength="600" placeholder="Optional notes or additional information"></textarea>
             </div>
           </div>
 
@@ -507,7 +478,7 @@
         <div class="section-header flex justify-between items-center mb-6">
           <div>
             <h1>MOV Records</h1>
-            <p class="text-muted">Administrator workspace for reviewing, editing, archiving, and restoring records.</p>
+            <p class="text-muted">Administrator workspace for managing, editing, archiving, and restoring records.</p>
           </div>
           <div class="section-actions flex gap-2">
             <span id="mov-record-count" class="record-count items-center flex"></span>
@@ -520,16 +491,6 @@
               <label for="movs-filter-type">Output type</label>
               <select id="movs-filter-type"></select>
             </div>
-            <div>
-              <label for="movs-filter-status">Verification status</label>
-              <select id="movs-filter-status">
-                <option value="all">All Statuses</option>
-                <option value="Draft">Draft</option>
-                <option value="For Review">For Review</option>
-                <option value="Verified">Verified</option>
-                <option value="Needs Revision">Needs Revision</option>
-              </select>
-            </div>
             <div id="record-scope-wrap">
               <label for="record-scope">Record scope</label>
               <select id="record-scope">
@@ -539,7 +500,7 @@
             </div>
             <div>
               <label for="global-search">Search</label>
-              <input type="search" id="global-search" placeholder="Title, activity, personnel, platform..." />
+              <input type="search" id="global-search" placeholder="Title, activity, output type, remarks..." />
             </div>
           </div>
         </div>
@@ -553,8 +514,6 @@
                   <th class="sortable" data-sort="date">Date <i class="fas fa-sort" aria-hidden="true"></i></th>
                   <th class="sortable" data-sort="type">Type <i class="fas fa-sort" aria-hidden="true"></i></th>
                   <th class="sortable" data-sort="title">Title / Details <i class="fas fa-sort" aria-hidden="true"></i></th>
-                  <th class="sortable" data-sort="responsible">Responsible <i class="fas fa-sort" aria-hidden="true"></i></th>
-                  <th class="sortable" data-sort="status">Status <i class="fas fa-sort" aria-hidden="true"></i></th>
                   <th>Link</th>
                   <th>Actions</th>
                 </tr>
@@ -607,16 +566,6 @@
               <label for="filter-report-type">Output type</label>
               <select id="filter-report-type"></select>
             </div>
-            <div>
-              <label for="filter-report-status">Verification status</label>
-              <select id="filter-report-status">
-                <option value="all">All Statuses</option>
-                <option value="Draft">Draft</option>
-                <option value="For Review">For Review</option>
-                <option value="Verified">Verified</option>
-                <option value="Needs Revision">Needs Revision</option>
-              </select>
-            </div>
             <div class="filter-actions">
               <button id="filter-report-btn" class="btn btn-default h-9" type="button">Apply</button>
               <button id="export-report-btn" class="btn btn-outline h-9" type="button"><i class="fas fa-file-arrow-down" aria-hidden="true"></i> Export</button>
@@ -642,15 +591,12 @@
                   <th>Type</th>
                   <th>Activity / Program</th>
                   <th>Title / Details</th>
-                  <th>Responsible</th>
-                  <th>Status</th>
-                  <th>Platform</th>
                   <th>Link</th>
                   <th>Remarks</th>
                 </tr>
               </thead>
               <tbody>
-                <tr><td colspan="9" class="empty-state">Apply filters to generate the report.</td></tr>
+                <tr><td colspan="6" class="empty-state">Apply filters to generate the report.</td></tr>
               </tbody>
             </table>
           </div>
@@ -658,7 +604,7 @@
 
         <div class="signature-grid">
           <div><div class="signature-line">Prepared by</div></div>
-          <div><div class="signature-line">Reviewed / Verified by</div></div>
+          <div><div class="signature-line">Reviewed by</div></div>
         </div>
       </section>
     </main>
@@ -707,18 +653,11 @@ const CONFIG = {
 };
 
 const TYPES = Object.keys(CONFIG);
-const STATUS_CLASSES = {
-  'Draft': 'status-draft',
-  'For Review': 'status-review',
-  'Verified': 'status-verified',
-  'Needs Revision': 'status-revision'
-};
-const VALID_STATUSES = Object.keys(STATUS_CLASSES);
 const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
 const ROLE_PERMISSIONS = {
   // The ADAS I serves as both Administrator and PAU Encoder.
-  admin: ['read', 'create', 'edit', 'verify', 'archive', 'restore', 'delete', 'import', 'export', 'print'],
+  admin: ['read', 'create', 'edit', 'archive', 'restore', 'delete', 'import', 'export', 'print'],
 
   // The official PAU account and any approved management account are read-only.
   viewer: ['read', 'export', 'print']
@@ -1224,11 +1163,8 @@ function readFormRecord() {
   return {
     date: normalizeText($('input-date').value),
     type: normalizeText($('input-type').value),
-    platform: normalizeText($('input-platform').value),
-    status: normalizeText($('input-status').value),
     activity: normalizeText($('input-activity').value),
     title: normalizeText($('input-title').value),
-    responsible: normalizeText($('input-responsible').value),
     link: normalizeText($('input-link').value),
     remarks: normalizeText($('input-remarks').value)
   };
@@ -1241,9 +1177,7 @@ function validateRecord(record) {
   const required = [
     ['input-date', record.date, 'Date produced is required.'],
     ['input-type', record.type, 'Output type is required.'],
-    ['input-status', record.status, 'Verification status is required.'],
-    ['input-title', record.title, 'Title or details are required.'],
-    ['input-responsible', record.responsible, 'Responsible personnel is required.']
+    ['input-title', record.title, 'Title or details are required.']
   ];
 
   required.forEach(([id, value, message]) => {
@@ -1260,10 +1194,6 @@ function validateRecord(record) {
   if (record.type && !TYPES.includes(record.type)) {
     errors.push('Select a valid output type.');
     $('input-type').classList.add('field-error');
-  }
-  if (record.status && !VALID_STATUSES.includes(record.status)) {
-    errors.push('Select a valid verification status.');
-    $('input-status').classList.add('field-error');
   }
   if (record.link && !getSafeUrl(record.link)) {
     errors.push('MOV link must begin with http:// or https://.');
@@ -1300,16 +1230,6 @@ async function saveRecord() {
     updatedByName: currentDisplayName()
   };
 
-  if (record.status === 'Verified') {
-    if (!can('verify')) return showToast('Only the Administrator / PAU Encoder may verify MOV records.', 'error');
-    baseData.verifiedAt = firebase.firestore.FieldValue.serverTimestamp();
-    baseData.verifiedBy = currentUser.uid;
-    baseData.verifiedByName = currentDisplayName();
-  } else {
-    baseData.verifiedAt = null;
-    baseData.verifiedBy = null;
-    baseData.verifiedByName = '';
-  }
 
   isSaving = true;
   $('add-mov').disabled = true;
@@ -1345,11 +1265,8 @@ async function saveRecord() {
 function resetForm() {
   $('input-date').value = dateToISO(new Date());
   $('input-type').value = TYPES[0];
-  $('input-platform').value = '';
-  $('input-status').value = 'Draft';
   $('input-activity').value = '';
   $('input-title').value = '';
-  $('input-responsible').value = '';
   $('input-link').value = '';
   $('input-remarks').value = '';
   document.querySelectorAll('.field-error').forEach(element => element.classList.remove('field-error'));
@@ -1367,11 +1284,8 @@ function editItem(id) {
 
   $('input-date').value = record.date || dateToISO(getRecordDate(record)) || '';
   $('input-type').value = TYPES.includes(record.type) ? record.type : TYPES[0];
-  $('input-platform').value = normalizeText(record.platform);
-  $('input-status').value = VALID_STATUSES.includes(record.status) ? record.status : 'Draft';
   $('input-activity').value = normalizeText(record.activity);
   $('input-title').value = normalizeText(record.title);
-  $('input-responsible').value = normalizeText(record.responsible);
   $('input-link').value = normalizeText(record.link);
   $('input-remarks').value = normalizeText(record.remarks);
 
@@ -1462,13 +1376,12 @@ function getVisibleMovRecords() {
   const source = scope === 'archived' ? archivedData : movsData;
   const search = safeLower($('global-search').value);
   const type = $('movs-filter-type').value;
-  const status = $('movs-filter-status').value;
 
   const filtered = source.filter(record => {
-    const haystack = [record.title, record.activity, record.responsible, record.platform, record.type, record.status, record.remarks]
+    const haystack = [record.title, record.activity, record.type, record.remarks]
       .map(safeLower)
       .join(' ');
-    return (!search || haystack.includes(search)) && (type === 'all' || record.type === type) && (status === 'all' || (record.status || 'Draft') === status);
+    return (!search || haystack.includes(search)) && (type === 'all' || record.type === type);
   });
 
   return sortRecords(filtered, currentSort.field, currentSort.direction);
@@ -1505,7 +1418,7 @@ function renderMovsTable() {
   if (!records.length) {
     const row = document.createElement('tr');
     const cell = document.createElement('td');
-    cell.colSpan = 8;
+    cell.colSpan = 6;
     cell.className = 'empty-state';
     cell.textContent = scope === 'archived' ? 'No archived records matched the selected filters.' : 'No active records matched the selected filters.';
     row.appendChild(cell);
@@ -1547,9 +1460,6 @@ function renderMovsTable() {
       titleCell.appendChild(activity);
     }
 
-    const statusCell = document.createElement('td');
-    statusCell.appendChild(createBadge(record.status || 'Draft', STATUS_CLASSES[record.status] || STATUS_CLASSES.Draft));
-
     const linkCell = document.createElement('td');
     const safeUrl = getSafeUrl(record.link);
     if (safeUrl) {
@@ -1585,8 +1495,6 @@ function renderMovsTable() {
       createCell(formatDisplayDate(record.date || record.sortDate)),
       typeCell,
       titleCell,
-      createCell(record.responsible || '-'),
-      statusCell,
       linkCell,
       actionsCell
     );
@@ -1610,7 +1518,7 @@ function updateBulkActionButton() {
   }
 }
 
-['global-search', 'movs-filter-type', 'movs-filter-status', 'record-scope'].forEach(id => {
+['global-search', 'movs-filter-type', 'record-scope'].forEach(id => {
   $(id).addEventListener(id === 'global-search' ? 'input' : 'change', renderMovsTable);
 });
 
@@ -1696,7 +1604,6 @@ function generateReport() {
   const year = Number($('filter-report-year').value) || new Date().getFullYear();
   const month = $('filter-report-month').value;
   const type = $('filter-report-type').value;
-  const status = $('filter-report-status').value;
 
   filteredReportData = movsData
     .filter(record => {
@@ -1704,8 +1611,7 @@ function generateReport() {
       return date &&
         date.getFullYear() === year &&
         (month === 'all' || date.getMonth() === Number(month)) &&
-        (type === 'all' || record.type === type) &&
-        (status === 'all' || (record.status || 'Draft') === status);
+        (type === 'all' || record.type === type);
     })
     .sort((a, b) => (getRecordDate(a)?.getTime() || 0) - (getRecordDate(b)?.getTime() || 0));
 
@@ -1752,7 +1658,7 @@ function renderReportTable() {
   if (!filteredReportData.length) {
     const row = document.createElement('tr');
     const cell = document.createElement('td');
-    cell.colSpan = 9;
+    cell.colSpan = 6;
     cell.className = 'empty-state';
     cell.textContent = 'No records were found for the selected reporting filters.';
     row.appendChild(cell);
@@ -1762,9 +1668,6 @@ function renderReportTable() {
 
   filteredReportData.forEach(record => {
     const row = document.createElement('tr');
-    const statusCell = document.createElement('td');
-    statusCell.appendChild(createBadge(record.status || 'Draft', STATUS_CLASSES[record.status] || STATUS_CLASSES.Draft));
-
     const linkCell = document.createElement('td');
     const safeUrl = getSafeUrl(record.link);
     if (safeUrl) {
@@ -1783,9 +1686,6 @@ function renderReportTable() {
       createCell(record.type || '-'),
       createCell(record.activity || '-'),
       createCell(record.title || '-'),
-      createCell(record.responsible || '-'),
-      statusCell,
-      createCell(record.platform || '-'),
       linkCell,
       createCell(record.remarks || '-')
     );
@@ -1797,11 +1697,9 @@ function updatePrintMetadata() {
   const year = $('filter-report-year').value;
   const month = $('filter-report-month').value;
   const type = $('filter-report-type').value;
-  const status = $('filter-report-status').value;
   const monthLabel = month === 'all' ? 'All Months' : MONTH_NAMES[Number(month)];
   const typeLabel = type === 'all' ? 'All Output Types' : type;
-  const statusLabel = status === 'all' ? 'All Verification Statuses' : status;
-  $('print-report-period').textContent = `Reporting Period: ${monthLabel} ${year} | ${typeLabel} | ${statusLabel}`;
+  $('print-report-period').textContent = `Reporting Period: ${monthLabel} ${year} | ${typeLabel}`;
   $('print-generated-at').textContent = `Generated on ${new Intl.DateTimeFormat('en-PH', { dateStyle: 'long', timeStyle: 'short' }).format(new Date())}`;
 }
 
@@ -1824,24 +1722,19 @@ function exportReport() {
     'Output Type': record.type || '',
     'Activity / Program / KRA': record.activity || '',
     'Title / Details': record.title || '',
-    'Responsible Personnel': record.responsible || '',
-    'Verification Status': record.status || 'Draft',
-    Platform: record.platform || '',
     'MOV Link': record.link || '',
-    Remarks: record.remarks || '',
-    'Created By': record.createdByName || '',
-    'Verified By': record.verifiedByName || ''
+    Remarks: record.remarks || ''
   }));
 
   const worksheet = XLSX.utils.json_to_sheet(rows);
   worksheet['!cols'] = [
-    { wch: 13 }, { wch: 23 }, { wch: 30 }, { wch: 45 }, { wch: 24 },
-    { wch: 19 }, { wch: 20 }, { wch: 45 }, { wch: 35 }, { wch: 24 }, { wch: 24 }
+    { wch: 13 }, { wch: 23 }, { wch: 30 }, { wch: 45 },
+    { wch: 45 }, { wch: 35 }
   ];
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, worksheet, 'MOV Report');
 
-  const fileName = `PAUMOVision_${$('filter-report-year').value}_${$('filter-report-month').value}_${$('filter-report-type').value}_${$('filter-report-status').value}`
+  const fileName = `PAUMOVision_${$('filter-report-year').value}_${$('filter-report-month').value}_${$('filter-report-type').value}`
     .replaceAll(' ', '_')
     .replaceAll('/', '-')
     .replaceAll('(', '')
@@ -1877,8 +1770,6 @@ async function importExcel(event) {
       const date = parseDate(row.Date ?? row.date);
       const type = normalizeText(row.Type ?? row['Output Type'] ?? row.type);
       const title = normalizeText(row.Title ?? row['Title / Details'] ?? row.title);
-      const responsible = normalizeText(row.Responsible ?? row['Responsible Personnel'] ?? row.responsible);
-      const status = normalizeText(row.Status ?? row['Verification Status'] ?? 'Draft') || 'Draft';
       const linkValue = normalizeText(row.Link ?? row['MOV Link'] ?? row.link);
       const safeLink = linkValue ? getSafeUrl(linkValue) : '';
       const rowNumber = index + 2;
@@ -1887,9 +1778,6 @@ async function importExcel(event) {
       if (!date) reasons.push('Invalid or missing Date');
       if (!TYPES.includes(type)) reasons.push('Invalid Output Type');
       if (!title) reasons.push('Missing Title');
-      if (!responsible) reasons.push('Missing Responsible Personnel');
-      if (!VALID_STATUSES.includes(status)) reasons.push('Invalid Verification Status');
-      if (status === 'Verified' && !can('verify')) reasons.push('Your role cannot import records as Verified');
       if (linkValue && !safeLink) reasons.push('Invalid MOV Link');
 
       const isoDate = dateToISO(date);
@@ -1906,10 +1794,7 @@ async function importExcel(event) {
         date: isoDate,
         type,
         title,
-        responsible,
         activity: normalizeText(row.Activity ?? row['Activity / Program / KRA'] ?? ''),
-        platform: normalizeText(row.Platform ?? ''),
-        status,
         link: safeLink,
         remarks: normalizeText(row.Remarks ?? row.remarks ?? ''),
         sortDate: firebase.firestore.Timestamp.fromDate(date),
@@ -1940,10 +1825,7 @@ async function importExcel(event) {
         createdByName: currentDisplayName(),
         updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
         updatedBy: currentUser.uid,
-        updatedByName: currentDisplayName(),
-        verifiedAt: record.status === 'Verified' ? firebase.firestore.FieldValue.serverTimestamp() : null,
-        verifiedBy: record.status === 'Verified' ? currentUser.uid : null,
-        verifiedByName: record.status === 'Verified' ? currentDisplayName() : ''
+        updatedByName: currentDisplayName()
       });
     });
 
