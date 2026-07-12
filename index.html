@@ -3,533 +3,680 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>PAUMOVision Dashboard</title>
+  <meta name="theme-color" content="#0b2f5b" />
+  <meta name="description" content="PAUMOVision — Public Affairs Unit Means of Verification Tracker" />
+  <title>PAUMOVision | PAU Means of Verification Tracker</title>
+
   <link rel="icon" type="image/png" href="logo.png" />
-   
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="manifest" href="manifest.json" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
   <style>
-    /* --- 1. DESIGN TOKENS --- */
     :root {
       --background: #ffffff;
-      --foreground: #020817;
+      --foreground: #0f172a;
       --card: #ffffff;
-      --primary: #3b82f6;       
+      --primary: #0b2f5b;
+      --primary-hover: #123f75;
       --primary-foreground: #ffffff;
-      --secondary: #f1f5f9;     
+      --gold: #d7a326;
+      --gold-soft: #fff8df;
+      --secondary: #f1f5f9;
       --secondary-foreground: #0f172a;
+      --accent: #eef4fb;
+      --accent-foreground: #0b2f5b;
       --muted: #f1f5f9;
       --muted-foreground: #64748b;
-      --destructive: #ef4444;
-      --destructive-foreground: #f8fafc;
+      --destructive: #dc2626;
+      --destructive-hover: #b91c1c;
+      --destructive-foreground: #ffffff;
+      --success: #059669;
+      --warning: #d97706;
+      --info: #0284c7;
       --border: #e2e8f0;
-      --input: #e2e8f0;
-      --radius: 0.5rem; 
+      --input: #cbd5e1;
+      --radius: 0.65rem;
 
-      /* Custom Colors */
-      --primary-soft: #eff6ff;   
-      --primary-border: #dbeafe; 
-      --success-soft: #ecfdf5;   
-      --warning-soft: #fffbeb;   
-      --info-soft: #f0f9ff;      
+      --primary-soft: #eef4fb;
+      --primary-border: #cbdcf0;
+      --success-soft: #ecfdf5;
+      --warning-soft: #fffbeb;
+      --info-soft: #f0f9ff;
       --purple-soft: #f5f3ff;
       --rose-soft: #fff1f2;
 
-      /* Sidebar */
-      --sidebar-bg: #0f172a;      
-      --sidebar-fg: #f8fafc;      
-      --sidebar-hover: #1e293b;    
-      --sidebar-active: #3b82f6;  
+      --sidebar-bg: #081f3a;
+      --sidebar-fg: #f8fafc;
+      --sidebar-hover: #123f75;
+      --sidebar-active: #d7a326;
     }
 
-    * { margin:0; padding:0; box-sizing:border-box; font-family:'Inter', sans-serif; }
-    body { display:flex; height:100vh; background:#f8fafc; color:var(--foreground); overflow: hidden; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: "Inter", sans-serif; }
+    html { min-height: 100%; }
+    body { min-height: 100vh; background: #f8fafc; color: var(--foreground); }
+    button, input, select, textarea { font: inherit; }
+    button { border: 0; }
+    a { color: inherit; }
 
-    /* --- LAYOUT & UTILS --- */
+    .hidden { display: none !important; }
     .flex { display: flex; }
+    .grid { display: grid; }
     .items-center { align-items: center; }
+    .items-end { align-items: flex-end; }
     .justify-between { justify-content: space-between; }
+    .justify-end { justify-content: flex-end; }
+    .flex-wrap { flex-wrap: wrap; }
     .gap-2 { gap: 0.5rem; }
+    .gap-3 { gap: 0.75rem; }
     .gap-4 { gap: 1rem; }
+    .mb-2 { margin-bottom: 0.5rem; }
     .mb-4 { margin-bottom: 1rem; }
     .mb-6 { margin-bottom: 1.5rem; }
+    .mt-4 { margin-top: 1rem; }
     .w-full { width: 100%; }
-    
-    /* --- BUTTONS --- */
-    .btn {
-      display: inline-flex; align-items: center; justify-content: center;
-      white-space: nowrap; border-radius: var(--radius);
-      font-size: 0.875rem; font-weight: 500; transition-colors: 0.2s;
-      cursor: pointer; border: 1px solid transparent; outline: none; gap: 0.5rem;
-    }
-    .btn:disabled { pointer-events: none; opacity: 0.5; }
-    .btn-default { background-color: var(--primary); color: var(--primary-foreground); }
-    .btn-default:hover { background-color: #2563eb; }
-    .btn-destructive { background-color: var(--destructive); color: var(--destructive-foreground); }
-    .btn-outline { border-color: var(--input); background-color: var(--background); color: var(--foreground); }
-    .btn-outline:hover { background-color: var(--accent); color: var(--accent-foreground); }
-    .btn-ghost { background-color: transparent; color: var(--foreground); }
-    .btn-ghost:hover { background-color: #f1f5f9; }
+    .text-sm { font-size: 0.875rem; }
+    .font-medium { font-weight: 500; }
+    .font-semibold { font-weight: 600; }
+    .font-bold { font-weight: 700; }
+    .text-muted { color: var(--muted-foreground); font-size: 0.875rem; }
 
+    .auth-screen {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 1.5rem;
+      background:
+        radial-gradient(circle at 15% 20%, rgba(215, 163, 38, 0.16), transparent 30%),
+        radial-gradient(circle at 85% 80%, rgba(11, 47, 91, 0.18), transparent 35%),
+        linear-gradient(135deg, #f8fafc, #eef4fb);
+    }
+    .auth-card {
+      width: min(440px, 100%);
+      background: rgba(255,255,255,0.96);
+      border: 1px solid rgba(203,220,240,0.9);
+      border-radius: 1rem;
+      padding: 2rem;
+      box-shadow: 0 22px 60px rgba(15, 23, 42, 0.13);
+    }
+    .auth-brand { text-align: center; margin-bottom: 1.5rem; }
+    .auth-brand img { width: 110px; height: 110px; object-fit: cover; border-radius: 1rem; margin-bottom: 0.8rem; }
+    .auth-brand h1 { font-size: 1.65rem; color: var(--primary); }
+    .auth-brand p { margin-top: 0.35rem; color: var(--muted-foreground); font-size: 0.875rem; }
+    .auth-error { min-height: 1.2rem; color: var(--destructive); font-size: 0.82rem; margin-top: 0.75rem; }
+
+    .app-shell { min-height: 100vh; display: flex; overflow: hidden; }
+
+    .sidebar {
+      width: 270px;
+      min-width: 270px;
+      height: 100vh;
+      background: linear-gradient(180deg, var(--sidebar-bg), #0b2f5b);
+      color: var(--sidebar-fg);
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid rgba(255,255,255,0.08);
+    }
+    .brand {
+      padding: 1.25rem;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+    }
+    .brand-logo { width: 48px; height: 48px; object-fit: cover; border-radius: 0.65rem; border: 1px solid rgba(255,255,255,0.25); }
+    .brand h2 { font-size: 1.1rem; color: #fff; line-height: 1.1; }
+    .brand p { font-size: 0.7rem; color: #cbd5e1; margin-top: 0.28rem; }
+    .nav-list { list-style: none; padding: 1rem 0.75rem; flex: 1; }
+    .nav-item {
+      width: 100%;
+      padding: 0.72rem 0.85rem;
+      margin-bottom: 0.3rem;
+      cursor: pointer;
+      border-radius: var(--radius);
+      color: #cbd5e1;
+      background: transparent;
+      font-size: 0.875rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      transition: 0.2s ease;
+      text-align: left;
+    }
+    .nav-item:hover { background: var(--sidebar-hover); color: #fff; }
+    .nav-item.active { background: var(--sidebar-active); color: #1f2937; }
+    .nav-item:focus-visible { outline: 3px solid rgba(255,255,255,0.45); outline-offset: 2px; }
+    .sidebar-user { padding: 1rem 1.1rem; border-top: 1px solid rgba(255,255,255,0.1); }
+    .sidebar-user .name { color: #fff; font-size: 0.83rem; font-weight: 600; overflow-wrap: anywhere; }
+    .sidebar-user .role { color: #cbd5e1; font-size: 0.72rem; margin-top: 0.25rem; text-transform: capitalize; }
+
+    .content { flex: 1; height: 100vh; overflow-y: auto; padding: 2rem; position: relative; }
+    h1 { font-size: 1.8rem; font-weight: 700; line-height: 1.2; color: var(--foreground); }
+    h3 { color: var(--foreground); }
+    .section { display: none; animation: fadeIn 0.25s ease-out; }
+    .section.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      white-space: nowrap;
+      border-radius: var(--radius);
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid transparent;
+      outline: none;
+      gap: 0.5rem;
+      transition: 0.2s ease;
+    }
+    .btn:disabled { pointer-events: none; opacity: 0.55; }
+    .btn:focus-visible { outline: 3px solid rgba(11,47,91,0.25); outline-offset: 2px; }
+    .btn-default { background: var(--primary); color: var(--primary-foreground); }
+    .btn-default:hover { background: var(--primary-hover); }
+    .btn-gold { background: var(--gold); color: #1f2937; }
+    .btn-gold:hover { background: #c8941f; }
+    .btn-destructive { background: var(--destructive); color: var(--destructive-foreground); }
+    .btn-destructive:hover { background: var(--destructive-hover); }
+    .btn-outline { border-color: var(--input); background: var(--background); color: var(--foreground); }
+    .btn-outline:hover { background: var(--accent); color: var(--accent-foreground); }
+    .btn-ghost { background: transparent; color: var(--foreground); }
+    .btn-ghost:hover { background: var(--secondary); }
     .h-10 { height: 2.5rem; padding: 0 1rem; }
-    .h-9  { height: 2.25rem; padding: 0 0.75rem; font-size: 0.8rem; }
-    .h-8  { height: 2rem; padding: 0 0.5rem; font-size: 0.75rem; }
+    .h-9 { height: 2.25rem; padding: 0 0.78rem; font-size: 0.8rem; }
+    .h-8 { height: 2rem; padding: 0 0.55rem; font-size: 0.75rem; }
     .h-icon { height: 2.25rem; width: 2.25rem; padding: 0; }
 
-    /* --- SIDEBAR --- */
-    .sidebar { width: 260px; background: var(--sidebar-bg); color: var(--sidebar-fg); display: flex; flex-direction: column; border-right: 1px solid #1e293b; }
-    .brand { padding: 1.5rem; border-bottom: 1px solid #1e293b; }
-    .brand h2 { font-size: 1.25rem; font-weight: 700; color: #fff; }
-    .brand p { font-size: 0.75rem; color: #94a3b8; margin-top: 4px; font-weight: 500; }
-    .sidebar ul { list-style:none; padding: 1rem 0.75rem; flex: 1; }
-    .sidebar li { padding: 0.65rem 0.85rem; margin-bottom: 4px; cursor:pointer; border-radius: var(--radius); color: #94a3b8; font-size: 0.875rem; font-weight: 500; display: flex; align-items: center; gap: 12px; transition: all 0.2s; }
-    .sidebar li:hover { background: var(--sidebar-hover); color: #fff; }
-    .sidebar li.active { background: var(--sidebar-active); color: #fff; }
+    label { display: block; margin-bottom: 0.38rem; font-size: 0.82rem; font-weight: 600; color: var(--foreground); }
+    input, select, textarea {
+      width: 100%;
+      border-radius: var(--radius);
+      border: 1px solid var(--input);
+      background: #fff;
+      padding: 0 0.75rem;
+      color: var(--foreground);
+      font-size: 0.875rem;
+      transition: 0.15s ease;
+    }
+    input, select { height: 2.4rem; }
+    textarea { min-height: 84px; padding-top: 0.65rem; resize: vertical; }
+    input:focus, select:focus, textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(11,47,91,0.1); }
+    input:focus-visible, select:focus-visible, textarea:focus-visible { outline: none; }
+    .field-error { border-color: var(--destructive) !important; }
 
-    /* --- CONTENT AREA --- */
-    .content { flex:1; padding: 2rem; overflow-y:auto; position: relative; }
-    h1 { font-size: 1.875rem; color: var(--foreground); font-weight: 700; line-height: 1.2; }
-    .text-muted { color: var(--muted-foreground); font-size: 0.875rem; }
-    .section { display:none; animation: fadeIn 0.3s ease-out; }
-    .section.active { display:block; }
-    @keyframes fadeIn { from { opacity:0; transform: translateY(4px); } to { opacity:1; transform: translateY(0); } }
-
-    /* --- INPUTS --- */
-    input, select { display: flex; height: 2.25rem; width: 100%; border-radius: var(--radius); border: 1px solid var(--input); background-color: transparent; padding: 0 0.75rem; font-size: 0.875rem; color: var(--foreground); }
-    input:focus, select:focus { outline: none; border-color: var(--primary); }
-    label { font-size: 0.875rem; font-weight: 500; margin-bottom: 0.375rem; display: block; color: var(--foreground); }
-
-    /* --- CARDS & STATS --- */
-    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
-    .stat-card { border-radius: var(--radius); padding: 1.25rem; background: #fff; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: 0 1px 3px rgba(15,23,42,0.06); padding: 1.5rem; }
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(205px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+    .stat-card { border: 1px solid transparent; border-radius: var(--radius); padding: 1.15rem; background: #fff; box-shadow: 0 1px 2px rgba(15,23,42,0.05); }
     .variant-primary { background: var(--primary-soft); border-color: var(--primary-border); } .variant-primary i { color: var(--primary); }
     .variant-success { background: var(--success-soft); border-color: #d1fae5; } .variant-success i { color: #10b981; }
     .variant-warning { background: var(--warning-soft); border-color: #fef3c7; } .variant-warning i { color: #f59e0b; }
     .variant-info { background: var(--info-soft); border-color: #e0f2fe; } .variant-info i { color: #0ea5e9; }
     .variant-purple { background: var(--purple-soft); border-color: #ede9fe; } .variant-purple i { color: #8b5cf6; }
     .variant-rose { background: var(--rose-soft); border-color: #ffe4e6; } .variant-rose i { color: #f43f5e; }
-    
-    .stat-header { display: flex; justify-content: space-between; align-items: flex-start; }
-    .stat-title { font-size: 0.875rem; font-weight: 500; color: #64748b; margin-bottom: 0.25rem; }
+    .variant-gold { background: var(--gold-soft); border-color: #f4dfa4; } .variant-gold i { color: var(--gold); }
+    .stat-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; }
+    .stat-title { font-size: 0.82rem; font-weight: 500; color: #64748b; margin-bottom: 0.25rem; }
     .stat-value { font-size: 1.5rem; font-weight: 700; color: var(--foreground); }
-    .icon-box { padding: 0.5rem; border-radius: 0.5rem; background: rgba(255,255,255,0.5); }
+    .icon-box { padding: 0.55rem; border-radius: 0.55rem; background: rgba(255,255,255,0.62); }
 
-    /* --- CHARTS & CONTAINERS --- */
-    .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); padding: 1.5rem; }
-    .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; }
-    .chart-container { position: relative; height: 300px; width: 100%; }
+    .charts-row { display: grid; grid-template-columns: 1fr 1.35fr; gap: 1.5rem; margin-bottom: 1.5rem; }
+    .chart-container { position: relative; height: 310px; width: 100%; }
 
-   /* --- TABLES --- */
-    .table-wrapper { 
-      border-radius: var(--radius); 
-      border: 1px solid var(--border); 
-      overflow-x: auto; /* Enables horizontal scrolling on tiny phone screens */
-      background: #fff; 
-      width: 100%;
-    }
-    
-    table { 
-      width: 100%; 
-      border-collapse: collapse; 
-      font-size: 0.875rem; 
-      table-layout: fixed; /* This is the magic property that forces it to fit the screen */
-      min-width: 800px; /* Prevents columns from crushing to an unreadable size on phones */
-    }
-    
+    .form-grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); }
+    .form-wide { grid-column: span 2; }
+
+    .table-wrapper { border-radius: var(--radius); border: 1px solid var(--border); overflow-x: auto; background: #fff; width: 100%; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.84rem; min-width: 980px; }
     thead { background: #f8fafc; border-bottom: 1px solid var(--border); }
-    th { text-align: left; padding: 0.75rem 1rem; font-weight: 500; color: var(--muted-foreground); height: 2.5rem; }
-    
-    /* Distribute column widths as percentages to keep it contained */
-   /* Distribute column widths specifically for the MOVs Table (7 columns) */
-    #movs-table th:nth-child(1) { width: 5%; }  /* Checkbox */
-    #movs-table th:nth-child(2) { width: 12%; } /* Date */
-    #movs-table th:nth-child(3) { width: 15%; } /* Type */
-    #movs-table th:nth-child(4) { width: 40%; } /* Title */
-    #movs-table th:nth-child(5) { width: 10%; } /* Responsible */
-    #movs-table th:nth-child(6) { width: 8%; }  /* Link */
-    #movs-table th:nth-child(7) { width: 10%; } /* Actions */
+    th { text-align: left; padding: 0.78rem 0.9rem; font-weight: 600; color: var(--muted-foreground); white-space: nowrap; }
+    th.sortable { cursor: pointer; user-select: none; }
+    th.sortable:hover { color: var(--primary); }
+    td { padding: 0.78rem 0.9rem; border-bottom: 1px solid var(--border); vertical-align: top; overflow-wrap: anywhere; }
+    tbody tr:hover { background: #fbfdff; }
+    .badge { display: inline-flex; align-items: center; gap: 0.3rem; border-radius: 9999px; padding: 0.18rem 0.62rem; font-size: 0.72rem; font-weight: 600; white-space: nowrap; }
+    .status-draft { background: #f1f5f9; color: #475569; }
+    .status-review { background: #fff7ed; color: #c2410c; }
+    .status-verified { background: #ecfdf5; color: #047857; }
+    .status-revision { background: #fef2f2; color: #b91c1c; }
+    .empty-state { text-align: center; padding: 2.25rem !important; color: #94a3b8; }
 
-    /* Distribute column widths specifically for the Reports Table (6 columns) */
-    #report-table th:nth-child(1) { width: 12%; } /* Date */
-    #report-table th:nth-child(2) { width: 15%; } /* Type */
-    #report-table th:nth-child(3) { width: 40%; } /* Title */
-    #report-table th:nth-child(4) { width: 10%; } /* Responsible */
-    #report-table th:nth-child(5) { width: 13%; } /* Link */
-    #report-table th:nth-child(6) { width: 10%; } /* Remarks */
+    .filter-bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(155px, 1fr)); gap: 0.75rem; align-items: end; }
+    .filter-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+    .record-count { font-size: 0.78rem; color: var(--muted-foreground); }
 
-    td { 
-      padding: 0.75rem 1rem; 
-      border-bottom: 1px solid var(--border); 
-      vertical-align: top; /* Aligns text to the top so multi-line rows look neat */
-      word-wrap: break-word; /* Forces the long text to wrap into multiple lines */
-      overflow-wrap: break-word;
-      white-space: normal;
+    .print-report-header { display: none; text-align: center; margin-bottom: 1rem; }
+    .print-report-header img { width: 62px; height: 62px; object-fit: cover; border-radius: 0.5rem; }
+    .print-report-header h2 { margin-top: 0.4rem; font-size: 1rem; }
+    .print-report-header p { font-size: 0.78rem; line-height: 1.4; }
+    .signature-grid { display: none; grid-template-columns: 1fr 1fr; gap: 4rem; margin-top: 3rem; text-align: center; font-size: 0.8rem; }
+    .signature-line { border-top: 1px solid #000; padding-top: 0.35rem; }
+
+    #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 10000; max-width: min(380px, calc(100vw - 40px)); }
+    .toast { background: #1e293b; color: #fff; padding: 0.85rem 1rem; border-radius: 0.6rem; margin-top: 0.5rem; display: flex; align-items: flex-start; gap: 0.75rem; font-size: 0.84rem; box-shadow: 0 10px 30px rgba(15,23,42,0.2); animation: slideIn 0.25s; }
+    @keyframes slideIn { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: translateX(0); } }
+
+    .loading-overlay { position: fixed; inset: 0; background: rgba(248,250,252,0.82); backdrop-filter: blur(3px); z-index: 9999; display: grid; place-items: center; }
+    .loading-box { background: #fff; border: 1px solid var(--border); border-radius: 0.8rem; padding: 1rem 1.25rem; display: flex; align-items: center; gap: 0.75rem; box-shadow: 0 14px 40px rgba(15,23,42,0.12); }
+    .spinner { width: 22px; height: 22px; border: 3px solid #dbeafe; border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @media (max-width: 1120px) {
+      .charts-row { grid-template-columns: 1fr; }
+      .form-wide { grid-column: span 1; }
     }
-    
-    .badge { display: inline-flex; align-items: center; border-radius: 9999px; padding: 0.125rem 0.625rem; font-size: 0.75rem; font-weight: 500; }
 
-    /* Toasts */
-    #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 9999; }
-    .toast { background: #1e293b; color: #fff; padding: 12px 16px; border-radius: 8px; margin-top: 8px; display: flex; align-items: center; gap: 12px; font-size: 0.875rem; animation: slideIn 0.3s; }
-    @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
-
-   /* Responsive */
-    @media(max-width: 1024px) { .charts-row { grid-template-columns: 1fr; } }
-    @media(max-width: 768px) {
-      body { flex-direction:column; overflow-y: auto; }
-      .sidebar { width:100%; height: auto; border-right: none; border-bottom: 1px solid #1e293b; }
-      .brand { display: flex; justify-content: space-between; align-items: center; padding: 1rem; }
-      .sidebar ul { display: flex; overflow-x: auto; padding: 0.5rem; }
-      .content { padding: 1rem; }
+    @media (max-width: 780px) {
+      .app-shell { display: block; overflow: visible; }
+      .sidebar { width: 100%; min-width: 0; height: auto; position: sticky; top: 0; z-index: 100; }
+      .brand { padding: 0.75rem 1rem; }
+      .brand-logo { width: 40px; height: 40px; }
+      .nav-list { display: flex; overflow-x: auto; padding: 0.5rem; }
+      .nav-item { width: auto; min-width: max-content; margin: 0 0.25rem 0 0; }
+      .sidebar-user { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; padding: 0.65rem 1rem; }
+      .content { height: auto; min-height: calc(100vh - 150px); overflow: visible; padding: 1rem; }
+      .section-header { align-items: flex-start; flex-direction: column; gap: 1rem; }
+      .section-header > .flex { width: 100%; flex-wrap: wrap; }
       .stats-grid { grid-template-columns: 1fr; }
-      
-      /* --- NEW: Make MOVs and Reports headers responsive --- */
-      .section .flex.justify-between.items-center.mb-6 {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 1rem;
-      }
-      .section .flex.gap-2 {
-        width: 100%;
-        flex-direction: column;
-      }
-      /* Override the inline styles on your inputs/selects for mobile */
-      #movs-filter-type, #global-search, #filter-report-year, #filter-report-month, #filter-report-type {
-        width: 100% !important; 
-      }
-      .section .flex-wrap {
-        flex-direction: column;
-        align-items: flex-start !important;
-      }
-      .section .flex-wrap > div {
-        width: 100%;
-      }
+      .card { padding: 1rem; }
+      .filter-actions, .section-actions { width: 100%; }
+      .filter-actions .btn, .section-actions .btn { flex: 1; }
+      #toast-container { right: 12px; bottom: 12px; }
     }
-    /* ========================================= */
-    /* ===        PRINT STYLES (A4)          === */
-    /* ========================================= */
 
-    /* ========================================= */
-    /* ===        FIXED PRINT STYLES         === */
-    /* ========================================= */
     @media print {
-      /* 1. Page Setup */
-      @page { size: A4; margin: 1cm; }
-
-      /* 2. GLOBAL VISIBILITY RESETS */
-      /* Do NOT hide the body. Instead, reset it. */
-      body { 
-        visibility: visible !important;
-        background: white !important;
-        color: black !important;
-        height: auto !important;
-        width: 100% !important;
-        overflow: visible !important;
-      }
-      
-      /* 3. Hide UI Elements explicitly */
-      .sidebar, 
-      #toast-container, 
-      .btn, 
-      input, 
-      select, 
-      label,
-      button { 
-        display: none !important; 
-      }
-
-      /* 4. Reset Content Wrapper */
-      .content {
-        margin: 0 !important; 
-        padding: 0 !important;
-        width: 100% !important;
-        height: auto !important;
-        overflow: visible !important;
-        display: block !important;
-      }
-
-      /* 5. Section Logic: Hide all, show active */
+      @page { size: A4 landscape; margin: 1cm; }
+      body { background: #fff !important; color: #000 !important; }
+      .sidebar, #toast-container, .loading-overlay, .no-print, button, input, select, textarea, label { display: none !important; }
+      .app-shell, .content { display: block !important; width: 100% !important; height: auto !important; overflow: visible !important; padding: 0 !important; }
       .section { display: none !important; }
-      .section.active { display: block !important; }
-
-      /* --- REPORT SPECIFIC PRINTING --- */
-      /* When printing Reports, hide the title/filters to show ONLY Summary & Table */
-      #reports.active h1, 
-      #reports.active p.text-muted, 
-      #reports.active .flex.flex-wrap.gap-4 { 
-        display: none !important; 
-      }
-
-      #reports.active #report-summary-area, 
-      #reports.active .table-wrapper {
-        display: block !important;
-        border: none !important;
-        box-shadow: none !important;
-      }
-
-      #reports.active #report-summary-area {
-        border: 1px solid #000 !important; /* Keep border for summary */
-        margin-bottom: 20px !important;
-      }
-
-      /* --- DASHBOARD SPECIFIC PRINTING --- */
-      #dashboard.active .card {
-         border: 1px solid #000;
-         box-shadow: none;
-         break-inside: avoid;
-         margin-bottom: 20px;
-      }
-      /* Force 3 columns for stats on paper */
-      #dashboard.active .stats-grid {
-         grid-template-columns: repeat(3, 1fr) !important;
-      }
-
-      /* --- TABLE & LINK STYLES --- */
-      table { 
-        width: 100% !important; 
-        border-collapse: collapse !important; 
-        font-size: 10pt; 
-      }
-      th, td { 
-        border: 1px solid #000 !important; 
-        padding: 5px !important; 
-        color: #000 !important;
-      }
-      th { background-color: #eee !important; -webkit-print-color-adjust: exact; }
-
-      /* Justify the text specifically in the Title columns */
-    #movs-table td:nth-child(4) { 
-      text-align: justify; 
-    }
-    #report-table td:nth-child(3) { 
-      text-align: justify; 
-    }
-
-      /* FORCE LONG LINKS TO WRAP */
-      .print-link-cell a {
-        text-decoration: none !important;
-        color: #000 !important;
-        font-family: 'Courier New', monospace;
-        font-size: 9pt;
-        word-break: break-all !important; /* Breaks long URLs */
-        overflow-wrap: break-word !important;
-        display: block;
-      }
+      .section.active { display: block !important; animation: none !important; }
+      .card, .table-wrapper { border: none !important; box-shadow: none !important; }
+      .print-report-header { display: block !important; }
+      .signature-grid { display: grid !important; }
+      #dashboard.active #add-mov-section { display: none !important; }
+      #dashboard.active .stats-grid { grid-template-columns: repeat(4, 1fr) !important; }
+      #dashboard.active .card { border: 1px solid #000 !important; break-inside: avoid; margin-bottom: 0.8rem; }
+      #reports.active > .mb-6, #reports.active .filter-bar { display: none !important; }
+      table { min-width: 0 !important; width: 100% !important; table-layout: fixed; font-size: 8.5pt; }
+      th, td { border: 1px solid #000 !important; padding: 4px !important; color: #000 !important; word-break: break-word; }
+      th { background: #eee !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      a { color: #000 !important; text-decoration: none !important; word-break: break-all; }
+      .badge { border: 1px solid #000; color: #000 !important; background: #fff !important; }
+      .chart-container { height: 240px; }
     }
   </style>
 
   <script src="https://www.gstatic.com/firebasejs/11.0.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.0.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore-compat.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
 <body>
-
-  <div class="sidebar">
-    <div class="brand">
-      <h2>PAUMOVision</h2>
-      <p>PAU Means of Verification Tracker</p>
-    </div>
-    <ul>
-      <li class="active" data-section="dashboard"><i class="fas fa-th-large"></i> Dashboard</li>
-      <li data-section="movs"><i class="fas fa-table"></i> MOVs</li>
-      <li data-section="reports"><i class="fas fa-chart-pie"></i> Reports</li>
-    </ul>
+  <div id="auth-screen" class="auth-screen">
+    <form id="login-form" class="auth-card" autocomplete="on">
+      <div class="auth-brand">
+        <img src="logo.png" alt="PAUMOVision logo" />
+        <h1>PAUMOVision</h1>
+        <p>PAU Means of Verification Tracker</p>
+      </div>
+      <div class="mb-4">
+        <label for="login-email">Email address</label>
+        <input id="login-email" type="email" autocomplete="username" required placeholder="name@deped.gov.ph" />
+      </div>
+      <div>
+        <label for="login-password">Password</label>
+        <input id="login-password" type="password" autocomplete="current-password" required placeholder="Enter your password" />
+      </div>
+      <div id="auth-error" class="auth-error" role="alert"></div>
+      <button id="login-btn" type="submit" class="btn btn-default h-10 w-full">
+        <i class="fas fa-right-to-bracket" aria-hidden="true"></i> Sign in
+      </button>
+    </form>
   </div>
 
-  <div class="content">
-    <div id="toast-container"></div>
-
-    <section id="dashboard" class="section active">
-      <div class="flex justify-between items-center mb-6">
+  <div id="app-shell" class="app-shell hidden">
+    <aside class="sidebar">
+      <div class="brand">
+        <img src="logo.png" alt="PAUMOVision logo" class="brand-logo" />
         <div>
-          <h1>Dashboard</h1>
-          <p class="text-muted">Track and manage your Means of Verification</p>
+          <h2>PAUMOVision</h2>
+          <p>Track. Verify. Showcase.</p>
         </div>
-        <button id="print-dashboard-btn" class="btn btn-outline h-9">
-             <i class="fas fa-print"></i> Print Dashboard
+      </div>
+
+      <nav class="nav-list" aria-label="Primary navigation">
+        <button class="nav-item active" data-section="dashboard" type="button">
+          <i class="fas fa-chart-line" aria-hidden="true"></i> Dashboard
+        </button>
+        <button id="nav-movs" class="nav-item" data-section="movs" type="button">
+          <i class="fas fa-folder-open" aria-hidden="true"></i> MOV Records
+        </button>
+        <button class="nav-item" data-section="reports" type="button">
+          <i class="fas fa-file-lines" aria-hidden="true"></i> Reports
+        </button>
+      </nav>
+
+      <div class="sidebar-user">
+        <div>
+          <div id="user-name" class="name">Signed-in user</div>
+          <div id="user-role" class="role">Viewer</div>
+        </div>
+        <button id="logout-btn" class="btn btn-outline h-8" type="button" title="Sign out">
+          <i class="fas fa-arrow-right-from-bracket" aria-hidden="true"></i> Sign out
         </button>
       </div>
+    </aside>
 
-      <div class="stats-grid" id="stats-container"></div>
-      
-      <div class="charts-row">
-        <div class="card">
-          <h3 class="text-sm font-medium mb-4">Category Distribution</h3>
-          <div class="chart-container"><canvas id="chartDonut"></canvas></div>
-        </div>
-        <div class="card">
-          <div class="flex items-center justify-between mb-4">
-            <h3 class="text-sm font-medium">Monthly Trend</h3>
-            <select id="chart-year-filter" style="width: 100px;"></select>
+    <main class="content">
+      <div id="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+      <section id="dashboard" class="section active">
+        <div class="section-header flex justify-between items-center mb-6">
+          <div>
+            <h1>Dashboard</h1>
+            <p class="text-muted">Monitor PAU outputs and Means of Verification by reporting year.</p>
           </div>
-          <div class="chart-container"><canvas id="chartBar"></canvas></div>
-        </div>
-      </div>
-
-      <div class="card mb-6">
-         <div class="flex items-center justify-between mb-4 flex-wrap gap-4">
-             <h3 class="text-sm font-medium">Quarterly Summary</h3>
-             <div class="flex gap-2 items-center">
-                 <label style="margin:0;">Quarter:</label>
-                 <select id="q-summary-filter" style="width:120px;">
-                     <option value="all">All</option>
-                     <option value="1">Q1</option>
-                     <option value="2">Q2</option>
-                     <option value="3">Q3</option>
-                     <option value="4">Q4</option>
-                 </select>
-             </div>
-         </div>
-         <div id="quarterly-table-container"></div>
-      </div>
-
-      <div class="card" id="add-mov-section">
-        <h3 class="text-sm font-medium mb-4" id="form-title">Add New MOV</h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" style="display:grid; gap:1rem; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
-          <div><label>Date</label><input type="date" id="input-date" /></div>
-          <div><label>Type</label>
-            <select id="input-type">
-              <option value="IEC Videos">IEC Videos</option>
-              <option value="News Release">News Release</option>
-              <option value="Photo Release">Photo Release</option>
-              <option value="PILU EduAksyon">PILU EduAksyon</option>
-              <option value="Social Cards (others)">Social Cards (others)</option>
-              <option value="Social Cards (PAU)">Social Cards (PAU)</option>
-            </select>
+          <div class="section-actions flex gap-2 items-center">
+            <select id="dashboard-year-filter" aria-label="Dashboard reporting year" style="width: 120px;"></select>
+            <button id="print-dashboard-btn" class="btn btn-outline h-9" type="button">
+              <i class="fas fa-print" aria-hidden="true"></i> Print Dashboard
+            </button>
           </div>
-          <div><label>Title</label><input type="text" id="input-title" placeholder="Enter title..." /></div>
-          <div><label>Responsible</label><input type="text" id="input-responsible" placeholder="Name..." /></div>
-          <div><label>Link</label><input type="url" id="input-link" placeholder="http://..." /></div>
-          <div><label>Remarks</label><input type="text" id="input-remarks" placeholder="Optional" /></div>
         </div>
-        <div class="flex gap-2 mt-4 justify-end">
-              <label for="upload-excel" class="btn btn-outline h-9" style="cursor:pointer;"><i class="fas fa-file-excel"></i> Import Excel</label>
-              <input type="file" id="upload-excel" accept=".xlsx,.xls" style="display:none;" />
-              <button id="cancel-edit" class="btn btn-outline h-9" style="display:none;">Cancel</button>
-              <button id="add-mov" class="btn btn-default h-9">Save Record</button>
-        </div>
-      </div>
-    </section>
 
-    <section id="movs" class="section">
-      <div class="flex justify-between items-center mb-6">
-        <div><h1>MOVs</h1><p class="text-muted">View and manage all records</p></div>
-        <div class="flex gap-2">
-            <select id="movs-filter-type" style="width:180px;">
-                <option value="all">All Types</option>
-                <option value="IEC Videos">IEC Videos</option>
-                <option value="News Release">News Release</option>
-                <option value="Photo Release">Photo Release</option>
-                <option value="PILU EduAksyon">PILU EduAksyon</option>
-                <option value="Social Cards (others)">Social Cards (others)</option>
-                <option value="Social Cards (PAU)">Social Cards (PAU)</option>
-            </select>
-            <input type="text" id="global-search" placeholder="Search..." style="width:250px;">
+        <div id="stats-container" class="stats-grid"></div>
+
+        <div class="charts-row">
+          <div class="card">
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="text-sm font-semibold">Category Distribution</h3>
+              <span id="donut-period-label" class="record-count"></span>
+            </div>
+            <div class="chart-container"><canvas id="chartDonut" aria-label="Category distribution chart" role="img"></canvas></div>
+          </div>
+          <div class="card">
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="text-sm font-semibold">Monthly Production Trend</h3>
+              <span id="bar-period-label" class="record-count"></span>
+            </div>
+            <div class="chart-container"><canvas id="chartBar" aria-label="Monthly production trend chart" role="img"></canvas></div>
+          </div>
         </div>
-      </div>
-      
-      <div class="card" style="padding:0;">
-        <div class="table-wrapper" style="border:none;">
+
+        <div class="card mb-6">
+          <div class="flex items-center justify-between mb-4 flex-wrap gap-4">
+            <div>
+              <h3 class="text-sm font-semibold">Quarterly Summary</h3>
+              <p class="text-muted">Counts are based on the selected dashboard year.</p>
+            </div>
+            <div class="flex gap-2 items-center no-print">
+              <label for="q-summary-filter" style="margin:0;">Quarter</label>
+              <select id="q-summary-filter" style="width:120px;">
+                <option value="all">All</option>
+                <option value="1">Q1</option>
+                <option value="2">Q2</option>
+                <option value="3">Q3</option>
+                <option value="4">Q4</option>
+              </select>
+            </div>
+          </div>
+          <div id="quarterly-table-container"></div>
+        </div>
+
+        <div id="add-mov-section" class="card">
+          <div class="flex justify-between items-center mb-4 flex-wrap gap-3">
+            <div>
+              <h3 id="form-title" class="text-sm font-semibold">Add New MOV Record</h3>
+              <p class="text-muted">Fields marked with an asterisk are required.</p>
+            </div>
+            <span id="edit-indicator" class="badge status-review hidden">Editing existing record</span>
+          </div>
+
+          <div class="form-grid">
+            <div>
+              <label for="input-date">Date produced *</label>
+              <input type="date" id="input-date" />
+            </div>
+            <div>
+              <label for="input-type">Output type *</label>
+              <select id="input-type"></select>
+            </div>
+            <div>
+              <label for="input-platform">Platform</label>
+              <select id="input-platform">
+                <option value="">Not specified</option>
+                <option value="Facebook">Facebook</option>
+                <option value="Website">Website</option>
+                <option value="YouTube">YouTube</option>
+                <option value="Print">Print</option>
+                <option value="Internal Distribution">Internal Distribution</option>
+                <option value="Multiple Platforms">Multiple Platforms</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div>
+              <label for="input-status">Verification status *</label>
+              <select id="input-status">
+                <option value="Draft">Draft</option>
+                <option value="For Review">For Review</option>
+                <option value="Verified">Verified</option>
+                <option value="Needs Revision">Needs Revision</option>
+              </select>
+            </div>
+            <div class="form-wide">
+              <label for="input-activity">Activity / Program / KRA</label>
+              <input type="text" id="input-activity" maxlength="180" placeholder="Related activity, program, target, or performance indicator" />
+            </div>
+            <div class="form-wide">
+              <label for="input-title">Title / Details *</label>
+              <input type="text" id="input-title" maxlength="300" placeholder="Enter the title or description of the output" />
+            </div>
+            <div>
+              <label for="input-responsible">Responsible personnel *</label>
+              <input type="text" id="input-responsible" maxlength="120" placeholder="Name of assigned personnel" />
+            </div>
+            <div>
+              <label for="input-link">MOV link</label>
+              <input type="url" id="input-link" maxlength="1000" placeholder="https://..." />
+            </div>
+            <div class="form-wide">
+              <label for="input-remarks">Remarks</label>
+              <textarea id="input-remarks" maxlength="600" placeholder="Optional notes, verification comments, or follow-up action"></textarea>
+            </div>
+          </div>
+
+          <div class="flex gap-2 mt-4 justify-end flex-wrap no-print">
+            <label id="import-label" for="upload-excel" class="btn btn-outline h-9" style="cursor:pointer;">
+              <i class="fas fa-file-excel" aria-hidden="true"></i> Import Excel
+            </label>
+            <input type="file" id="upload-excel" accept=".xlsx,.xls" class="hidden" />
+            <button id="cancel-edit" class="btn btn-outline h-9 hidden" type="button">Cancel Edit</button>
+            <button id="add-mov" class="btn btn-gold h-9" type="button">
+              <i class="fas fa-floppy-disk" aria-hidden="true"></i> Save Record
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section id="movs" class="section">
+        <div class="section-header flex justify-between items-center mb-6">
+          <div>
+            <h1>MOV Records</h1>
+            <p class="text-muted">Administrator workspace for reviewing, editing, archiving, and restoring records.</p>
+          </div>
+          <div class="section-actions flex gap-2">
+            <span id="mov-record-count" class="record-count items-center flex"></span>
+          </div>
+        </div>
+
+        <div class="card mb-4">
+          <div class="filter-bar">
+            <div>
+              <label for="movs-filter-type">Output type</label>
+              <select id="movs-filter-type"></select>
+            </div>
+            <div>
+              <label for="movs-filter-status">Verification status</label>
+              <select id="movs-filter-status">
+                <option value="all">All Statuses</option>
+                <option value="Draft">Draft</option>
+                <option value="For Review">For Review</option>
+                <option value="Verified">Verified</option>
+                <option value="Needs Revision">Needs Revision</option>
+              </select>
+            </div>
+            <div id="record-scope-wrap">
+              <label for="record-scope">Record scope</label>
+              <select id="record-scope">
+                <option value="active">Active Records</option>
+                <option value="archived">Archived Records</option>
+              </select>
+            </div>
+            <div>
+              <label for="global-search">Search</label>
+              <input type="search" id="global-search" placeholder="Title, activity, personnel, platform..." />
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="padding:0;">
+          <div class="table-wrapper" style="border:none;">
             <table id="movs-table">
-            <thead>
+              <thead>
                 <tr>
-                <th width="40"><input type="checkbox" id="selectAll"></th>
-                <th style="cursor:pointer" onclick="sortTable('date')">Date <i class="fas fa-sort"></i></th>
-                <th>Type</th>
-                <th>Title</th>
-                <th>Responsible</th>
-                <th>Link</th>
-                <th>Actions</th>
+                  <th style="width:42px;"><input type="checkbox" id="selectAll" aria-label="Select all visible records" /></th>
+                  <th class="sortable" data-sort="date">Date <i class="fas fa-sort" aria-hidden="true"></i></th>
+                  <th class="sortable" data-sort="type">Type <i class="fas fa-sort" aria-hidden="true"></i></th>
+                  <th class="sortable" data-sort="title">Title / Details <i class="fas fa-sort" aria-hidden="true"></i></th>
+                  <th class="sortable" data-sort="responsible">Responsible <i class="fas fa-sort" aria-hidden="true"></i></th>
+                  <th class="sortable" data-sort="status">Status <i class="fas fa-sort" aria-hidden="true"></i></th>
+                  <th>Link</th>
+                  <th>Actions</th>
                 </tr>
-            </thead>
-            <tbody></tbody>
+              </thead>
+              <tbody></tbody>
             </table>
+          </div>
         </div>
-      </div>
-      <div class="flex justify-end mt-4">
-        <button id="deleteSelectedBtn" class="btn btn-destructive btn-outline h-9"><i class="fas fa-trash"></i> Delete Selected</button>
-      </div>
-    </section>
 
-    <section id="reports" class="section">
-      <div class="mb-6">
-        <h1>Reports</h1>
-        <p class="text-muted">Generate and export reports</p>
-      </div>
-      
-      <div class="flex flex-wrap gap-4 items-end mb-6">
-        <div style="flex:1; min-width: 150px;">
-            <label>Year</label><select id="filter-report-year"></select>
+        <div class="flex justify-end mt-4 no-print">
+          <button id="bulk-action-btn" class="btn btn-destructive h-9" type="button">
+            <i class="fas fa-box-archive" aria-hidden="true"></i> Archive Selected
+          </button>
         </div>
-        <div style="flex:1; min-width: 150px;">
-            <label>Month</label>
-            <select id="filter-report-month">
-                <option value="all" selected>All Months</option>
+      </section>
+
+      <section id="reports" class="section">
+        <div class="print-report-header">
+          <img src="logo.png" alt="PAUMOVision logo" />
+          <p>Republic of the Philippines<br />Department of Education<br />Regional Office I<br />Public Affairs Unit</p>
+          <h2>PAUMOVision — Means of Verification Monitoring Report</h2>
+          <p id="print-report-period"></p>
+          <p id="print-generated-at"></p>
+        </div>
+
+        <div class="mb-6">
+          <h1>Reports</h1>
+          <p class="text-muted">View real-time records, generate filtered reports, export to Excel, or print an official copy.</p>
+        </div>
+
+        <div class="card mb-6">
+          <div class="filter-bar">
+            <div>
+              <label for="filter-report-year">Year</label>
+              <select id="filter-report-year"></select>
+            </div>
+            <div>
+              <label for="filter-report-month">Month</label>
+              <select id="filter-report-month">
+                <option value="all">All Months</option>
                 <option value="0">January</option><option value="1">February</option>
                 <option value="2">March</option><option value="3">April</option>
                 <option value="4">May</option><option value="5">June</option>
                 <option value="6">July</option><option value="7">August</option>
                 <option value="8">September</option><option value="9">October</option>
                 <option value="10">November</option><option value="11">December</option>
-            </select>
+              </select>
+            </div>
+            <div>
+              <label for="filter-report-type">Output type</label>
+              <select id="filter-report-type"></select>
+            </div>
+            <div>
+              <label for="filter-report-status">Verification status</label>
+              <select id="filter-report-status">
+                <option value="all">All Statuses</option>
+                <option value="Draft">Draft</option>
+                <option value="For Review">For Review</option>
+                <option value="Verified">Verified</option>
+                <option value="Needs Revision">Needs Revision</option>
+              </select>
+            </div>
+            <div class="filter-actions">
+              <button id="filter-report-btn" class="btn btn-default h-9" type="button">Apply</button>
+              <button id="export-report-btn" class="btn btn-outline h-9" type="button"><i class="fas fa-file-arrow-down" aria-hidden="true"></i> Export</button>
+              <button id="print-report-btn" class="btn btn-outline h-9" type="button"><i class="fas fa-print" aria-hidden="true"></i> Print</button>
+            </div>
+          </div>
         </div>
-        <div style="flex:1; min-width: 150px;">
-            <label>Type</label>
-            <select id="filter-report-type">
-              <option value="all" selected>All Types</option>
-              <option value="IEC Videos">IEC Videos</option>
-              <option value="News Release">News Release</option>
-              <option value="Photo Release">Photo Release</option>
-              <option value="PILU EduAksyon">PILU EduAksyon</option>
-              <option value="Social Cards (others)">Social Cards (others)</option>
-              <option value="Social Cards (PAU)">Social Cards (PAU)</option>
-            </select>
+
+        <div id="report-summary-area" class="card mb-6 hidden" style="background:var(--primary-soft); border-color:var(--primary-border);">
+          <div class="flex items-center gap-2 mb-4">
+            <i class="fas fa-chart-column" style="color:var(--primary);" aria-hidden="true"></i>
+            <h3 class="font-bold" style="color:var(--primary);">Report Summary</h3>
+          </div>
+          <div id="report-summary-grid" class="grid" style="grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:1rem;text-align:center;"></div>
         </div>
-        
-        <button id="filter-report-btn" class="btn btn-default h-9">Apply</button>
-        <button id="export-report-btn" class="btn btn-outline h-9"><i class="fas fa-file-download"></i> Export</button>
-        
-        <button id="print-report-btn" class="btn btn-outline h-9">
-            <i class="fas fa-print"></i> Print Report
-        </button>
-      </div>
 
-      <div id="report-summary-area" style="display:none; background: var(--primary-soft); border: 1px solid var(--primary-border); border-radius: var(--radius); padding: 1.5rem; margin-bottom: 1.5rem;">
-         <div class="flex items-center gap-2 mb-4">
-             <i class="fas fa-chart-line" style="color:var(--primary);"></i>
-             <h3 class="font-bold" style="color:var(--primary);">Report Summary</h3>
-         </div>
-         <div class="grid" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 1rem; text-align: center;"></div>
-      </div>
-
-      <div class="card" style="padding:0;">
-        <div class="table-wrapper" style="border:none;">
+        <div class="card" style="padding:0;">
+          <div class="table-wrapper" style="border:none;">
             <table id="report-table">
-            <thead>
+              <thead>
                 <tr>
-                <th>Date</th>
-                <th>Type</th>
-                <th>Title</th>
-                <th>Responsible</th>
-                <th>Link</th>
-                <th>Remarks</th>
+                  <th>Date</th>
+                  <th>Type</th>
+                  <th>Activity / Program</th>
+                  <th>Title / Details</th>
+                  <th>Responsible</th>
+                  <th>Status</th>
+                  <th>Platform</th>
+                  <th>Link</th>
+                  <th>Remarks</th>
                 </tr>
-            </thead>
-            <tbody>
-                <tr><td colspan="6" style="text-align:center; padding: 2rem; color: #94a3b8;">Apply filters to view data</td></tr>
-            </tbody>
+              </thead>
+              <tbody>
+                <tr><td colspan="9" class="empty-state">Apply filters to generate the report.</td></tr>
+              </tbody>
             </table>
+          </div>
         </div>
-      </div>
-    </section>
 
+        <div class="signature-grid">
+          <div><div class="signature-line">Prepared by</div></div>
+          <div><div class="signature-line">Reviewed / Verified by</div></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="loading-overlay" class="loading-overlay hidden" aria-live="assertive">
+    <div class="loading-box">
+      <div class="spinner" aria-hidden="true"></div>
+      <span id="loading-message">Loading...</span>
+    </div>
   </div>
 
 <script>
-// --- 1. FIREBASE SETUP ---
+'use strict';
+
+// -----------------------------------------------------------------------------
+// 1. FIREBASE SETUP
+// -----------------------------------------------------------------------------
 const firebaseConfig = {
   apiKey: "AIzaSyBTMtGna6DHyqdSxvmEsIRL-ffWEbR-Cmk",
   authDomain: "pau-movs.firebaseapp.com",
@@ -539,362 +686,1293 @@ const firebaseConfig = {
   appId: "1:502537936923:web:5f7c97f1469efc9a9b18be",
   measurementId: "G-SCJBGH476G"
 };
+
 firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
 const db = firebase.firestore();
 const movsColl = db.collection('movs');
+const usersColl = db.collection('users');
+const auditColl = db.collection('auditLogs');
 
-// --- 2. CONFIG & STATE ---
+// -----------------------------------------------------------------------------
+// 2. CONFIGURATION AND STATE
+// -----------------------------------------------------------------------------
 const CONFIG = {
-  'IEC Videos': { variant: 'variant-primary', icon: 'fa-video' },
-  'News Release': { variant: 'variant-success', icon: 'fa-newspaper' },
-  'Photo Release': { variant: 'variant-warning', icon: 'fa-camera' },
-  'PILU EduAksyon': { variant: 'variant-info', icon: 'fa-book-open' },
-  'Social Cards (others)': { variant: 'variant-purple', icon: 'fa-th-large' },
-  'Social Cards (PAU)': { variant: 'variant-rose', icon: 'fa-users' }
+  'IEC Videos': { variant: 'variant-primary', icon: 'fa-video', color: '#0b2f5b' },
+  'News Release': { variant: 'variant-success', icon: 'fa-newspaper', color: '#059669' },
+  'Photo Release': { variant: 'variant-warning', icon: 'fa-camera', color: '#d97706' },
+  'PILU EduAksyon': { variant: 'variant-info', icon: 'fa-book-open', color: '#0284c7' },
+  'Social Cards (others)': { variant: 'variant-purple', icon: 'fa-layer-group', color: '#7c3aed' },
+  'Social Cards (PAU)': { variant: 'variant-rose', icon: 'fa-users', color: '#e11d48' }
 };
-const TYPES = Object.keys(CONFIG);
 
+const TYPES = Object.keys(CONFIG);
+const STATUS_CLASSES = {
+  'Draft': 'status-draft',
+  'For Review': 'status-review',
+  'Verified': 'status-verified',
+  'Needs Revision': 'status-revision'
+};
+const VALID_STATUSES = Object.keys(STATUS_CLASSES);
+const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+const ROLE_PERMISSIONS = {
+  // The ADAS I serves as both Administrator and PAU Encoder.
+  admin: ['read', 'create', 'edit', 'verify', 'archive', 'restore', 'delete', 'import', 'export', 'print'],
+
+  // The official PAU account and any approved management account are read-only.
+  viewer: ['read', 'export', 'print']
+};
+
+const ROLE_LABELS = {
+  admin: 'Administrator / PAU Encoder',
+  viewer: 'Viewer'
+};
+
+let currentUser = null;
+let currentProfile = { role: 'viewer', displayName: '' };
+let unsubscribeMovs = null;
+let allRecords = [];
 let movsData = [];
+let archivedData = [];
 let editingId = null;
 let chartDonutInstance = null;
 let chartBarInstance = null;
 let filteredReportData = [];
+let currentSort = { field: 'date', direction: 'desc' };
+let isSaving = false;
 
-// --- 3. INIT ---
-window.addEventListener('load', () => {
-  document.getElementById('input-date').value = new Date().toISOString().split('T')[0];
-  movsColl.orderBy('sortDate', 'desc').onSnapshot(snap => {
-    movsData = [];
-    snap.forEach(doc => movsData.push({ id: doc.id, ...doc.data() }));
-    updateApp();
-  });
+// -----------------------------------------------------------------------------
+// 3. DOM HELPERS
+// -----------------------------------------------------------------------------
+const $ = (id) => document.getElementById(id);
+
+function setLoading(show, message = 'Loading...') {
+  $('loading-message').textContent = message;
+  $('loading-overlay').classList.toggle('hidden', !show);
+}
+
+function showToast(message, type = 'success', duration = 3500) {
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+
+  const icon = document.createElement('i');
+  icon.className = `fas ${type === 'success' ? 'fa-circle-check' : type === 'warning' ? 'fa-triangle-exclamation' : 'fa-circle-exclamation'}`;
+  icon.style.color = type === 'success' ? '#4ade80' : type === 'warning' ? '#facc15' : '#f87171';
+  icon.setAttribute('aria-hidden', 'true');
+
+  const text = document.createElement('span');
+  text.textContent = String(message);
+
+  toast.append(icon, text);
+  $('toast-container').appendChild(toast);
+  window.setTimeout(() => toast.remove(), duration);
+}
+
+function createCell(text = '') {
+  const td = document.createElement('td');
+  td.textContent = text ?? '';
+  return td;
+}
+
+function createBadge(text, className = '') {
+  const span = document.createElement('span');
+  span.className = `badge ${className}`.trim();
+  span.textContent = text || '-';
+  return span;
+}
+
+function createIconButton({ icon, title, color = '', onClick }) {
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = 'btn btn-ghost h-icon';
+  button.title = title;
+  button.setAttribute('aria-label', title);
+  if (color) button.style.color = color;
+
+  const i = document.createElement('i');
+  i.className = `fas ${icon}`;
+  i.setAttribute('aria-hidden', 'true');
+  button.appendChild(i);
+  button.addEventListener('click', onClick);
+  return button;
+}
+
+function normalizeText(value) {
+  return String(value ?? '').trim();
+}
+
+function safeLower(value) {
+  return normalizeText(value).toLowerCase();
+}
+
+function getSafeUrl(value) {
+  const trimmed = normalizeText(value);
+  if (!trimmed) return '';
+  try {
+    const url = new URL(trimmed);
+    return ['http:', 'https:'].includes(url.protocol) ? url.href : '';
+  } catch {
+    return '';
+  }
+}
+
+function parseDate(value) {
+  if (!value) return null;
+  if (typeof value.toDate === 'function') return value.toDate();
+
+  if (typeof value === 'number') {
+    const excelEpoch = new Date(Date.UTC(1899, 11, 30));
+    const date = new Date(excelEpoch.getTime() + value * 86400000);
+    return Number.isNaN(date.getTime()) ? null : date;
+  }
+
+  const stringValue = normalizeText(value);
+  const dateOnlyMatch = stringValue.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (dateOnlyMatch) {
+    const [, year, month, day] = dateOnlyMatch;
+    const date = new Date(Number(year), Number(month) - 1, Number(day));
+    if (date.getFullYear() === Number(year) && date.getMonth() === Number(month) - 1 && date.getDate() === Number(day)) return date;
+    return null;
+  }
+
+  const parsed = new Date(stringValue);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+function dateToISO(date) {
+  if (!(date instanceof Date) || Number.isNaN(date.getTime())) return '';
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function getRecordDate(record) {
+  return parseDate(record.sortDate || record.date);
+}
+
+function formatDisplayDate(value) {
+  const date = parseDate(value);
+  if (!date) return normalizeText(value) || '-';
+  return new Intl.DateTimeFormat('en-PH', { year: 'numeric', month: 'short', day: '2-digit' }).format(date);
+}
+
+function can(permission) {
+  const permissions = ROLE_PERMISSIONS[currentProfile.role] || ROLE_PERMISSIONS.viewer;
+  return permissions.includes(permission);
+}
+
+function currentDisplayName() {
+  return currentProfile.displayName || currentUser?.displayName || currentUser?.email || 'Unknown user';
+}
+
+async function logAudit(action, recordId = '', details = {}) {
+  // Audit documents are administrative records. Viewer actions remain read-only
+  // and therefore do not create Firestore documents.
+  if (!currentUser || currentProfile.role !== 'admin') return;
+  try {
+    await auditColl.add({
+      action,
+      recordId,
+      details,
+      performedBy: currentUser.uid,
+      performedByName: currentDisplayName(),
+      performedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+  } catch (error) {
+    console.warn('Audit log could not be written:', error);
+  }
+}
+
+function initializeSelectOptions() {
+  const typeOptions = TYPES.map(type => `<option value="${type}">${type}</option>`).join('');
+  $('input-type').innerHTML = typeOptions;
+  $('movs-filter-type').innerHTML = `<option value="all">All Types</option>${typeOptions}`;
+  $('filter-report-type').innerHTML = `<option value="all">All Types</option>${typeOptions}`;
+}
+
+// -----------------------------------------------------------------------------
+// 4. AUTHENTICATION AND ACCESS CONTROL
+// -----------------------------------------------------------------------------
+$('login-form').addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const email = normalizeText($('login-email').value);
+  const password = $('login-password').value;
+  $('auth-error').textContent = '';
+  $('login-btn').disabled = true;
+
+  try {
+    await auth.signInWithEmailAndPassword(email, password);
+  } catch (error) {
+    $('auth-error').textContent = friendlyAuthError(error);
+  } finally {
+    $('login-btn').disabled = false;
+  }
 });
 
+$('logout-btn').addEventListener('click', () => auth.signOut());
+
+function friendlyAuthError(error) {
+  const map = {
+    'auth/invalid-credential': 'Invalid email address or password.',
+    'auth/user-not-found': 'No user account was found for this email.',
+    'auth/wrong-password': 'Invalid email address or password.',
+    'auth/too-many-requests': 'Too many unsuccessful attempts. Please try again later.',
+    'auth/network-request-failed': 'Network error. Check your internet connection.'
+  };
+  return map[error.code] || error.message || 'Unable to sign in.';
+}
+
+auth.onAuthStateChanged(async (user) => {
+  if (!user) {
+    currentUser = null;
+    currentProfile = { role: 'viewer', displayName: '' };
+    if (unsubscribeMovs) unsubscribeMovs();
+    $('app-shell').classList.add('hidden');
+    $('auth-screen').classList.remove('hidden');
+    setLoading(false);
+    return;
+  }
+
+  setLoading(true, 'Loading your PAUMOVision workspace...');
+  currentUser = user;
+
+  try {
+    const profileSnapshot = await usersColl.doc(user.uid).get();
+    if (!profileSnapshot.exists) {
+      throw new Error('This account is not authorized for PAUMOVision. Ask the Administrator to create its users/UID profile.');
+    }
+
+    const profile = profileSnapshot.data();
+    const role = normalizeText(profile.role).toLowerCase();
+    const active = profile.active === true;
+
+    if (!ROLE_PERMISSIONS[role] || !active) {
+      throw new Error('This PAUMOVision account is inactive or has an invalid role.');
+    }
+
+    currentProfile = {
+      role,
+      displayName: normalizeText(profile.displayName) || user.displayName || user.email || ''
+    };
+
+    $('user-name').textContent = currentDisplayName();
+    $('user-role').textContent = ROLE_LABELS[currentProfile.role];
+    applyPermissionUI();
+    $('auth-screen').classList.add('hidden');
+    $('app-shell').classList.remove('hidden');
+    listenToMovs();
+  } catch (error) {
+    console.error(error);
+    const message = error.message || 'Your user profile could not be loaded.';
+    await auth.signOut();
+    $('auth-error').textContent = message;
+  }
+});
+
+function applyPermissionUI() {
+  const isAdmin = currentProfile.role === 'admin';
+
+  // Viewer accounts see only the live Dashboard and Reports.
+  $('nav-movs').classList.toggle('hidden', !isAdmin);
+  $('add-mov-section').classList.toggle('hidden', !isAdmin);
+  $('import-label').classList.toggle('hidden', !isAdmin);
+  $('record-scope-wrap').classList.toggle('hidden', !isAdmin);
+
+  // These actions are available to both approved roles.
+  $('print-dashboard-btn').classList.toggle('hidden', !can('print'));
+  $('print-report-btn').classList.toggle('hidden', !can('print'));
+  $('export-report-btn').classList.toggle('hidden', !can('export'));
+
+  if (!isAdmin) {
+    resetForm();
+    if ($('movs').classList.contains('active')) switchSection('dashboard');
+  }
+}
+
+// -----------------------------------------------------------------------------
+// 5. REAL-TIME DATA
+// -----------------------------------------------------------------------------
+function listenToMovs() {
+  if (unsubscribeMovs) unsubscribeMovs();
+
+  unsubscribeMovs = movsColl.orderBy('sortDate', 'desc').onSnapshot(
+    (snapshot) => {
+      allRecords = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      movsData = allRecords.filter(record => record.archived !== true);
+      archivedData = allRecords.filter(record => record.archived === true);
+      populateYearDropdowns();
+      updateApp();
+      setLoading(false);
+    },
+    (error) => {
+      console.error(error);
+      setLoading(false);
+      showToast(`Unable to load MOV records: ${error.message}`, 'error', 7000);
+    }
+  );
+}
+
 function updateApp() {
-  populateYearDropdowns();
+  renderDashboard();
+  renderMovsTable();
+  generateReport();
+}
+
+function populateYearDropdowns() {
+  const controls = [$('dashboard-year-filter'), $('filter-report-year')];
+  const previousValues = controls.map(control => control.value);
+  const years = [...new Set(
+    movsData
+      .map(getRecordDate)
+      .filter(Boolean)
+      .map(date => date.getFullYear())
+  )].sort((a, b) => b - a);
+
+  const currentYear = new Date().getFullYear();
+  if (!years.includes(currentYear)) years.unshift(currentYear);
+  const options = years.map(year => `<option value="${year}">${year}</option>`).join('');
+
+  controls.forEach((control, index) => {
+    control.innerHTML = options;
+    const previous = Number(previousValues[index]);
+    control.value = years.includes(previous) ? String(previous) : String(currentYear);
+  });
+}
+
+// -----------------------------------------------------------------------------
+// 6. DASHBOARD
+// -----------------------------------------------------------------------------
+function getDashboardRecords() {
+  const selectedYear = Number($('dashboard-year-filter').value) || new Date().getFullYear();
+  return movsData.filter(record => getRecordDate(record)?.getFullYear() === selectedYear);
+}
+
+function renderDashboard() {
   renderStatsCards();
   updateCharts();
   renderQuarterlyTable();
-  renderTable(movsData);
-  
-  // *** AUTO GENERATE REPORT ON LOAD ***
-  generateReport(); 
 }
 
-// --- 4. UTILS ---
-function parseDate(s) {
-  if (!s) return new Date();
-  if (s && typeof s.toDate === 'function') return s.toDate();
-  if (typeof s === 'number') return new Date((s - 25569) * 86400 * 1000);
-  const d = new Date(s);
-  return isNaN(d) ? new Date() : d;
-}
-
-// --- 5. RENDERERS ---
 function renderStatsCards() {
-  const container = document.getElementById('stats-container');
-  const counts = {};
-  TYPES.forEach(t => counts[t] = 0);
-  movsData.forEach(r => { if(counts[r.type] !== undefined) counts[r.type]++; });
-
-  let html = '';
-  TYPES.forEach(t => {
-    const conf = CONFIG[t];
-    html += `
-      <div class="stat-card ${conf.variant}">
-        <div class="stat-header">
-           <div><div class="stat-title">${t}</div><div class="stat-value">${counts[t]}</div></div>
-           <div class="icon-box"><i class="fas ${conf.icon}"></i></div>
-        </div>
-      </div>`;
+  const records = getDashboardRecords();
+  const counts = Object.fromEntries(TYPES.map(type => [type, 0]));
+  records.forEach(record => {
+    if (Object.hasOwn(counts, record.type)) counts[record.type] += 1;
   });
-  html += `
-    <div class="stat-card variant-primary" style="grid-column: span 1 / -1;">
-        <div class="stat-header">
-           <div><div class="stat-title">Total IEC Produced</div><div class="stat-value">${movsData.length}</div></div>
-           <div class="icon-box"><i class="fas fa-chart-line"></i></div>
-        </div>
+
+  const container = $('stats-container');
+  container.replaceChildren();
+
+  const totalCard = document.createElement('div');
+  totalCard.className = 'stat-card variant-gold';
+  totalCard.innerHTML = `
+    <div class="stat-header">
+      <div><div class="stat-title">Total MOV Records</div><div class="stat-value">${records.length}</div></div>
+      <div class="icon-box"><i class="fas fa-folder-tree" aria-hidden="true"></i></div>
     </div>`;
-  container.innerHTML = html;
+  container.appendChild(totalCard);
+
+  TYPES.forEach(type => {
+    const config = CONFIG[type];
+    const card = document.createElement('div');
+    card.className = `stat-card ${config.variant}`;
+    card.innerHTML = `
+      <div class="stat-header">
+        <div><div class="stat-title">${type}</div><div class="stat-value">${counts[type]}</div></div>
+        <div class="icon-box"><i class="fas ${config.icon}" aria-hidden="true"></i></div>
+      </div>`;
+    container.appendChild(card);
+  });
 }
 
 function updateCharts() {
-  const yearEl = document.getElementById('chart-year-filter');
-  const selectedYear = parseInt(yearEl.value) || new Date().getFullYear();
-  const typeCounts = {}; TYPES.forEach(t => typeCounts[t] = 0);
-  const monthlyData = {}; for(let m=0; m<12; m++) { monthlyData[m] = {}; TYPES.forEach(t => monthlyData[m][t] = 0); }
+  const records = getDashboardRecords();
+  const selectedYear = Number($('dashboard-year-filter').value) || new Date().getFullYear();
+  const typeCounts = Object.fromEntries(TYPES.map(type => [type, 0]));
+  const monthlyData = Array.from({ length: 12 }, () => Object.fromEntries(TYPES.map(type => [type, 0])));
 
-  movsData.forEach(r => {
-    const d = parseDate(r.sortDate || r.date);
-    if(typeCounts[r.type] !== undefined) typeCounts[r.type]++;
-    if(d.getFullYear() === selectedYear) {
-       if(monthlyData[d.getMonth()]) monthlyData[d.getMonth()][r.type]++;
-    }
+  records.forEach(record => {
+    const date = getRecordDate(record);
+    if (!date || !Object.hasOwn(typeCounts, record.type)) return;
+    typeCounts[record.type] += 1;
+    monthlyData[date.getMonth()][record.type] += 1;
   });
 
-  const chartColors = ['hsl(220, 70%, 50%)', 'hsl(160, 60%, 45%)', 'hsl(38, 92%, 50%)', 'hsl(280, 65%, 60%)', 'hsl(350, 80%, 60%)', 'hsl(200, 80%, 50%)'];
+  $('donut-period-label').textContent = `Year ${selectedYear}`;
+  $('bar-period-label').textContent = `Year ${selectedYear}`;
 
-  const ctxDonut = document.getElementById('chartDonut').getContext('2d');
-  if(chartDonutInstance) chartDonutInstance.destroy();
-  chartDonutInstance = new Chart(ctxDonut, {
+  const colors = TYPES.map(type => CONFIG[type].color);
+  if (chartDonutInstance) chartDonutInstance.destroy();
+  chartDonutInstance = new Chart($('chartDonut').getContext('2d'), {
     type: 'doughnut',
     data: {
       labels: TYPES,
-      datasets: [{ data: TYPES.map(t => typeCounts[t]), backgroundColor: chartColors, borderWidth: 0 }]
+      datasets: [{ data: TYPES.map(type => typeCounts[type]), backgroundColor: colors, borderWidth: 0 }]
     },
-    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right' } }, cutout: '65%' }
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: '65%',
+      plugins: {
+        legend: { position: 'bottom', labels: { boxWidth: 14, usePointStyle: true } },
+        tooltip: { callbacks: { label: context => `${context.label}: ${context.raw}` } }
+      }
+    }
   });
 
-  const ctxBar = document.getElementById('chartBar').getContext('2d');
-  if(chartBarInstance) chartBarInstance.destroy();
-  const datasets = TYPES.map((t, i) => ({ label: t, data: [0,1,2,3,4,5,6,7,8,9,10,11].map(m => monthlyData[m][t]), backgroundColor: chartColors[i], borderRadius: 4 }));
-
-  chartBarInstance = new Chart(ctxBar, {
+  if (chartBarInstance) chartBarInstance.destroy();
+  chartBarInstance = new Chart($('chartBar').getContext('2d'), {
     type: 'bar',
-    data: { labels: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'], datasets: datasets },
-    options: { responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true }, y: { stacked: true } } }
+    data: {
+      labels: MONTH_NAMES.map(month => month.slice(0, 3)),
+      datasets: TYPES.map(type => ({
+        label: type,
+        data: monthlyData.map(month => month[type]),
+        backgroundColor: CONFIG[type].color,
+        borderRadius: 3
+      }))
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      scales: {
+        x: { stacked: true, grid: { display: false } },
+        y: { stacked: true, beginAtZero: true, ticks: { precision: 0 } }
+      },
+      plugins: { legend: { position: 'bottom', labels: { boxWidth: 14, usePointStyle: true } } }
+    }
   });
 }
 
 function renderQuarterlyTable() {
-    const container = document.getElementById('quarterly-table-container');
-    const qFilter = document.getElementById('q-summary-filter').value;
-    const year = parseInt(document.getElementById('chart-year-filter').value) || new Date().getFullYear();
-    const counts = {1:{}, 2:{}, 3:{}, 4:{}}; for(let q=1; q<=4; q++) TYPES.forEach(t => counts[q][t] = 0);
+  const records = getDashboardRecords();
+  const quarterFilter = $('q-summary-filter').value;
+  const counts = Object.fromEntries([1,2,3,4].map(q => [q, Object.fromEntries(TYPES.map(type => [type, 0]))]));
 
-    movsData.forEach(r => {
-        const d = parseDate(r.sortDate || r.date);
-        if(d.getFullYear() === year) {
-            const q = Math.floor(d.getMonth() / 3) + 1;
-            if(counts[q] && counts[q][r.type] !== undefined) counts[q][r.type]++;
-        }
+  records.forEach(record => {
+    const date = getRecordDate(record);
+    if (!date || !counts[Math.floor(date.getMonth() / 3) + 1] || !Object.hasOwn(counts[1], record.type)) return;
+    counts[Math.floor(date.getMonth() / 3) + 1][record.type] += 1;
+  });
+
+  const wrapper = document.createElement('div');
+  wrapper.className = 'table-wrapper';
+  const table = document.createElement('table');
+  table.style.minWidth = '900px';
+  const thead = document.createElement('thead');
+  const headRow = document.createElement('tr');
+  ['Quarter', ...TYPES, 'Total'].forEach(label => {
+    const th = document.createElement('th');
+    th.textContent = label;
+    headRow.appendChild(th);
+  });
+  thead.appendChild(headRow);
+
+  const tbody = document.createElement('tbody');
+  [1,2,3,4].forEach(quarter => {
+    if (quarterFilter !== 'all' && Number(quarterFilter) !== quarter) return;
+    const row = document.createElement('tr');
+    const quarterCell = createCell(`Q${quarter}`);
+    quarterCell.style.fontWeight = '700';
+    row.appendChild(quarterCell);
+    let total = 0;
+    TYPES.forEach(type => {
+      const value = counts[quarter][type];
+      total += value;
+      row.appendChild(createCell(value));
     });
+    const totalCell = createCell(total);
+    totalCell.style.fontWeight = '700';
+    row.appendChild(totalCell);
+    tbody.appendChild(row);
+  });
 
-    let html = `<div class="table-wrapper"><table><thead><tr><th>Quarter</th>`;
-    TYPES.forEach(t => html += `<th>${t}</th>`);
-    html += `<th>Total</th></tr></thead><tbody>`;
-    for(let q=1; q<=4; q++) {
-        if(qFilter !== 'all' && qFilter !== String(q)) continue;
-        let rowTotal = 0;
-        html += `<tr><td style="font-weight:600;">Q${q}</td>`;
-        TYPES.forEach(t => { html += `<td>${counts[q][t]}</td>`; rowTotal += counts[q][t]; });
-        html += `<td style="font-weight:600;">${rowTotal}</td></tr>`;
-    }
-    html += `</tbody></table></div>`;
-    container.innerHTML = html;
+  table.append(thead, tbody);
+  wrapper.appendChild(table);
+  $('quarterly-table-container').replaceChildren(wrapper);
 }
 
-// EVENTS
-document.getElementById('chart-year-filter').addEventListener('change', () => { updateCharts(); renderQuarterlyTable(); });
-document.getElementById('q-summary-filter').addEventListener('change', renderQuarterlyTable);
-
-// CRUD
-document.getElementById('add-mov').addEventListener('click', async () => {
-  const rec = {
-    date: document.getElementById('input-date').value,
-    type: document.getElementById('input-type').value,
-    title: document.getElementById('input-title').value,
-    responsible: document.getElementById('input-responsible').value,
-    link: document.getElementById('input-link').value,
-    remarks: document.getElementById('input-remarks').value
-  };
-  if(!rec.title) return showToast('Title is required', 'error');
-  try {
-    if(editingId) { await movsColl.doc(editingId).update({ ...rec, sortDate: parseDate(rec.date), updatedAt: firebase.firestore.FieldValue.serverTimestamp() }); showToast('Updated'); }
-    else { await movsColl.add({ ...rec, sortDate: parseDate(rec.date), createdAt: firebase.firestore.FieldValue.serverTimestamp() }); showToast('Added'); }
-    resetForm();
-  } catch(e) { showToast(e.message, 'error'); }
+$('dashboard-year-filter').addEventListener('change', renderDashboard);
+$('q-summary-filter').addEventListener('change', renderQuarterlyTable);
+$('print-dashboard-btn').addEventListener('click', () => {
+  if (!can('print')) return showToast('Your role is not authorized to print the dashboard.', 'error');
+  window.print();
 });
+
+// -----------------------------------------------------------------------------
+// 7. FORM, VALIDATION, AND CRUD
+// -----------------------------------------------------------------------------
+function readFormRecord() {
+  return {
+    date: normalizeText($('input-date').value),
+    type: normalizeText($('input-type').value),
+    platform: normalizeText($('input-platform').value),
+    status: normalizeText($('input-status').value),
+    activity: normalizeText($('input-activity').value),
+    title: normalizeText($('input-title').value),
+    responsible: normalizeText($('input-responsible').value),
+    link: normalizeText($('input-link').value),
+    remarks: normalizeText($('input-remarks').value)
+  };
+}
+
+function validateRecord(record) {
+  const errors = [];
+  document.querySelectorAll('.field-error').forEach(element => element.classList.remove('field-error'));
+
+  const required = [
+    ['input-date', record.date, 'Date produced is required.'],
+    ['input-type', record.type, 'Output type is required.'],
+    ['input-status', record.status, 'Verification status is required.'],
+    ['input-title', record.title, 'Title or details are required.'],
+    ['input-responsible', record.responsible, 'Responsible personnel is required.']
+  ];
+
+  required.forEach(([id, value, message]) => {
+    if (!value) {
+      errors.push(message);
+      $(id).classList.add('field-error');
+    }
+  });
+
+  if (record.date && !parseDate(record.date)) {
+    errors.push('The selected date is invalid.');
+    $('input-date').classList.add('field-error');
+  }
+  if (record.type && !TYPES.includes(record.type)) {
+    errors.push('Select a valid output type.');
+    $('input-type').classList.add('field-error');
+  }
+  if (record.status && !VALID_STATUSES.includes(record.status)) {
+    errors.push('Select a valid verification status.');
+    $('input-status').classList.add('field-error');
+  }
+  if (record.link && !getSafeUrl(record.link)) {
+    errors.push('MOV link must begin with http:// or https://.');
+    $('input-link').classList.add('field-error');
+  }
+
+  return errors;
+}
+
+function isDuplicateRecord(record, excludedId = null) {
+  const key = `${record.date}|${safeLower(record.type)}|${safeLower(record.title)}`;
+  return movsData.some(item => item.id !== excludedId && `${item.date}|${safeLower(item.type)}|${safeLower(item.title)}` === key);
+}
+
+$('add-mov').addEventListener('click', saveRecord);
+$('cancel-edit').addEventListener('click', resetForm);
+
+async function saveRecord() {
+  if (isSaving || !can(editingId ? 'edit' : 'create')) return;
+  const record = readFormRecord();
+  const errors = validateRecord(record);
+  if (errors.length) return showToast(errors[0], 'error');
+  if (isDuplicateRecord(record, editingId)) return showToast('A record with the same date, type, and title already exists.', 'warning', 5000);
+
+  const date = parseDate(record.date);
+  const safeLink = record.link ? getSafeUrl(record.link) : '';
+  const baseData = {
+    ...record,
+    link: safeLink,
+    sortDate: firebase.firestore.Timestamp.fromDate(date),
+    archived: false,
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    updatedBy: currentUser.uid,
+    updatedByName: currentDisplayName()
+  };
+
+  if (record.status === 'Verified') {
+    if (!can('verify')) return showToast('Only the Administrator / PAU Encoder may verify MOV records.', 'error');
+    baseData.verifiedAt = firebase.firestore.FieldValue.serverTimestamp();
+    baseData.verifiedBy = currentUser.uid;
+    baseData.verifiedByName = currentDisplayName();
+  } else {
+    baseData.verifiedAt = null;
+    baseData.verifiedBy = null;
+    baseData.verifiedByName = '';
+  }
+
+  isSaving = true;
+  $('add-mov').disabled = true;
+  setLoading(true, editingId ? 'Updating MOV record...' : 'Saving MOV record...');
+
+  try {
+    if (editingId) {
+      const previous = movsData.find(item => item.id === editingId);
+      await movsColl.doc(editingId).update(baseData);
+      await logAudit('UPDATE', editingId, { previous, updated: record });
+      showToast('MOV record updated successfully.');
+    } else {
+      const document = await movsColl.add({
+        ...baseData,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        createdBy: currentUser.uid,
+        createdByName: currentDisplayName()
+      });
+      await logAudit('CREATE', document.id, { record });
+      showToast('MOV record added successfully.');
+    }
+    resetForm();
+  } catch (error) {
+    console.error(error);
+    showToast(`Unable to save the record: ${error.message}`, 'error', 7000);
+  } finally {
+    isSaving = false;
+    $('add-mov').disabled = false;
+    setLoading(false);
+  }
+}
 
 function resetForm() {
-  document.getElementById('input-title').value = '';
-  document.getElementById('input-responsible').value = '';
-  document.getElementById('input-link').value = '';
-  document.getElementById('input-remarks').value = '';
+  $('input-date').value = dateToISO(new Date());
+  $('input-type').value = TYPES[0];
+  $('input-platform').value = '';
+  $('input-status').value = 'Draft';
+  $('input-activity').value = '';
+  $('input-title').value = '';
+  $('input-responsible').value = '';
+  $('input-link').value = '';
+  $('input-remarks').value = '';
+  document.querySelectorAll('.field-error').forEach(element => element.classList.remove('field-error'));
   editingId = null;
-  document.getElementById('add-mov').textContent = 'Save Record';
-  document.getElementById('form-title').textContent = 'Add New MOV';
-  document.getElementById('cancel-edit').style.display = 'none';
+  $('form-title').textContent = 'Add New MOV Record';
+  $('edit-indicator').classList.add('hidden');
+  $('cancel-edit').classList.add('hidden');
+  $('add-mov').innerHTML = '<i class="fas fa-floppy-disk" aria-hidden="true"></i> Save Record';
 }
-document.getElementById('cancel-edit').addEventListener('click', resetForm);
 
-// TABLE
-function renderTable(data) {
-  const tbody = document.querySelector('#movs-table tbody');
-  const search = document.getElementById('global-search').value.toLowerCase();
-  const typeFilter = document.getElementById('movs-filter-type').value;
+function editItem(id) {
+  if (!can('edit')) return showToast('Only the Administrator / PAU Encoder may edit records.', 'error');
+  const record = movsData.find(item => item.id === id);
+  if (!record) return;
 
-  const filtered = data.filter(d => {
-    const matchesSearch = d.title.toLowerCase().includes(search) || d.responsible.toLowerCase().includes(search);
-    const matchesType = typeFilter === 'all' || d.type === typeFilter;
-    return matchesSearch && matchesType;
+  $('input-date').value = record.date || dateToISO(getRecordDate(record)) || '';
+  $('input-type').value = TYPES.includes(record.type) ? record.type : TYPES[0];
+  $('input-platform').value = normalizeText(record.platform);
+  $('input-status').value = VALID_STATUSES.includes(record.status) ? record.status : 'Draft';
+  $('input-activity').value = normalizeText(record.activity);
+  $('input-title').value = normalizeText(record.title);
+  $('input-responsible').value = normalizeText(record.responsible);
+  $('input-link').value = normalizeText(record.link);
+  $('input-remarks').value = normalizeText(record.remarks);
+
+  editingId = id;
+  $('form-title').textContent = 'Edit MOV Record';
+  $('edit-indicator').classList.remove('hidden');
+  $('cancel-edit').classList.remove('hidden');
+  $('add-mov').innerHTML = '<i class="fas fa-pen-to-square" aria-hidden="true"></i> Update Record';
+  switchSection('dashboard');
+  $('add-mov-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+async function archiveItem(id) {
+  if (!can('archive')) return showToast('Only the Administrator / PAU Encoder may archive records.', 'error');
+  const record = movsData.find(item => item.id === id);
+  if (!record || !confirm(`Archive “${record.title}”?`)) return;
+
+  setLoading(true, 'Archiving record...');
+  try {
+    await movsColl.doc(id).update({
+      archived: true,
+      archivedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      archivedBy: currentUser.uid,
+      archivedByName: currentDisplayName(),
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      updatedBy: currentUser.uid,
+      updatedByName: currentDisplayName()
+    });
+    await logAudit('ARCHIVE', id, { title: record.title });
+    showToast('Record archived.');
+  } catch (error) {
+    showToast(`Unable to archive record: ${error.message}`, 'error');
+  } finally {
+    setLoading(false);
+  }
+}
+
+async function restoreItem(id) {
+  if (!can('restore')) return showToast('Only the Administrator / PAU Encoder may restore records.', 'error');
+  const record = archivedData.find(item => item.id === id);
+  if (!record || !confirm(`Restore “${record.title}”?`)) return;
+
+  setLoading(true, 'Restoring record...');
+  try {
+    await movsColl.doc(id).update({
+      archived: false,
+      archivedAt: null,
+      archivedBy: null,
+      archivedByName: '',
+      restoredAt: firebase.firestore.FieldValue.serverTimestamp(),
+      restoredBy: currentUser.uid,
+      restoredByName: currentDisplayName(),
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      updatedBy: currentUser.uid,
+      updatedByName: currentDisplayName()
+    });
+    await logAudit('RESTORE', id, { title: record.title });
+    showToast('Record restored.');
+  } catch (error) {
+    showToast(`Unable to restore record: ${error.message}`, 'error');
+  } finally {
+    setLoading(false);
+  }
+}
+
+async function permanentlyDeleteItem(id) {
+  if (!can('delete')) return showToast('Only the Administrator / PAU Encoder may permanently delete records.', 'error');
+  const record = archivedData.find(item => item.id === id);
+  if (!record || !confirm(`Permanently delete “${record.title}”? This cannot be undone.`)) return;
+
+  setLoading(true, 'Permanently deleting record...');
+  try {
+    await logAudit('PERMANENT_DELETE', id, { title: record.title });
+    await movsColl.doc(id).delete();
+    showToast('Archived record permanently deleted.');
+  } catch (error) {
+    showToast(`Unable to delete record: ${error.message}`, 'error');
+  } finally {
+    setLoading(false);
+  }
+}
+
+// -----------------------------------------------------------------------------
+// 8. MOV TABLE, FILTERING, AND SORTING
+// -----------------------------------------------------------------------------
+function getVisibleMovRecords() {
+  const scope = $('record-scope').value;
+  const source = scope === 'archived' ? archivedData : movsData;
+  const search = safeLower($('global-search').value);
+  const type = $('movs-filter-type').value;
+  const status = $('movs-filter-status').value;
+
+  const filtered = source.filter(record => {
+    const haystack = [record.title, record.activity, record.responsible, record.platform, record.type, record.status, record.remarks]
+      .map(safeLower)
+      .join(' ');
+    return (!search || haystack.includes(search)) && (type === 'all' || record.type === type) && (status === 'all' || (record.status || 'Draft') === status);
   });
 
-  tbody.innerHTML = filtered.map(r => {
-    let style = "background:#f1f5f9; color:#475569;";
-    if(r.type.includes('IEC')) style = "background:var(--primary-soft); color:var(--primary);";
-    if(r.type.includes('News')) style = "background:var(--success-soft); color:#10b981;";
-    if(r.type.includes('Photo')) style = "background:var(--warning-soft); color:#d97706;";
-    if(r.type.includes('PILU')) style = "background:var(--info-soft); color:#0ea5e9;";
-    return `
-    <tr data-id="${r.id}">
-      <td><input type="checkbox" class="rowCheckbox"></td>
-      <td>${r.date}</td>
-      <td><span class="badge" style="${style}">${r.type}</span></td>
-      <td>${r.title}</td>
-      <td>${r.responsible}</td>
-      <td>${r.link ? `<a href="${r.link}" target="_blank" class="btn btn-ghost h-8" style="color:var(--primary)"><i class="fas fa-external-link-alt"></i> View</a>` : ''}</td>
-      <td>
-        <button onclick="editItem('${r.id}')" class="btn btn-ghost h-icon"><i class="fas fa-pen"></i></button>
-        <button onclick="deleteItem('${r.id}')" class="btn btn-ghost h-icon" style="color:#ef4444;"><i class="fas fa-trash"></i></button>
-      </td>
-    </tr>`;
-  }).join('');
+  return sortRecords(filtered, currentSort.field, currentSort.direction);
 }
-document.getElementById('global-search').addEventListener('input', () => renderTable(movsData));
-document.getElementById('movs-filter-type').addEventListener('change', () => renderTable(movsData));
 
-window.editItem = (id) => {
-  const r = movsData.find(d => d.id === id);
-  if(r) {
-    document.getElementById('input-date').value = r.date;
-    document.getElementById('input-type').value = r.type;
-    document.getElementById('input-title').value = r.title;
-    document.getElementById('input-responsible').value = r.responsible;
-    document.getElementById('input-link').value = r.link;
-    document.getElementById('input-remarks').value = r.remarks;
-    editingId = id;
-    document.getElementById('add-mov').textContent = 'Update Record';
-    document.getElementById('form-title').textContent = 'Edit Record';
-    document.getElementById('cancel-edit').style.display = 'inline-block';
-    document.querySelector('[data-section="dashboard"]').click();
+function sortRecords(records, field, direction) {
+  const multiplier = direction === 'asc' ? 1 : -1;
+  return [...records].sort((a, b) => {
+    let valueA;
+    let valueB;
+
+    if (field === 'date') {
+      valueA = getRecordDate(a)?.getTime() || 0;
+      valueB = getRecordDate(b)?.getTime() || 0;
+    } else {
+      valueA = safeLower(a[field]);
+      valueB = safeLower(b[field]);
+    }
+
+    if (valueA < valueB) return -1 * multiplier;
+    if (valueA > valueB) return 1 * multiplier;
+    return 0;
+  });
+}
+
+function renderMovsTable() {
+  const records = getVisibleMovRecords();
+  const scope = $('record-scope').value;
+  const tbody = document.querySelector('#movs-table tbody');
+  tbody.replaceChildren();
+  $('selectAll').checked = false;
+  $('mov-record-count').textContent = `${records.length} visible record${records.length === 1 ? '' : 's'}`;
+
+  if (!records.length) {
+    const row = document.createElement('tr');
+    const cell = document.createElement('td');
+    cell.colSpan = 8;
+    cell.className = 'empty-state';
+    cell.textContent = scope === 'archived' ? 'No archived records matched the selected filters.' : 'No active records matched the selected filters.';
+    row.appendChild(cell);
+    tbody.appendChild(row);
+    updateBulkActionButton();
+    return;
   }
-};
-window.deleteItem = async (id) => { if(confirm('Delete?')) { await movsColl.doc(id).delete(); showToast('Deleted'); } };
 
-// --- REPORTS LOGIC ---
+  records.forEach(record => {
+    const row = document.createElement('tr');
+    row.dataset.id = record.id;
 
-// 1. EXTRACT REPORT GENERATION LOGIC
+    const checkboxCell = document.createElement('td');
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.className = 'rowCheckbox';
+    checkbox.setAttribute('aria-label', `Select ${record.title || 'record'}`);
+    checkboxCell.appendChild(checkbox);
+
+    const typeCell = document.createElement('td');
+    const typeBadge = createBadge(record.type || 'Uncategorized');
+    const config = CONFIG[record.type];
+    if (config) {
+      typeBadge.style.background = `${config.color}18`;
+      typeBadge.style.color = config.color;
+    }
+    typeCell.appendChild(typeBadge);
+
+    const titleCell = document.createElement('td');
+    const title = document.createElement('div');
+    title.className = 'font-semibold';
+    title.textContent = record.title || '-';
+    titleCell.appendChild(title);
+    if (record.activity) {
+      const activity = document.createElement('div');
+      activity.className = 'text-muted';
+      activity.style.marginTop = '0.3rem';
+      activity.textContent = record.activity;
+      titleCell.appendChild(activity);
+    }
+
+    const statusCell = document.createElement('td');
+    statusCell.appendChild(createBadge(record.status || 'Draft', STATUS_CLASSES[record.status] || STATUS_CLASSES.Draft));
+
+    const linkCell = document.createElement('td');
+    const safeUrl = getSafeUrl(record.link);
+    if (safeUrl) {
+      const link = document.createElement('a');
+      link.href = safeUrl;
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      link.className = 'btn btn-ghost h-8';
+      link.style.color = 'var(--primary)';
+      link.innerHTML = '<i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i> View';
+      linkCell.appendChild(link);
+    } else {
+      linkCell.textContent = '-';
+    }
+
+    const actionsCell = document.createElement('td');
+    const actions = document.createElement('div');
+    actions.className = 'flex gap-2';
+
+    if (scope === 'active') {
+      if (can('edit')) actions.appendChild(createIconButton({ icon: 'fa-pen', title: 'Edit record', onClick: () => editItem(record.id) }));
+      if (can('archive')) actions.appendChild(createIconButton({ icon: 'fa-box-archive', title: 'Archive record', color: '#dc2626', onClick: () => archiveItem(record.id) }));
+    } else {
+      if (can('restore')) actions.appendChild(createIconButton({ icon: 'fa-rotate-left', title: 'Restore record', color: '#059669', onClick: () => restoreItem(record.id) }));
+      if (can('delete')) actions.appendChild(createIconButton({ icon: 'fa-trash', title: 'Permanently delete record', color: '#dc2626', onClick: () => permanentlyDeleteItem(record.id) }));
+    }
+
+    if (!actions.childElementCount) actionsCell.textContent = '-';
+    else actionsCell.appendChild(actions);
+
+    row.append(
+      checkboxCell,
+      createCell(formatDisplayDate(record.date || record.sortDate)),
+      typeCell,
+      titleCell,
+      createCell(record.responsible || '-'),
+      statusCell,
+      linkCell,
+      actionsCell
+    );
+    tbody.appendChild(row);
+  });
+
+  updateBulkActionButton();
+}
+
+function updateBulkActionButton() {
+  const scope = $('record-scope').value;
+  const button = $('bulk-action-btn');
+  if (scope === 'archived') {
+    button.innerHTML = '<i class="fas fa-rotate-left" aria-hidden="true"></i> Restore Selected';
+    button.className = 'btn btn-default h-9';
+    button.classList.toggle('hidden', !can('restore'));
+  } else {
+    button.innerHTML = '<i class="fas fa-box-archive" aria-hidden="true"></i> Archive Selected';
+    button.className = 'btn btn-destructive h-9';
+    button.classList.toggle('hidden', !can('archive'));
+  }
+}
+
+['global-search', 'movs-filter-type', 'movs-filter-status', 'record-scope'].forEach(id => {
+  $(id).addEventListener(id === 'global-search' ? 'input' : 'change', renderMovsTable);
+});
+
+document.querySelectorAll('#movs-table th.sortable').forEach(header => {
+  header.addEventListener('click', () => {
+    const field = header.dataset.sort;
+    currentSort = {
+      field,
+      direction: currentSort.field === field && currentSort.direction === 'asc' ? 'desc' : 'asc'
+    };
+    renderMovsTable();
+  });
+});
+
+$('selectAll').addEventListener('change', function () {
+  document.querySelectorAll('.rowCheckbox').forEach(checkbox => { checkbox.checked = this.checked; });
+});
+
+$('bulk-action-btn').addEventListener('click', async () => {
+  const selectedIds = [...document.querySelectorAll('.rowCheckbox:checked')]
+    .map(checkbox => checkbox.closest('tr')?.dataset.id)
+    .filter(Boolean);
+  if (!selectedIds.length) return showToast('Select at least one record.', 'warning');
+
+  const scope = $('record-scope').value;
+  if (scope === 'archived' && !can('restore')) return showToast('Only the Administrator / PAU Encoder may restore records.', 'error');
+  if (scope === 'active' && !can('archive')) return showToast('Only the Administrator / PAU Encoder may archive records.', 'error');
+
+  const verb = scope === 'archived' ? 'restore' : 'archive';
+  if (!confirm(`${verb[0].toUpperCase() + verb.slice(1)} ${selectedIds.length} selected record(s)?`)) return;
+
+  setLoading(true, `${verb[0].toUpperCase() + verb.slice(1)}ing selected records...`);
+  try {
+    await runBatches(selectedIds, async (batch, id) => {
+      const reference = movsColl.doc(id);
+      if (scope === 'archived') {
+        batch.update(reference, {
+          archived: false,
+          archivedAt: null,
+          archivedBy: null,
+          archivedByName: '',
+          restoredAt: firebase.firestore.FieldValue.serverTimestamp(),
+          restoredBy: currentUser.uid,
+          restoredByName: currentDisplayName(),
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+          updatedBy: currentUser.uid,
+          updatedByName: currentDisplayName()
+        });
+      } else {
+        batch.update(reference, {
+          archived: true,
+          archivedAt: firebase.firestore.FieldValue.serverTimestamp(),
+          archivedBy: currentUser.uid,
+          archivedByName: currentDisplayName(),
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+          updatedBy: currentUser.uid,
+          updatedByName: currentDisplayName()
+        });
+      }
+    });
+    await logAudit(scope === 'archived' ? 'BULK_RESTORE' : 'BULK_ARCHIVE', '', { count: selectedIds.length, ids: selectedIds });
+    showToast(`${selectedIds.length} record(s) ${scope === 'archived' ? 'restored' : 'archived'}.`);
+  } catch (error) {
+    showToast(`Bulk action failed: ${error.message}`, 'error');
+  } finally {
+    setLoading(false);
+  }
+});
+
+async function runBatches(items, addOperation, size = 400) {
+  for (let start = 0; start < items.length; start += size) {
+    const batch = db.batch();
+    const chunk = items.slice(start, start + size);
+    chunk.forEach(item => addOperation(batch, item));
+    await batch.commit();
+  }
+}
+
+// -----------------------------------------------------------------------------
+// 9. REPORTS
+// -----------------------------------------------------------------------------
 function generateReport() {
-    const yVal = document.getElementById('filter-report-year').value;
-    const mVal = document.getElementById('filter-report-month').value;
-    const tVal = document.getElementById('filter-report-type').value;
+  const year = Number($('filter-report-year').value) || new Date().getFullYear();
+  const month = $('filter-report-month').value;
+  const type = $('filter-report-type').value;
+  const status = $('filter-report-status').value;
 
-    filteredReportData = movsData.filter(r => {
-        const d = parseDate(r.sortDate || r.date);
-        if(d.getFullYear().toString() !== yVal) return false;
-        if(mVal !== 'all' && d.getMonth().toString() !== mVal) return false;
-        if(tVal !== 'all' && r.type !== tVal) return false;
-        return true;
+  filteredReportData = movsData
+    .filter(record => {
+      const date = getRecordDate(record);
+      return date &&
+        date.getFullYear() === year &&
+        (month === 'all' || date.getMonth() === Number(month)) &&
+        (type === 'all' || record.type === type) &&
+        (status === 'all' || (record.status || 'Draft') === status);
+    })
+    .sort((a, b) => (getRecordDate(a)?.getTime() || 0) - (getRecordDate(b)?.getTime() || 0));
+
+  renderReportSummary();
+  renderReportTable();
+  updatePrintMetadata();
+}
+
+function renderReportSummary() {
+  const area = $('report-summary-area');
+  const grid = $('report-summary-grid');
+  grid.replaceChildren();
+
+  if (!filteredReportData.length) {
+    area.classList.add('hidden');
+    return;
+  }
+
+  area.classList.remove('hidden');
+  const counts = Object.fromEntries(TYPES.map(type => [type, 0]));
+  filteredReportData.forEach(record => {
+    if (Object.hasOwn(counts, record.type)) counts[record.type] += 1;
+  });
+
+  const cards = [['Total Records', filteredReportData.length], ...TYPES.filter(type => counts[type] > 0).map(type => [type, counts[type]])];
+  cards.forEach(([label, value]) => {
+    const card = document.createElement('div');
+    card.style.cssText = 'background:#fff;padding:1rem;border-radius:.55rem;border:1px solid #dbe4ef;';
+    const number = document.createElement('div');
+    number.style.cssText = 'font-weight:700;font-size:1.25rem;color:var(--primary);';
+    number.textContent = value;
+    const text = document.createElement('div');
+    text.style.cssText = 'font-size:.72rem;color:#64748b;margin-top:.2rem;';
+    text.textContent = label;
+    card.append(number, text);
+    grid.appendChild(card);
+  });
+}
+
+function renderReportTable() {
+  const tbody = document.querySelector('#report-table tbody');
+  tbody.replaceChildren();
+
+  if (!filteredReportData.length) {
+    const row = document.createElement('tr');
+    const cell = document.createElement('td');
+    cell.colSpan = 9;
+    cell.className = 'empty-state';
+    cell.textContent = 'No records were found for the selected reporting filters.';
+    row.appendChild(cell);
+    tbody.appendChild(row);
+    return;
+  }
+
+  filteredReportData.forEach(record => {
+    const row = document.createElement('tr');
+    const statusCell = document.createElement('td');
+    statusCell.appendChild(createBadge(record.status || 'Draft', STATUS_CLASSES[record.status] || STATUS_CLASSES.Draft));
+
+    const linkCell = document.createElement('td');
+    const safeUrl = getSafeUrl(record.link);
+    if (safeUrl) {
+      const link = document.createElement('a');
+      link.href = safeUrl;
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      link.textContent = safeUrl;
+      link.style.color = 'var(--primary)';
+      link.style.textDecoration = 'underline';
+      linkCell.appendChild(link);
+    } else linkCell.textContent = '-';
+
+    row.append(
+      createCell(formatDisplayDate(record.date || record.sortDate)),
+      createCell(record.type || '-'),
+      createCell(record.activity || '-'),
+      createCell(record.title || '-'),
+      createCell(record.responsible || '-'),
+      statusCell,
+      createCell(record.platform || '-'),
+      linkCell,
+      createCell(record.remarks || '-')
+    );
+    tbody.appendChild(row);
+  });
+}
+
+function updatePrintMetadata() {
+  const year = $('filter-report-year').value;
+  const month = $('filter-report-month').value;
+  const type = $('filter-report-type').value;
+  const status = $('filter-report-status').value;
+  const monthLabel = month === 'all' ? 'All Months' : MONTH_NAMES[Number(month)];
+  const typeLabel = type === 'all' ? 'All Output Types' : type;
+  const statusLabel = status === 'all' ? 'All Verification Statuses' : status;
+  $('print-report-period').textContent = `Reporting Period: ${monthLabel} ${year} | ${typeLabel} | ${statusLabel}`;
+  $('print-generated-at').textContent = `Generated on ${new Intl.DateTimeFormat('en-PH', { dateStyle: 'long', timeStyle: 'short' }).format(new Date())}`;
+}
+
+$('filter-report-btn').addEventListener('click', generateReport);
+$('print-report-btn').addEventListener('click', () => {
+  if (!can('print')) return showToast('Your role is not authorized to print reports.', 'error');
+  generateReport();
+  window.print();
+});
+
+$('export-report-btn').addEventListener('click', exportReport);
+
+function exportReport() {
+  if (!can('export')) return showToast('Your role is not authorized to export reports.', 'error');
+  generateReport();
+  if (!filteredReportData.length) return showToast('There is no report data to export.', 'warning');
+
+  const rows = filteredReportData.map(record => ({
+    Date: record.date || dateToISO(getRecordDate(record)),
+    'Output Type': record.type || '',
+    'Activity / Program / KRA': record.activity || '',
+    'Title / Details': record.title || '',
+    'Responsible Personnel': record.responsible || '',
+    'Verification Status': record.status || 'Draft',
+    Platform: record.platform || '',
+    'MOV Link': record.link || '',
+    Remarks: record.remarks || '',
+    'Created By': record.createdByName || '',
+    'Verified By': record.verifiedByName || ''
+  }));
+
+  const worksheet = XLSX.utils.json_to_sheet(rows);
+  worksheet['!cols'] = [
+    { wch: 13 }, { wch: 23 }, { wch: 30 }, { wch: 45 }, { wch: 24 },
+    { wch: 19 }, { wch: 20 }, { wch: 45 }, { wch: 35 }, { wch: 24 }, { wch: 24 }
+  ];
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'MOV Report');
+
+  const fileName = `PAUMOVision_${$('filter-report-year').value}_${$('filter-report-month').value}_${$('filter-report-type').value}_${$('filter-report-status').value}`
+    .replaceAll(' ', '_')
+    .replaceAll('/', '-')
+    .replaceAll('(', '')
+    .replaceAll(')', '');
+  XLSX.writeFile(workbook, `${fileName}.xlsx`);
+  logAudit('EXPORT_REPORT', '', { count: rows.length, fileName });
+}
+
+// -----------------------------------------------------------------------------
+// 10. EXCEL IMPORT
+// -----------------------------------------------------------------------------
+$('upload-excel').addEventListener('change', importExcel);
+
+async function importExcel(event) {
+  const file = event.target.files?.[0];
+  event.target.value = '';
+  if (!file || !can('import')) return;
+
+  setLoading(true, 'Reading and validating Excel file...');
+  try {
+    const data = await file.arrayBuffer();
+    const workbook = XLSX.read(data, { type: 'array', cellDates: true });
+    const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+    const rows = XLSX.utils.sheet_to_json(worksheet, { defval: '', raw: true });
+
+    if (!rows.length) throw new Error('The selected worksheet is empty.');
+
+    const existingKeys = new Set(movsData.map(record => `${record.date}|${safeLower(record.type)}|${safeLower(record.title)}`));
+    const validRows = [];
+    const issues = [];
+
+    rows.forEach((row, index) => {
+      const date = parseDate(row.Date ?? row.date);
+      const type = normalizeText(row.Type ?? row['Output Type'] ?? row.type);
+      const title = normalizeText(row.Title ?? row['Title / Details'] ?? row.title);
+      const responsible = normalizeText(row.Responsible ?? row['Responsible Personnel'] ?? row.responsible);
+      const status = normalizeText(row.Status ?? row['Verification Status'] ?? 'Draft') || 'Draft';
+      const linkValue = normalizeText(row.Link ?? row['MOV Link'] ?? row.link);
+      const safeLink = linkValue ? getSafeUrl(linkValue) : '';
+      const rowNumber = index + 2;
+      const reasons = [];
+
+      if (!date) reasons.push('Invalid or missing Date');
+      if (!TYPES.includes(type)) reasons.push('Invalid Output Type');
+      if (!title) reasons.push('Missing Title');
+      if (!responsible) reasons.push('Missing Responsible Personnel');
+      if (!VALID_STATUSES.includes(status)) reasons.push('Invalid Verification Status');
+      if (status === 'Verified' && !can('verify')) reasons.push('Your role cannot import records as Verified');
+      if (linkValue && !safeLink) reasons.push('Invalid MOV Link');
+
+      const isoDate = dateToISO(date);
+      const duplicateKey = `${isoDate}|${safeLower(type)}|${safeLower(title)}`;
+      if (existingKeys.has(duplicateKey)) reasons.push('Duplicate record');
+
+      if (reasons.length) {
+        issues.push({ 'Excel Row': rowNumber, Title: title, Issues: reasons.join('; ') });
+        return;
+      }
+
+      existingKeys.add(duplicateKey);
+      validRows.push({
+        date: isoDate,
+        type,
+        title,
+        responsible,
+        activity: normalizeText(row.Activity ?? row['Activity / Program / KRA'] ?? ''),
+        platform: normalizeText(row.Platform ?? ''),
+        status,
+        link: safeLink,
+        remarks: normalizeText(row.Remarks ?? row.remarks ?? ''),
+        sortDate: firebase.firestore.Timestamp.fromDate(date),
+        archived: false
+      });
     });
 
-    // Summary Logic
-    const summaryDiv = document.getElementById('report-summary-area');
-    const counts = {}; filteredReportData.forEach(r => counts[r.type] = (counts[r.type]||0) + 1);
-    
-    // Always show summary if we ran the filter, even if count is 0, 
-    // but typically if count > 0 we show grid. 
-    // If 0, we can hide or show "0 results".
-    if(filteredReportData.length > 0) {
-        summaryDiv.style.display = 'block';
-        let html = `<div style="background:#fff; padding:1rem; border-radius:0.5rem; border:1px solid #e2e8f0;"><div style="font-weight:700; font-size:1.25rem; color:var(--primary);">${filteredReportData.length}</div><div style="font-size:0.75rem; color:#64748b;">Total</div></div>`;
-        for(let t in counts) {
-            html += `<div style="background:#fff; padding:1rem; border-radius:0.5rem; border:1px solid #e2e8f0;"><div style="font-weight:700; font-size:1.25rem; color:#0f172a;">${counts[t]}</div><div style="font-size:0.75rem; color:#64748b;">${t}</div></div>`;
-        }
-        summaryDiv.querySelector('.grid').innerHTML = html;
-    } else { 
-        summaryDiv.style.display = 'none'; 
+    if (issues.length) exportImportIssues(issues);
+    if (!validRows.length) {
+      showToast('No valid records were found. An import-issues file was generated.', 'warning', 6000);
+      return;
     }
 
-    // Table Logic
-    const tbody = document.querySelector('#report-table tbody');
-    if(filteredReportData.length === 0) { 
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:2rem;">No records found for ' + yVal + '.</td></tr>'; 
-        return; 
-    }
-    
-    tbody.innerHTML = filteredReportData.map(r => `
-        <tr>
-            <td style="white-space:nowrap;">${r.date}</td>
-            <td>${r.type}</td>
-            <td>${r.title}</td>
-            <td>${r.responsible}</td>
-            <td class="print-link-cell">
-                ${r.link ? `<a href="${r.link}" target="_blank" style="color:var(--primary); text-decoration:underline;">${r.link}</a>` : '-'}
-            </td>
-            <td>${r.remarks}</td>
-        </tr>
-    `).join('');
-}
+    setLoading(false);
+    const confirmation = confirm(
+      `Import ${validRows.length} valid record(s)?\n\n` +
+      `${issues.length} row(s) were skipped${issues.length ? ' and listed in the generated issues file' : ''}.`
+    );
+    if (!confirmation) return;
 
-// 2. Event Listener calls the function
-document.getElementById('filter-report-btn').addEventListener('click', generateReport);
+    setLoading(true, `Importing ${validRows.length} record(s)...`);
+    await runBatches(validRows, (batch, record) => {
+      const reference = movsColl.doc();
+      batch.set(reference, {
+        ...record,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        createdBy: currentUser.uid,
+        createdByName: currentDisplayName(),
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        updatedBy: currentUser.uid,
+        updatedByName: currentDisplayName(),
+        verifiedAt: record.status === 'Verified' ? firebase.firestore.FieldValue.serverTimestamp() : null,
+        verifiedBy: record.status === 'Verified' ? currentUser.uid : null,
+        verifiedByName: record.status === 'Verified' ? currentDisplayName() : ''
+      });
+    });
 
-// PRINT BUTTON EVENT LISTENERS
-document.getElementById('print-dashboard-btn').addEventListener('click', () => {
-    window.print();
-});
-document.getElementById('print-report-btn').addEventListener('click', () => {
-    window.print();
-});
-
-document.getElementById('export-report-btn').addEventListener('click', () => {
-    if(filteredReportData.length === 0) return showToast('No data', 'error');
-    const ws = XLSX.utils.json_to_sheet(filteredReportData.map(r => ({ Date: r.date, Type: r.type, Title: r.title, Responsible: r.responsible, Link: r.link, Remarks: r.remarks })));
-    const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Report"); XLSX.writeFile(wb, "Report_Export.xlsx");
-});
-
-function populateYearDropdowns() {
-  const years = [...new Set(movsData.map(r => parseDate(r.sortDate || r.date).getFullYear()))].sort((a,b)=>b-a);
-  const currentYear = new Date().getFullYear();
-  
-  // Ensure Current Year (2026) is always in the list, even if no data exists yet
-  if(!years.includes(currentYear)) {
-      years.unshift(currentYear);
+    await logAudit('IMPORT_EXCEL', '', { fileName: file.name, imported: validRows.length, skipped: issues.length });
+    showToast(`Imported ${validRows.length} record(s).${issues.length ? ` ${issues.length} row(s) were skipped.` : ''}`, issues.length ? 'warning' : 'success', 6000);
+  } catch (error) {
+    console.error(error);
+    showToast(`Excel import failed: ${error.message}`, 'error', 7000);
+  } finally {
+    setLoading(false);
   }
-
-  const ops = years.map(y => `<option value="${y}">${y}</option>`).join('');
-  document.getElementById('chart-year-filter').innerHTML = ops;
-  
-  // Set Report Year to Current Year (2026) by default
-  const reportSel = document.getElementById('filter-report-year');
-  reportSel.innerHTML = ops;
-  reportSel.value = currentYear;
 }
 
-function showToast(msg, type='success') {
-  const t = document.createElement('div'); t.className = 'toast';
-  t.innerHTML = `<i class="fas ${type==='success'?'fa-check-circle':'fa-exclamation-circle'}" style="color:${type==='success'?'#4ade80':'#f87171'}"></i> ${msg}`;
-  document.getElementById('toast-container').appendChild(t); setTimeout(() => t.remove(), 3000);
+function exportImportIssues(issues) {
+  const worksheet = XLSX.utils.json_to_sheet(issues);
+  worksheet['!cols'] = [{ wch: 12 }, { wch: 45 }, { wch: 60 }];
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'Import Issues');
+  XLSX.writeFile(workbook, `PAUMOVision_Import_Issues_${Date.now()}.xlsx`);
 }
 
-document.querySelectorAll('.sidebar li').forEach(item => {
-  item.addEventListener('click', () => {
-    document.querySelectorAll('.sidebar li').forEach(i=>i.classList.remove('active')); item.classList.add('active');
-    document.querySelectorAll('.section').forEach(s=>s.classList.remove('active')); document.getElementById(item.dataset.section).classList.add('active');
+// -----------------------------------------------------------------------------
+// 11. NAVIGATION AND INITIALIZATION
+// -----------------------------------------------------------------------------
+function switchSection(sectionId) {
+  document.querySelectorAll('.nav-item').forEach(item => item.classList.toggle('active', item.dataset.section === sectionId));
+  document.querySelectorAll('.section').forEach(section => section.classList.toggle('active', section.id === sectionId));
+  if (sectionId === 'reports') generateReport();
+  if (sectionId === 'movs') renderMovsTable();
+  document.querySelector('.content')?.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+document.querySelectorAll('.nav-item').forEach(item => {
+  item.addEventListener('click', () => switchSection(item.dataset.section));
+});
+
+initializeSelectOptions();
+resetForm();
+
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(error => console.warn('Service worker registration failed:', error));
   });
-});
-
-document.getElementById('upload-excel').addEventListener('change', async (e) => {
-    const file = e.target.files[0]; if(!file) return;
-    try {
-        const data = await file.arrayBuffer(); const workbook = XLSX.read(data, {type:'array'});
-        const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
-        let count = 0; for(let r of json) {
-           await movsColl.add({ date: r.Date||new Date().toISOString().split('T')[0], type: r.Type||'IEC Videos', title: r.Title||'Imported', responsible: r.Responsible||'', link: r.Link||'', remarks: r.Remarks||'', sortDate: new Date(), createdAt: new Date() });
-           count++;
-        }
-        showToast(`Imported ${count}`);
-    } catch(err) { showToast('Error', 'error'); }
-});
-document.getElementById('deleteSelectedBtn').addEventListener('click', async () => {
-  const checkboxes = document.querySelectorAll('.rowCheckbox:checked');
-  if(checkboxes.length === 0) return showToast('No items', 'error');
-  if(!confirm(`Delete ${checkboxes.length}?`)) return;
-  for(const cb of checkboxes) { await movsColl.doc(cb.closest('tr').dataset.id).delete(); }
-  showToast('Deleted'); document.getElementById('selectAll').checked = false;
-});
-document.getElementById('selectAll').addEventListener('change', function() { document.querySelectorAll('.rowCheckbox').forEach(cb => cb.checked = this.checked); });
+}
 </script>
 </body>
 </html>
