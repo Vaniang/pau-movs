@@ -729,6 +729,13 @@ const ROLE_LABELS = {
   viewer: 'Viewer'
 };
 
+// Default names are used only when the Firestore profile has no displayName.
+// The saved users/{UID}.displayName value still takes priority.
+const DEFAULT_DISPLAY_NAMES = {
+  admin: 'PAU Administrator',
+  viewer: 'Public Affairs Unit'
+};
+
 let currentUser = null;
 let currentProfile = { role: 'viewer', displayName: '' };
 let unsubscribeMovs = null;
@@ -864,7 +871,11 @@ function can(permission) {
 }
 
 function currentDisplayName() {
-  return currentProfile.displayName || currentUser?.displayName || currentUser?.email || 'Unknown user';
+  return currentProfile.displayName
+    || DEFAULT_DISPLAY_NAMES[currentProfile.role]
+    || currentUser?.displayName
+    || currentUser?.email
+    || 'Unknown user';
 }
 
 async function logAudit(action, recordId = '', details = {}) {
@@ -954,7 +965,11 @@ auth.onAuthStateChanged(async (user) => {
 
     currentProfile = {
       role,
-      displayName: normalizeText(profile.displayName) || user.displayName || user.email || ''
+      displayName: normalizeText(profile.displayName)
+        || DEFAULT_DISPLAY_NAMES[role]
+        || user.displayName
+        || user.email
+        || ''
     };
 
     $('user-name').textContent = currentDisplayName();
