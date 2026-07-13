@@ -4,10 +4,15 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#0b2f5b" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="PAUMOVision" />
   <meta name="description" content="PAUMOVision — Public Affairs Unit Means of Verification and Facebook Engagement Tracker" />
   <title>PAUMOVision | PAU Means of Verification Tracker</title>
 
   <link rel="icon" type="image/png" href="logo.png" />
+  <link rel="apple-touch-icon" href="logo.png" />
   <link rel="manifest" href="manifest.json" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -306,6 +311,104 @@
     .spinner { width: 22px; height: 22px; border: 3px solid #dbeafe; border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
+
+    .preset-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      padding-bottom: 1rem;
+      margin-bottom: 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .preset-button.active {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+    }
+    .executive-summary {
+      background: linear-gradient(135deg, #fffdf5, var(--gold-soft));
+      border-color: #ecd58b;
+    }
+    .executive-summary p {
+      margin-top: 0.65rem;
+      line-height: 1.75;
+      text-align: justify;
+      text-justify: inter-word;
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 11000;
+      display: grid;
+      place-items: center;
+      padding: 1rem;
+      background: rgba(8, 31, 58, 0.58);
+      backdrop-filter: blur(3px);
+    }
+    .modal-card {
+      width: min(520px, 100%);
+      max-height: calc(100vh - 2rem);
+      overflow-y: auto;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 0.9rem;
+      box-shadow: 0 24px 70px rgba(15,23,42,0.28);
+      padding: 1.35rem;
+    }
+    .modal-card h2 { font-size: 1.15rem; color: var(--primary); }
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      margin-top: 1.2rem;
+    }
+    .metric-modal-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.9rem;
+      margin-top: 1rem;
+    }
+    .metric-modal-grid .full { grid-column: 1 / -1; }
+
+    .offline-banner {
+      position: fixed;
+      top: 0;
+      left: 50%;
+      z-index: 12000;
+      transform: translateX(-50%);
+      width: min(760px, calc(100% - 1.5rem));
+      padding: 0.7rem 1rem;
+      border-radius: 0 0 0.7rem 0.7rem;
+      background: #7f1d1d;
+      color: #fff;
+      text-align: center;
+      font-size: 0.82rem;
+      box-shadow: 0 8px 24px rgba(127,29,29,0.25);
+    }
+
+    .session-countdown {
+      margin-top: 0.8rem;
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--destructive);
+      text-align: center;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .activity-table { min-width: 920px; }
+    .activity-status {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 9999px;
+      padding: 0.18rem 0.55rem;
+      font-size: 0.72rem;
+      font-weight: 600;
+    }
+    .activity-status.active { background: #ecfdf5; color: #047857; }
+    .activity-status.closed { background: #f1f5f9; color: #475569; }
+
     @media (max-width: 1120px) {
       .charts-row { grid-template-columns: 1fr; }
       .form-wide { grid-column: span 1; }
@@ -326,13 +429,15 @@
       .card { padding: 1rem; }
       .filter-actions, .section-actions { width: 100%; }
       .filter-actions .btn, .section-actions .btn { flex: 1; }
+      .metric-modal-grid { grid-template-columns: 1fr; }
+      .metric-modal-grid .full { grid-column: auto; }
       #toast-container { right: 12px; bottom: 12px; }
     }
 
     @media print {
       @page { size: A4 landscape; margin: 1cm; }
       body { background: #fff !important; color: #000 !important; }
-      .sidebar, #toast-container, .loading-overlay, .no-print, button, input, select, textarea, label { display: none !important; }
+      .sidebar, #toast-container, .loading-overlay, .modal-backdrop, .offline-banner, .no-print, button, input, select, textarea, label { display: none !important; }
       .app-shell, .content { display: block !important; width: 100% !important; height: auto !important; overflow: visible !important; padding: 0 !important; }
       .section { display: none !important; }
       .section.active { display: block !important; animation: none !important; }
@@ -424,6 +529,9 @@
         <button class="nav-item" data-section="reports" type="button">
           <i class="fas fa-file-lines" aria-hidden="true"></i> Reports
         </button>
+        <button id="nav-login-activity" class="nav-item" data-section="login-activity" type="button">
+          <i class="fas fa-clock-rotate-left" aria-hidden="true"></i> Login Activity
+        </button>
       </nav>
 
       <div class="sidebar-user">
@@ -431,9 +539,14 @@
           <div id="user-name" class="name">Signed-in user</div>
           <div id="user-role" class="role">Viewer</div>
         </div>
-        <button id="logout-btn" class="btn btn-outline h-8" type="button" title="Sign out">
-          <i class="fas fa-arrow-right-from-bracket" aria-hidden="true"></i> Sign out
-        </button>
+        <div class="flex gap-2 flex-wrap">
+          <button id="install-app-btn" class="btn btn-outline h-8" type="button" title="Install PAUMOVision">
+            <i class="fas fa-download" aria-hidden="true"></i> Install
+          </button>
+          <button id="logout-btn" class="btn btn-outline h-8" type="button" title="Sign out">
+            <i class="fas fa-arrow-right-from-bracket" aria-hidden="true"></i> Sign out
+          </button>
+        </div>
       </div>
     </aside>
 
@@ -643,6 +756,17 @@
         </div>
 
         <div class="card mb-6">
+          <div>
+            <label style="margin-bottom:0.65rem;">Quick report presets</label>
+            <div id="report-preset-bar" class="preset-bar no-print">
+              <button class="btn btn-outline h-8 preset-button" data-report-preset="current-month" type="button">Current Month</button>
+              <button class="btn btn-outline h-8 preset-button" data-report-preset="current-quarter" type="button">Current Quarter</button>
+              <button class="btn btn-outline h-8 preset-button" data-report-preset="first-semester" type="button">First Semester</button>
+              <button class="btn btn-outline h-8 preset-button" data-report-preset="second-semester" type="button">Second Semester</button>
+              <button class="btn btn-outline h-8 preset-button" data-report-preset="annual" type="button">Annual Report</button>
+              <button class="btn btn-outline h-8 preset-button" data-report-preset="all-records" type="button">All Records</button>
+            </div>
+          </div>
           <div class="filter-bar">
             <div>
               <label for="filter-report-year">Year</label>
@@ -680,6 +804,14 @@
           <div id="report-summary-grid" class="grid" style="grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:1rem;text-align:center;"></div>
         </div>
 
+        <div id="executive-summary-area" class="card mb-6 executive-summary hidden">
+          <div class="flex items-center gap-2">
+            <i class="fas fa-wand-magic-sparkles" style="color:var(--gold);" aria-hidden="true"></i>
+            <h3 class="font-bold" style="color:var(--primary);">Automatic Executive Summary</h3>
+          </div>
+          <p id="executive-summary-text"></p>
+        </div>
+
         <div class="card" style="padding:0;">
           <div class="table-wrapper" style="border:none;">
             <table id="report-table">
@@ -708,7 +840,99 @@
           <div><div class="signature-line">Reviewed by</div></div>
         </div>
       </section>
+
+      <section id="login-activity" class="section">
+        <div class="section-header flex justify-between items-center mb-6">
+          <div>
+            <h1>Login Activity</h1>
+            <p class="text-muted">Administrator-only record of PAUMOVision account sessions. Shared viewer accounts identify the account used, not the specific person operating it.</p>
+          </div>
+          <div class="section-actions flex gap-2 items-center">
+            <span id="login-activity-count" class="record-count"></span>
+            <button id="refresh-login-activity-btn" class="btn btn-outline h-9" type="button">
+              <i class="fas fa-arrows-rotate" aria-hidden="true"></i> Refresh
+            </button>
+          </div>
+        </div>
+
+        <div class="card" style="padding:0;">
+          <div class="table-wrapper" style="border:none;">
+            <table id="login-activity-table" class="activity-table">
+              <thead>
+                <tr>
+                  <th>Account</th>
+                  <th>Role</th>
+                  <th>Email</th>
+                  <th>Login</th>
+                  <th>Last Activity</th>
+                  <th>Logout</th>
+                  <th>Status / Reason</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td colspan="7" class="empty-state">Login activity will appear here.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
     </main>
+  </div>
+
+  <div id="offline-banner" class="offline-banner hidden" role="status">
+    <i class="fas fa-wifi" aria-hidden="true"></i>
+    You are offline. Live data, login activity, and record updates may be unavailable until the connection returns.
+  </div>
+
+  <div id="quick-metrics-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="quick-metrics-title">
+    <div class="modal-card">
+      <div class="flex justify-between items-center gap-3">
+        <div>
+          <h2 id="quick-metrics-title">Update Facebook Metrics</h2>
+          <p id="quick-metrics-record-title" class="text-muted" style="margin-top:.35rem;"></p>
+        </div>
+        <button id="close-quick-metrics-btn" class="btn btn-ghost h-icon" type="button" aria-label="Close metrics update">
+          <i class="fas fa-xmark" aria-hidden="true"></i>
+        </button>
+      </div>
+      <div class="metric-modal-grid">
+        <div>
+          <label for="quick-reach">Reach</label>
+          <input id="quick-reach" type="number" min="0" step="1" inputmode="numeric" />
+        </div>
+        <div>
+          <label for="quick-reactions">Reactions</label>
+          <input id="quick-reactions" type="number" min="0" step="1" inputmode="numeric" />
+        </div>
+        <div>
+          <label for="quick-shares">Shares</label>
+          <input id="quick-shares" type="number" min="0" step="1" inputmode="numeric" />
+        </div>
+        <div>
+          <label for="quick-metrics-date">Metrics updated on</label>
+          <input id="quick-metrics-date" type="date" />
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button id="cancel-quick-metrics-btn" class="btn btn-outline h-9" type="button">Cancel</button>
+        <button id="save-quick-metrics-btn" class="btn btn-gold h-9" type="button">
+          <i class="fas fa-chart-simple" aria-hidden="true"></i> Save Metrics
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="session-warning-modal" class="modal-backdrop hidden" role="alertdialog" aria-modal="true" aria-labelledby="session-warning-title">
+    <div class="modal-card" style="max-width:430px;text-align:center;">
+      <i class="fas fa-hourglass-half" style="font-size:2rem;color:var(--warning);" aria-hidden="true"></i>
+      <h2 id="session-warning-title" style="margin-top:.7rem;">Session Expiring Soon</h2>
+      <p class="text-muted" style="margin-top:.55rem;">For security, PAUMOVision signs out accounts after 30 minutes of inactivity.</p>
+      <div id="session-countdown" class="session-countdown">01:00</div>
+      <div class="modal-actions" style="justify-content:center;">
+        <button id="session-signout-btn" class="btn btn-outline h-9" type="button">Sign Out</button>
+        <button id="continue-session-btn" class="btn btn-default h-9" type="button">Continue Session</button>
+      </div>
+    </div>
   </div>
 
   <div id="loading-overlay" class="loading-overlay hidden" aria-live="assertive">
@@ -740,6 +964,7 @@ const db = firebase.firestore();
 const movsColl = db.collection('movs');
 const usersColl = db.collection('users');
 const auditColl = db.collection('auditLogs');
+const loginActivitiesColl = db.collection('loginActivities');
 
 // -----------------------------------------------------------------------------
 // 2. CONFIGURATION AND STATE
@@ -758,7 +983,7 @@ const MONTH_NAMES = ['January','February','March','April','May','June','July','A
 
 const ROLE_PERMISSIONS = {
   // The ADAS I serves as both Administrator and PAU Encoder.
-  admin: ['read', 'create', 'edit', 'archive', 'restore', 'delete', 'import', 'export', 'print'],
+  admin: ['read', 'create', 'edit', 'archive', 'restore', 'delete', 'import', 'export', 'print', 'viewLoginActivity'],
 
   // The official PAU account and any approved management account are read-only.
   viewer: ['read', 'export', 'print']
@@ -789,6 +1014,25 @@ let chartEngagementInstance = null;
 let filteredReportData = [];
 let currentSort = { field: 'date', direction: 'desc' };
 let isSaving = false;
+let quickMetricsRecordId = null;
+let reportRangeOverride = null;
+let activeReportPreset = '';
+let loginActivityRecords = [];
+let unsubscribeLoginActivity = null;
+let currentLoginActivityRef = null;
+let currentLoginActivityId = '';
+let deferredInstallPrompt = null;
+let inactivityWarningTimer = null;
+let inactivityLogoutTimer = null;
+let inactivityCountdownTimer = null;
+let inactivitySecondsRemaining = 60;
+let lastActivityHeartbeatAt = 0;
+let lastInactivityResetAt = 0;
+let isLoggingOut = false;
+
+const SESSION_TIMEOUT_MS = 30 * 60 * 1000;
+const SESSION_WARNING_MS = 60 * 1000;
+const ACTIVITY_HEARTBEAT_MS = 5 * 60 * 1000;
 
 // -----------------------------------------------------------------------------
 // 3. DOM HELPERS
@@ -939,6 +1183,54 @@ function formatDisplayDate(value) {
   return new Intl.DateTimeFormat('en-PH', { year: 'numeric', month: 'short', day: '2-digit' }).format(date);
 }
 
+function formatDateTime(value) {
+  const date = parseDate(value);
+  if (!date) return '-';
+  return new Intl.DateTimeFormat('en-PH', {
+    year: 'numeric',
+    month: 'short',
+    day: '2-digit',
+    hour: 'numeric',
+    minute: '2-digit'
+  }).format(date);
+}
+
+function startOfDay(date) {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+}
+
+function endOfDay(date) {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate(), 23, 59, 59, 999);
+}
+
+function selectedReportYear() {
+  const value = $('filter-report-year').value;
+  return value === 'all' ? new Date().getFullYear() : Number(value) || new Date().getFullYear();
+}
+
+function getReportPeriodLabel() {
+  const year = $('filter-report-year').value;
+  const month = $('filter-report-month').value;
+  const type = $('filter-report-type').value;
+  const typeLabel = type === 'all' ? 'All Output Types' : type;
+
+  if (reportRangeOverride?.label) {
+    return `${reportRangeOverride.label} | ${typeLabel}`;
+  }
+
+  if (activeReportPreset === 'all-records') {
+    return `All Available Records | ${typeLabel}`;
+  }
+
+  if (activeReportPreset === 'annual') {
+    return `Annual Report ${year} | ${typeLabel}`;
+  }
+
+  const monthLabel = month === 'all' ? 'All Months' : MONTH_NAMES[Number(month)];
+  const yearLabel = year === 'all' ? 'All Years' : year;
+  return `${monthLabel} ${yearLabel} | ${typeLabel}`;
+}
+
 function can(permission) {
   const permissions = ROLE_PERMISSIONS[currentProfile.role] || ROLE_PERMISSIONS.viewer;
   return permissions.includes(permission);
@@ -996,7 +1288,7 @@ $('login-form').addEventListener('submit', async (event) => {
   }
 });
 
-$('logout-btn').addEventListener('click', () => auth.signOut());
+$('logout-btn').addEventListener('click', () => performLogout('Manual sign out'));
 
 function friendlyAuthError(error) {
   const map = {
@@ -1011,9 +1303,18 @@ function friendlyAuthError(error) {
 
 auth.onAuthStateChanged(async (user) => {
   if (!user) {
+    clearSessionTimers();
+    closeSessionWarning();
+    closeQuickMetricsModal();
     currentUser = null;
     currentProfile = { role: 'viewer', displayName: '' };
+    currentLoginActivityRef = null;
+    currentLoginActivityId = '';
     if (unsubscribeMovs) unsubscribeMovs();
+    if (unsubscribeLoginActivity) unsubscribeLoginActivity();
+    unsubscribeMovs = null;
+    unsubscribeLoginActivity = null;
+    loginActivityRecords = [];
     $('app-shell').classList.add('hidden');
     $('auth-screen').classList.remove('hidden');
     setLoading(false);
@@ -1051,6 +1352,9 @@ auth.onAuthStateChanged(async (user) => {
     applyPermissionUI();
     $('auth-screen').classList.add('hidden');
     $('app-shell').classList.remove('hidden');
+    await startLoginActivitySession();
+    startSessionTimers();
+    if (currentProfile.role === 'admin') listenToLoginActivity();
     listenToMovs();
   } catch (error) {
     console.error(error);
@@ -1065,6 +1369,7 @@ function applyPermissionUI() {
 
   // Viewer accounts see only the live Dashboard and Reports.
   $('nav-movs').classList.toggle('hidden', !isAdmin);
+  $('nav-login-activity').classList.toggle('hidden', !isAdmin);
   $('add-mov-section').classList.toggle('hidden', !isAdmin);
   $('import-label').classList.toggle('hidden', !isAdmin);
   $('record-scope-wrap').classList.toggle('hidden', !isAdmin);
@@ -1076,12 +1381,234 @@ function applyPermissionUI() {
 
   if (!isAdmin) {
     resetForm();
-    if ($('movs').classList.contains('active')) switchSection('dashboard');
+    if ($('movs').classList.contains('active') || $('login-activity').classList.contains('active')) {
+      switchSection('dashboard');
+    }
   }
 }
 
 // -----------------------------------------------------------------------------
-// 5. REAL-TIME DATA
+// 5. LOGIN ACTIVITY AND SESSION SECURITY
+// -----------------------------------------------------------------------------
+async function startLoginActivitySession() {
+  if (!currentUser) return;
+
+  try {
+    const reference = loginActivitiesColl.doc();
+    currentLoginActivityRef = reference;
+    currentLoginActivityId = reference.id;
+    lastActivityHeartbeatAt = Date.now();
+
+    await reference.set({
+      userId: currentUser.uid,
+      displayName: currentDisplayName(),
+      role: currentProfile.role,
+      email: currentUser.email || '',
+      loginAt: firebase.firestore.FieldValue.serverTimestamp(),
+      lastActivityAt: firebase.firestore.FieldValue.serverTimestamp(),
+      logoutAt: null,
+      logoutReason: '',
+      sessionId: reference.id
+    });
+  } catch (error) {
+    currentLoginActivityRef = null;
+    currentLoginActivityId = '';
+    console.warn('Login activity could not be recorded:', error);
+  }
+}
+
+async function updateLoginActivityHeartbeat(force = false) {
+  if (!currentLoginActivityRef || !currentUser || !navigator.onLine) return;
+  const now = Date.now();
+  if (!force && now - lastActivityHeartbeatAt < ACTIVITY_HEARTBEAT_MS) return;
+  lastActivityHeartbeatAt = now;
+
+  try {
+    await currentLoginActivityRef.update({
+      lastActivityAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+  } catch (error) {
+    console.warn('Login activity heartbeat could not be updated:', error);
+  }
+}
+
+async function closeLoginActivitySession(reason = 'Signed out') {
+  const reference = currentLoginActivityRef;
+  currentLoginActivityRef = null;
+  currentLoginActivityId = '';
+  if (!reference || !currentUser) return;
+
+  try {
+    await reference.update({
+      lastActivityAt: firebase.firestore.FieldValue.serverTimestamp(),
+      logoutAt: firebase.firestore.FieldValue.serverTimestamp(),
+      logoutReason: reason
+    });
+  } catch (error) {
+    console.warn('Logout activity could not be recorded:', error);
+  }
+}
+
+async function performLogout(reason = 'Signed out') {
+  if (isLoggingOut) return;
+  isLoggingOut = true;
+  clearSessionTimers();
+  closeSessionWarning();
+  setLoading(true, 'Signing out...');
+
+  try {
+    await closeLoginActivitySession(reason);
+    await auth.signOut();
+  } catch (error) {
+    console.error(error);
+    showToast(`Unable to sign out: ${error.message}`, 'error');
+  } finally {
+    isLoggingOut = false;
+    setLoading(false);
+  }
+}
+
+function listenToLoginActivity() {
+  if (!can('viewLoginActivity')) return;
+  if (unsubscribeLoginActivity) unsubscribeLoginActivity();
+
+  unsubscribeLoginActivity = loginActivitiesColl
+    .orderBy('loginAt', 'desc')
+    .limit(100)
+    .onSnapshot(
+      snapshot => {
+        loginActivityRecords = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        renderLoginActivityTable();
+      },
+      error => {
+        console.error(error);
+        showToast(`Unable to load login activity: ${error.message}`, 'error', 6000);
+      }
+    );
+}
+
+function renderLoginActivityTable() {
+  if (!can('viewLoginActivity')) return;
+  const tbody = document.querySelector('#login-activity-table tbody');
+  tbody.replaceChildren();
+  $('login-activity-count').textContent = `${loginActivityRecords.length} recent session${loginActivityRecords.length === 1 ? '' : 's'}`;
+
+  if (!loginActivityRecords.length) {
+    const row = document.createElement('tr');
+    const cell = document.createElement('td');
+    cell.colSpan = 7;
+    cell.className = 'empty-state';
+    cell.textContent = 'No login activity has been recorded yet.';
+    row.appendChild(cell);
+    tbody.appendChild(row);
+    return;
+  }
+
+  loginActivityRecords.forEach(activity => {
+    const row = document.createElement('tr');
+    const statusCell = document.createElement('td');
+    const status = document.createElement('span');
+    const hasLogout = Boolean(parseDate(activity.logoutAt));
+    status.className = `activity-status ${hasLogout ? 'closed' : 'active'}`;
+    status.textContent = hasLogout
+      ? normalizeText(activity.logoutReason) || 'Signed out'
+      : 'Active / not closed';
+    statusCell.appendChild(status);
+
+    row.append(
+      createCell(activity.displayName || '-'),
+      createCell(ROLE_LABELS[activity.role] || activity.role || '-'),
+      createCell(activity.email || '-'),
+      createCell(formatDateTime(activity.loginAt)),
+      createCell(formatDateTime(activity.lastActivityAt)),
+      createCell(formatDateTime(activity.logoutAt)),
+      statusCell
+    );
+    tbody.appendChild(row);
+  });
+}
+
+$('refresh-login-activity-btn').addEventListener('click', () => {
+  if (!can('viewLoginActivity')) return;
+  listenToLoginActivity();
+  showToast('Login activity refreshed.');
+});
+
+function startSessionTimers() {
+  clearSessionTimers();
+  lastInactivityResetAt = Date.now();
+
+  inactivityWarningTimer = window.setTimeout(
+    showSessionWarning,
+    SESSION_TIMEOUT_MS - SESSION_WARNING_MS
+  );
+  inactivityLogoutTimer = window.setTimeout(
+    () => performLogout('Automatic sign out after 30 minutes of inactivity'),
+    SESSION_TIMEOUT_MS
+  );
+}
+
+function clearSessionTimers() {
+  window.clearTimeout(inactivityWarningTimer);
+  window.clearTimeout(inactivityLogoutTimer);
+  window.clearInterval(inactivityCountdownTimer);
+  inactivityWarningTimer = null;
+  inactivityLogoutTimer = null;
+  inactivityCountdownTimer = null;
+}
+
+function noteUserActivity() {
+  if (!currentUser || !$('session-warning-modal').classList.contains('hidden')) return;
+  const now = Date.now();
+  if (now - lastInactivityResetAt < 15000) return;
+  lastInactivityResetAt = now;
+  startSessionTimers();
+  updateLoginActivityHeartbeat();
+}
+
+function showSessionWarning() {
+  if (!currentUser) return;
+  inactivitySecondsRemaining = Math.ceil(SESSION_WARNING_MS / 1000);
+  $('session-warning-modal').classList.remove('hidden');
+  updateSessionCountdown();
+
+  window.clearInterval(inactivityCountdownTimer);
+  inactivityCountdownTimer = window.setInterval(() => {
+    inactivitySecondsRemaining -= 1;
+    updateSessionCountdown();
+    if (inactivitySecondsRemaining <= 0) {
+      window.clearInterval(inactivityCountdownTimer);
+    }
+  }, 1000);
+}
+
+function updateSessionCountdown() {
+  const minutes = Math.floor(Math.max(inactivitySecondsRemaining, 0) / 60);
+  const seconds = Math.max(inactivitySecondsRemaining, 0) % 60;
+  $('session-countdown').textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+}
+
+function closeSessionWarning() {
+  $('session-warning-modal').classList.add('hidden');
+  window.clearInterval(inactivityCountdownTimer);
+  inactivityCountdownTimer = null;
+}
+
+$('continue-session-btn').addEventListener('click', () => {
+  closeSessionWarning();
+  updateLoginActivityHeartbeat(true);
+  startSessionTimers();
+  showToast('Your session has been extended.');
+});
+
+$('session-signout-btn').addEventListener('click', () => performLogout('Signed out from inactivity warning'));
+
+['pointerdown', 'keydown', 'touchstart', 'scroll'].forEach(eventName => {
+  window.addEventListener(eventName, noteUserActivity, { passive: true });
+});
+
+// -----------------------------------------------------------------------------
+// 6. REAL-TIME DATA
 // -----------------------------------------------------------------------------
 function listenToMovs() {
   if (unsubscribeMovs) unsubscribeMovs();
@@ -1110,8 +1637,11 @@ function updateApp() {
 }
 
 function populateYearDropdowns() {
-  const controls = [$('dashboard-year-filter'), $('filter-report-year')];
-  const previousValues = controls.map(control => control.value);
+  const dashboardControl = $('dashboard-year-filter');
+  const reportControl = $('filter-report-year');
+  const previousDashboardYear = dashboardControl.value;
+  const previousReportYear = reportControl.value;
+
   const years = [...new Set(
     movsData
       .map(getRecordDate)
@@ -1121,13 +1651,22 @@ function populateYearDropdowns() {
 
   const currentYear = new Date().getFullYear();
   if (!years.includes(currentYear)) years.unshift(currentYear);
-  const options = years.map(year => `<option value="${year}">${year}</option>`).join('');
 
-  controls.forEach((control, index) => {
-    control.innerHTML = options;
-    const previous = Number(previousValues[index]);
-    control.value = years.includes(previous) ? String(previous) : String(currentYear);
-  });
+  const yearOptions = years.map(year => `<option value="${year}">${year}</option>`).join('');
+  dashboardControl.innerHTML = yearOptions;
+  reportControl.innerHTML = `<option value="all">All Years</option>${yearOptions}`;
+
+  dashboardControl.value = years.includes(Number(previousDashboardYear))
+    ? previousDashboardYear
+    : String(currentYear);
+
+  if (previousReportYear === 'all') {
+    reportControl.value = 'all';
+  } else {
+    reportControl.value = years.includes(Number(previousReportYear))
+      ? previousReportYear
+      : String(currentYear);
+  }
 }
 
 // -----------------------------------------------------------------------------
@@ -1404,9 +1943,50 @@ function validateRecord(record) {
   return errors;
 }
 
-function isDuplicateRecord(record, excludedId = null) {
-  const key = `${record.date}|${safeLower(record.type)}|${safeLower(record.title)}`;
-  return movsData.some(item => item.id !== excludedId && `${item.date}|${safeLower(item.type)}|${safeLower(item.title)}` === key);
+function normalizeUrlForComparison(value) {
+  const safeUrl = getSafeUrl(value);
+  if (!safeUrl) return '';
+  return safeUrl.replace(/\/+$/, '').toLowerCase();
+}
+
+function findPotentialDuplicates(record, excludedId = null) {
+  const link = normalizeUrlForComparison(record.link);
+  const title = safeLower(record.title);
+  const activity = safeLower(record.activity);
+  const type = safeLower(record.type);
+
+  return movsData
+    .filter(item => item.id !== excludedId)
+    .map(item => {
+      const reasons = [];
+      const itemLink = normalizeUrlForComparison(item.link);
+      const sameDate = normalizeText(item.date) === normalizeText(record.date);
+      const sameType = safeLower(item.type) === type;
+      const sameTitle = safeLower(item.title) === title;
+      const sameActivity = activity && safeLower(item.activity) === activity;
+
+      if (link && itemLink === link) reasons.push('same MOV/Facebook link');
+      if (sameDate && sameTitle) reasons.push('same date and title');
+      if (sameDate && sameType && sameActivity) reasons.push('same date, type, and activity');
+
+      return reasons.length ? { record: item, reasons } : null;
+    })
+    .filter(Boolean);
+}
+
+function confirmPotentialDuplicates(duplicates) {
+  if (!duplicates.length) return true;
+
+  const examples = duplicates.slice(0, 3).map(({ record, reasons }, index) =>
+    `${index + 1}. ${record.title || 'Untitled record'} — ${reasons.join(', ')}`
+  ).join('\n');
+
+  const extra = duplicates.length > 3 ? `\n…and ${duplicates.length - 3} more possible duplicate(s).` : '';
+
+  return confirm(
+    `PAUMOVision found ${duplicates.length} possible duplicate record(s):\n\n` +
+    `${examples}${extra}\n\nSave this record anyway?`
+  );
 }
 
 $('add-mov').addEventListener('click', saveRecord);
@@ -1417,21 +1997,34 @@ async function saveRecord() {
   const record = readFormRecord();
   const errors = validateRecord(record);
   if (errors.length) return showToast(errors[0], 'error');
-  if (isDuplicateRecord(record, editingId)) return showToast('A record with the same date, type, and title already exists.', 'warning', 5000);
+
+  const potentialDuplicates = findPotentialDuplicates(record, editingId);
+  if (!confirmPotentialDuplicates(potentialDuplicates)) {
+    return showToast('Record saving was cancelled so you can review the possible duplicate.', 'warning');
+  }
 
   const date = parseDate(record.date);
   const safeLink = record.link ? getSafeUrl(record.link) : '';
+  const previousRecord = editingId ? movsData.find(item => item.id === editingId) : null;
+  const metricsChanged = !previousRecord
+    || getMetric(previousRecord, 'reach') !== record.reach
+    || getMetric(previousRecord, 'reactions') !== record.reactions
+    || getMetric(previousRecord, 'shares') !== record.shares;
+
   const baseData = {
     ...record,
     link: safeLink,
     sortDate: firebase.firestore.Timestamp.fromDate(date),
     archived: false,
-    metricsUpdatedAt: firebase.firestore.FieldValue.serverTimestamp(),
     updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
     updatedBy: currentUser.uid,
     updatedByName: currentDisplayName()
   };
 
+  if (metricsChanged) {
+    baseData.metricsAsOfDate = dateToISO(new Date());
+    baseData.metricsUpdatedAt = firebase.firestore.FieldValue.serverTimestamp();
+  }
 
   isSaving = true;
   $('add-mov').disabled = true;
@@ -1439,9 +2032,8 @@ async function saveRecord() {
 
   try {
     if (editingId) {
-      const previous = movsData.find(item => item.id === editingId);
       await movsColl.doc(editingId).update(baseData);
-      await logAudit('UPDATE', editingId, { previous, updated: record });
+      await logAudit('UPDATE', editingId, { previous: previousRecord, updated: record });
       showToast('MOV record updated successfully.');
     } else {
       const document = await movsColl.add({
@@ -1504,6 +2096,91 @@ function editItem(id) {
   $('add-mov').innerHTML = '<i class="fas fa-pen-to-square" aria-hidden="true"></i> Update Record';
   switchSection('dashboard');
   $('add-mov-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function openQuickMetricsModal(id) {
+  if (!can('edit')) return showToast('Only the Administrator / PAU Encoder may update metrics.', 'error');
+  const record = movsData.find(item => item.id === id);
+  if (!record) return;
+
+  quickMetricsRecordId = id;
+  $('quick-metrics-record-title').textContent = record.title || 'Selected MOV record';
+  $('quick-reach').value = String(getMetric(record, 'reach'));
+  $('quick-reactions').value = String(getMetric(record, 'reactions'));
+  $('quick-shares').value = String(getMetric(record, 'shares'));
+  $('quick-metrics-date').value = normalizeText(record.metricsAsOfDate) || dateToISO(new Date());
+  $('quick-metrics-modal').classList.remove('hidden');
+  $('quick-reach').focus();
+}
+
+function closeQuickMetricsModal() {
+  quickMetricsRecordId = null;
+  $('quick-metrics-modal').classList.add('hidden');
+}
+
+$('close-quick-metrics-btn').addEventListener('click', closeQuickMetricsModal);
+$('cancel-quick-metrics-btn').addEventListener('click', closeQuickMetricsModal);
+$('quick-metrics-modal').addEventListener('click', event => {
+  if (event.target === $('quick-metrics-modal')) closeQuickMetricsModal();
+});
+
+$('save-quick-metrics-btn').addEventListener('click', saveQuickMetrics);
+
+async function saveQuickMetrics() {
+  if (!quickMetricsRecordId || !can('edit')) return;
+
+  const reach = parseMetricValue($('quick-reach').value);
+  const reactions = parseMetricValue($('quick-reactions').value);
+  const shares = parseMetricValue($('quick-shares').value);
+  const metricsAsOfDate = $('quick-metrics-date').value;
+
+  if ([reach, reactions, shares].includes(null)) {
+    return showToast('Reach, reactions, and shares must be whole numbers of zero or higher.', 'error');
+  }
+  if (!parseDate(metricsAsOfDate)) {
+    return showToast('Select a valid metrics update date.', 'error');
+  }
+
+  const record = movsData.find(item => item.id === quickMetricsRecordId);
+  if (!record) return closeQuickMetricsModal();
+
+  const previousMetrics = {
+    reach: getMetric(record, 'reach'),
+    reactions: getMetric(record, 'reactions'),
+    shares: getMetric(record, 'shares'),
+    metricsAsOfDate: normalizeText(record.metricsAsOfDate)
+  };
+
+  $('save-quick-metrics-btn').disabled = true;
+  setLoading(true, 'Updating Facebook metrics...');
+
+  try {
+    await movsColl.doc(quickMetricsRecordId).update({
+      reach,
+      reactions,
+      shares,
+      metricsAsOfDate,
+      metricsUpdatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      updatedBy: currentUser.uid,
+      updatedByName: currentDisplayName()
+    });
+
+    await logAudit('METRICS_UPDATE', quickMetricsRecordId, {
+      title: record.title,
+      previous: previousMetrics,
+      updated: { reach, reactions, shares, metricsAsOfDate }
+    });
+
+    showToast('Facebook metrics updated successfully.');
+    closeQuickMetricsModal();
+  } catch (error) {
+    console.error(error);
+    showToast(`Unable to update metrics: ${error.message}`, 'error', 7000);
+  } finally {
+    $('save-quick-metrics-btn').disabled = false;
+    setLoading(false);
+  }
 }
 
 async function archiveItem(id) {
@@ -1691,7 +2368,15 @@ function renderMovsTable() {
     actions.className = 'flex gap-2';
 
     if (scope === 'active') {
-      if (can('edit')) actions.appendChild(createIconButton({ icon: 'fa-pen', title: 'Edit record', onClick: () => editItem(record.id) }));
+      if (can('edit')) {
+        actions.appendChild(createIconButton({
+          icon: 'fa-chart-simple',
+          title: 'Quick update reach, reactions, and shares',
+          color: '#d97706',
+          onClick: () => openQuickMetricsModal(record.id)
+        }));
+        actions.appendChild(createIconButton({ icon: 'fa-pen', title: 'Edit full record', onClick: () => editItem(record.id) }));
+      }
       if (can('archive')) actions.appendChild(createIconButton({ icon: 'fa-box-archive', title: 'Archive record', color: '#dc2626', onClick: () => archiveItem(record.id) }));
     } else {
       if (can('restore')) actions.appendChild(createIconButton({ icon: 'fa-rotate-left', title: 'Restore record', color: '#059669', onClick: () => restoreItem(record.id) }));
@@ -1815,22 +2500,25 @@ async function runBatches(items, addOperation, size = 400) {
 // 9. REPORTS
 // -----------------------------------------------------------------------------
 function generateReport() {
-  const year = Number($('filter-report-year').value) || new Date().getFullYear();
+  const yearValue = $('filter-report-year').value;
   const month = $('filter-report-month').value;
   const type = $('filter-report-type').value;
 
   filteredReportData = movsData
     .filter(record => {
       const date = getRecordDate(record);
-      return date &&
-        date.getFullYear() === year &&
-        (month === 'all' || date.getMonth() === Number(month)) &&
-        (type === 'all' || record.type === type);
+      if (!date) return false;
+
+      const matchesDateRange = reportRangeOverride
+        ? date >= reportRangeOverride.start && date <= reportRangeOverride.end
+        : (yearValue === 'all' || date.getFullYear() === Number(yearValue))
+          && (month === 'all' || date.getMonth() === Number(month));
+
+      return matchesDateRange && (type === 'all' || record.type === type);
     })
     .sort((a, b) => {
-      // Reports are displayed from the most recent MOV date to the oldest.
-      // When two records have the same MOV date, the record added most recently
-      // appears first.
+      // Most recent MOV date appears first. If dates match, the most recently
+      // created record appears first.
       const dateDifference =
         (getRecordDate(b)?.getTime() || 0) -
         (getRecordDate(a)?.getTime() || 0);
@@ -1844,9 +2532,83 @@ function generateReport() {
     });
 
   renderReportSummary();
+  renderExecutiveSummary();
   renderReportTable();
   updatePrintMetadata();
 }
+
+function setActiveReportPreset(key = '') {
+  activeReportPreset = key;
+  document.querySelectorAll('[data-report-preset]').forEach(button => {
+    button.classList.toggle('active', button.dataset.reportPreset === key);
+  });
+}
+
+function clearReportPreset() {
+  reportRangeOverride = null;
+  setActiveReportPreset('');
+}
+
+function applyReportPreset(key) {
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const chosenYear = $('filter-report-year').value === 'all'
+    ? currentYear
+    : Number($('filter-report-year').value) || currentYear;
+
+  reportRangeOverride = null;
+
+  if (key === 'current-month') {
+    $('filter-report-year').value = String(currentYear);
+    $('filter-report-month').value = String(now.getMonth());
+  } else if (key === 'current-quarter') {
+    const quarter = Math.floor(now.getMonth() / 3) + 1;
+    const startMonth = (quarter - 1) * 3;
+    $('filter-report-year').value = String(currentYear);
+    $('filter-report-month').value = 'all';
+    reportRangeOverride = {
+      start: startOfDay(new Date(currentYear, startMonth, 1)),
+      end: endOfDay(new Date(currentYear, startMonth + 3, 0)),
+      label: `Quarter ${quarter} (${MONTH_NAMES[startMonth]}–${MONTH_NAMES[startMonth + 2]}) ${currentYear}`
+    };
+  } else if (key === 'first-semester') {
+    $('filter-report-year').value = String(chosenYear);
+    $('filter-report-month').value = 'all';
+    reportRangeOverride = {
+      start: startOfDay(new Date(chosenYear, 0, 1)),
+      end: endOfDay(new Date(chosenYear, 5, 30)),
+      label: `First Semester (January–June) ${chosenYear}`
+    };
+  } else if (key === 'second-semester') {
+    $('filter-report-year').value = String(chosenYear);
+    $('filter-report-month').value = 'all';
+    reportRangeOverride = {
+      start: startOfDay(new Date(chosenYear, 6, 1)),
+      end: endOfDay(new Date(chosenYear, 11, 31)),
+      label: `Second Semester (July–December) ${chosenYear}`
+    };
+  } else if (key === 'annual') {
+    $('filter-report-year').value = String(chosenYear);
+    $('filter-report-month').value = 'all';
+  } else if (key === 'all-records') {
+    $('filter-report-year').value = 'all';
+    $('filter-report-month').value = 'all';
+    $('filter-report-type').value = 'all';
+  }
+
+  setActiveReportPreset(key);
+  generateReport();
+}
+
+document.querySelectorAll('[data-report-preset]').forEach(button => {
+  button.addEventListener('click', () => applyReportPreset(button.dataset.reportPreset));
+});
+
+['filter-report-year', 'filter-report-month', 'filter-report-type'].forEach(id => {
+  $(id).addEventListener('change', () => {
+    clearReportPreset();
+  });
+});
 
 function renderReportSummary() {
   const area = $('report-summary-area');
@@ -1884,6 +2646,62 @@ function renderReportSummary() {
     card.append(number, text);
     grid.appendChild(card);
   });
+}
+
+function buildExecutiveSummaryText() {
+  if (!filteredReportData.length) return '';
+
+  const totals = calculateEngagementTotals(filteredReportData);
+  const countByType = Object.fromEntries(TYPES.map(type => [type, 0]));
+  const reachByType = Object.fromEntries(TYPES.map(type => [type, 0]));
+
+  filteredReportData.forEach(record => {
+    if (!Object.hasOwn(countByType, record.type)) return;
+    countByType[record.type] += 1;
+    reachByType[record.type] += getMetric(record, 'reach');
+  });
+
+  const representedTypes = TYPES.filter(type => countByType[type] > 0);
+  const topVolumeType = [...representedTypes].sort((a, b) => countByType[b] - countByType[a])[0];
+  const topAverageReachType = [...representedTypes].sort((a, b) => {
+    const averageA = countByType[a] ? reachByType[a] / countByType[a] : 0;
+    const averageB = countByType[b] ? reachByType[b] / countByType[b] : 0;
+    return averageB - averageA;
+  })[0];
+
+  const recordWord = filteredReportData.length === 1 ? 'communication output' : 'communication outputs';
+  let summary = `For ${getReportPeriodLabel()}, the Public Affairs Unit recorded ${formatMetric(filteredReportData.length)} ${recordWord}.`;
+
+  if (totals.reach || totals.reactions || totals.shares) {
+    summary += ` These outputs generated a cumulative post reach of ${formatMetric(totals.reach)}, with ${formatMetric(totals.reactions)} reactions and ${formatMetric(totals.shares)} shares.`;
+  } else {
+    summary += ' Facebook reach, reaction, and share figures for the selected records are currently recorded as zero.';
+  }
+
+  if (representedTypes.length > 1 && topVolumeType) {
+    summary += ` ${topVolumeType} recorded the highest number of outputs at ${formatMetric(countByType[topVolumeType])}.`;
+  }
+
+  if (representedTypes.length > 1 && topAverageReachType && reachByType[topAverageReachType] > 0) {
+    const averageReach = Math.round(reachByType[topAverageReachType] / countByType[topAverageReachType]);
+    summary += ` ${topAverageReachType} achieved the highest average recorded reach at approximately ${formatMetric(averageReach)} per MOV.`;
+  }
+
+  return summary;
+}
+
+function renderExecutiveSummary() {
+  const area = $('executive-summary-area');
+  const summaryText = buildExecutiveSummaryText();
+
+  if (!summaryText) {
+    area.classList.add('hidden');
+    $('executive-summary-text').textContent = '';
+    return;
+  }
+
+  $('executive-summary-text').textContent = summaryText;
+  area.classList.remove('hidden');
 }
 
 function renderReportTable() {
@@ -1932,16 +2750,14 @@ function renderReportTable() {
 }
 
 function updatePrintMetadata() {
-  const year = $('filter-report-year').value;
-  const month = $('filter-report-month').value;
-  const type = $('filter-report-type').value;
-  const monthLabel = month === 'all' ? 'All Months' : MONTH_NAMES[Number(month)];
-  const typeLabel = type === 'all' ? 'All Output Types' : type;
-  $('print-report-period').textContent = `Reporting Period: ${monthLabel} ${year} | ${typeLabel}`;
+  $('print-report-period').textContent = `Reporting Period: ${getReportPeriodLabel()}`;
   $('print-generated-at').textContent = `Generated on ${new Intl.DateTimeFormat('en-PH', { dateStyle: 'long', timeStyle: 'short' }).format(new Date())}`;
 }
 
-$('filter-report-btn').addEventListener('click', generateReport);
+$('filter-report-btn').addEventListener('click', () => {
+  clearReportPreset();
+  generateReport();
+});
 $('print-report-btn').addEventListener('click', () => {
   if (!can('print')) return showToast('Your role is not authorized to print reports.', 'error');
   generateReport();
@@ -1973,15 +2789,34 @@ function exportReport() {
     { wch: 14 }, { wch: 14 }, { wch: 14 }, { wch: 45 }, { wch: 35 }
   ];
   const workbook = XLSX.utils.book_new();
+
+  const executiveSummary = buildExecutiveSummaryText();
+  const summaryWorksheet = XLSX.utils.aoa_to_sheet([
+    ['PAUMOVision — Executive Summary'],
+    ['Reporting Period', getReportPeriodLabel()],
+    ['Generated On', new Intl.DateTimeFormat('en-PH', { dateStyle: 'long', timeStyle: 'short' }).format(new Date())],
+    [],
+    [executiveSummary]
+  ]);
+  summaryWorksheet['!cols'] = [{ wch: 24 }, { wch: 100 }];
+  summaryWorksheet['!merges'] = [
+    XLSX.utils.decode_range('A1:B1'),
+    XLSX.utils.decode_range('A5:B5')
+  ];
+
+  XLSX.utils.book_append_sheet(workbook, summaryWorksheet, 'Executive Summary');
   XLSX.utils.book_append_sheet(workbook, worksheet, 'MOV Report');
 
-  const fileName = `PAUMOVision_${$('filter-report-year').value}_${$('filter-report-month').value}_${$('filter-report-type').value}`
+  const fileName = `PAUMOVision_${getReportPeriodLabel()}`
     .replaceAll(' ', '_')
     .replaceAll('/', '-')
     .replaceAll('(', '')
-    .replaceAll(')', '');
+    .replaceAll(')', '')
+    .replaceAll('|', '-')
+    .replaceAll('–', '-')
+    .replaceAll(':', '');
   XLSX.writeFile(workbook, `${fileName}.xlsx`);
-  logAudit('EXPORT_REPORT', '', { count: rows.length, fileName });
+  logAudit('EXPORT_REPORT', '', { count: rows.length, fileName, preset: activeReportPreset || 'manual' });
 }
 
 // -----------------------------------------------------------------------------
@@ -2003,7 +2838,27 @@ async function importExcel(event) {
 
     if (!rows.length) throw new Error('The selected worksheet is empty.');
 
-    const existingKeys = new Set(movsData.map(record => `${record.date}|${safeLower(record.type)}|${safeLower(record.title)}`));
+    const duplicateIndex = {
+      exact: new Set(),
+      links: new Set(),
+      dateTitle: new Set(),
+      dateTypeActivity: new Set()
+    };
+
+    movsData.forEach(record => {
+      const exactKey = `${record.date}|${safeLower(record.type)}|${safeLower(record.title)}`;
+      const linkKey = normalizeUrlForComparison(record.link);
+      const dateTitleKey = `${record.date}|${safeLower(record.title)}`;
+      const activityKey = safeLower(record.activity)
+        ? `${record.date}|${safeLower(record.type)}|${safeLower(record.activity)}`
+        : '';
+
+      duplicateIndex.exact.add(exactKey);
+      duplicateIndex.dateTitle.add(dateTitleKey);
+      if (linkKey) duplicateIndex.links.add(linkKey);
+      if (activityKey) duplicateIndex.dateTypeActivity.add(activityKey);
+    });
+
     const validRows = [];
     const issues = [];
 
@@ -2028,26 +2883,43 @@ async function importExcel(event) {
       if (shares === null) reasons.push('Shares must be a non-negative whole number');
 
       const isoDate = dateToISO(date);
-      const duplicateKey = `${isoDate}|${safeLower(type)}|${safeLower(title)}`;
-      if (existingKeys.has(duplicateKey)) reasons.push('Duplicate record');
+      const activity = normalizeText(row.Activity ?? row['Activity / Program / KRA'] ?? '');
+      const exactKey = `${isoDate}|${safeLower(type)}|${safeLower(title)}`;
+      const linkKey = normalizeUrlForComparison(safeLink);
+      const dateTitleKey = `${isoDate}|${safeLower(title)}`;
+      const activityKey = activity
+        ? `${isoDate}|${safeLower(type)}|${safeLower(activity)}`
+        : '';
+
+      if (duplicateIndex.exact.has(exactKey)) reasons.push('Exact duplicate date, type, and title');
+      else {
+        if (linkKey && duplicateIndex.links.has(linkKey)) reasons.push('Duplicate MOV/Facebook link');
+        if (duplicateIndex.dateTitle.has(dateTitleKey)) reasons.push('Duplicate date and title');
+        if (activityKey && duplicateIndex.dateTypeActivity.has(activityKey)) reasons.push('Duplicate date, type, and activity');
+      }
 
       if (reasons.length) {
         issues.push({ 'Excel Row': rowNumber, Title: title, Issues: reasons.join('; ') });
         return;
       }
 
-      existingKeys.add(duplicateKey);
+      duplicateIndex.exact.add(exactKey);
+      duplicateIndex.dateTitle.add(dateTitleKey);
+      if (linkKey) duplicateIndex.links.add(linkKey);
+      if (activityKey) duplicateIndex.dateTypeActivity.add(activityKey);
+
       validRows.push({
         date: isoDate,
         type,
         title,
-        activity: normalizeText(row.Activity ?? row['Activity / Program / KRA'] ?? ''),
+        activity,
         reach,
         reactions,
         shares,
         link: safeLink,
         remarks: normalizeText(row.Remarks ?? row.remarks ?? ''),
         sortDate: firebase.firestore.Timestamp.fromDate(date),
+        metricsAsOfDate: dateToISO(new Date()),
         metricsUpdatedAt: firebase.firestore.FieldValue.serverTimestamp(),
         archived: false
       });
@@ -2102,10 +2974,15 @@ function exportImportIssues(issues) {
 // 11. NAVIGATION AND INITIALIZATION
 // -----------------------------------------------------------------------------
 function switchSection(sectionId) {
+  if (sectionId === 'login-activity' && !can('viewLoginActivity')) {
+    return showToast('Only the PAU Administrator may view login activity.', 'error');
+  }
+
   document.querySelectorAll('.nav-item').forEach(item => item.classList.toggle('active', item.dataset.section === sectionId));
   document.querySelectorAll('.section').forEach(section => section.classList.toggle('active', section.id === sectionId));
   if (sectionId === 'reports') generateReport();
   if (sectionId === 'movs') renderMovsTable();
+  if (sectionId === 'login-activity') renderLoginActivityTable();
   document.querySelector('.content')?.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -2113,8 +2990,74 @@ document.querySelectorAll('.nav-item').forEach(item => {
   item.addEventListener('click', () => switchSection(item.dataset.section));
 });
 
+function isStandaloneMode() {
+  return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+}
+
+function updateInstallButton() {
+  $('install-app-btn').classList.toggle('hidden', isStandaloneMode());
+}
+
+window.addEventListener('beforeinstallprompt', event => {
+  event.preventDefault();
+  deferredInstallPrompt = event;
+  updateInstallButton();
+});
+
+window.addEventListener('appinstalled', () => {
+  deferredInstallPrompt = null;
+  updateInstallButton();
+  showToast('PAUMOVision was installed successfully.');
+});
+
+$('install-app-btn').addEventListener('click', async () => {
+  if (isStandaloneMode()) {
+    return showToast('PAUMOVision is already installed.');
+  }
+
+  if (deferredInstallPrompt) {
+    deferredInstallPrompt.prompt();
+    const choice = await deferredInstallPrompt.userChoice;
+    if (choice.outcome === 'accepted') {
+      showToast('Installing PAUMOVision...');
+    }
+    deferredInstallPrompt = null;
+    updateInstallButton();
+    return;
+  }
+
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  if (isIOS) {
+    alert('To install PAUMOVision on iPhone or iPad: tap the Share button in Safari, then choose “Add to Home Screen.”');
+  } else {
+    alert('Open your browser menu and choose “Install PAUMOVision” or “Add to Home screen.” Installation requires HTTPS.');
+  }
+});
+
+function updateOnlineStatus() {
+  const offline = !navigator.onLine;
+  $('offline-banner').classList.toggle('hidden', !offline);
+  if (!offline) updateLoginActivityHeartbeat(true);
+}
+
+window.addEventListener('online', () => {
+  updateOnlineStatus();
+  showToast('Internet connection restored.');
+});
+window.addEventListener('offline', () => {
+  updateOnlineStatus();
+  showToast('You are offline. Live updates may be temporarily unavailable.', 'warning', 6000);
+});
+
+document.addEventListener('keydown', event => {
+  if (event.key !== 'Escape') return;
+  if (!$('quick-metrics-modal').classList.contains('hidden')) closeQuickMetricsModal();
+});
+
 initializeSelectOptions();
 resetForm();
+updateInstallButton();
+updateOnlineStatus();
 
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
   window.addEventListener('load', () => {
