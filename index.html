@@ -390,6 +390,14 @@
     .stats-grid { grid-template-columns: repeat(2, 1fr); }
     .charts-row { grid-template-columns: 1fr; }
     .form-wide { grid-column: span 1; }
+    #quarterly-table-container table {
+    font-size: 0.8rem;
+  }
+  
+  #quarterly-table-container th,
+  #quarterly-table-container td {
+    padding: 0.5rem 0.6rem;
+  }
   }
 
   @media (max-width: 780px) {
@@ -440,6 +448,14 @@
     min-height: 280px !important;
   }
   }
+    #quarterly-table-container {
+  overflow-x: auto;
+  width: 100%;
+}
+
+#quarterly-table-container table {
+  min-width: 1000px; /* Forces horizontal scroll on small screens */
+}
 </style>
   <script src="https://www.gstatic.com/firebasejs/11.0.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/11.0.0/firebase-auth-compat.js"></script>
@@ -1782,9 +1798,18 @@ function updateCharts() {
   const selectedQuarter = $('dashboard-quarter-filter').value;
   const quarterLabel = selectedQuarter === 'all' ? '' : ` Q${selectedQuarter}`;
   
+  // Initialize counters
   const typeCounts = Object.fromEntries(TYPES.map(type => [type, 0]));
   const monthlyData = Array.from({ length: 12 }, () => Object.fromEntries(TYPES.map(type => [type, 0])));
   const avgPerformanceData = { reach: [], reactions: [] };
+
+  // ✅ FIX: Populate typeCounts and monthlyData from records
+  records.forEach(record => {
+    const date = getRecordDate(record);
+    if (!date || !Object.hasOwn(typeCounts, record.type)) return;
+    typeCounts[record.type] += 1;
+    monthlyData[date.getMonth()][record.type] += 1;
+  });
 
   // Calculate average performance per output type
   TYPES.forEach(type => {
