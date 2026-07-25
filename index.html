@@ -583,6 +583,18 @@
           <div class="chart-container"><canvas id="chartAvgPerformance" aria-label="Average performance by output type" role="img"></canvas></div>
         </div>
 
+           <!-- 3. Option #2: Engagement Rate Trend (Don't forget this one!) -->
+        <div class="card mb-6">
+          <div class="flex justify-between items-center mb-4 flex-wrap gap-3">
+            <div>
+              <h3 class="text-sm font-semibold">Monthly Engagement Rate Trend</h3>
+              <p class="text-muted">Calculated as ((Reactions + Shares) / Reach) × 100. Tracks audience interaction efficiency over time.</p>
+            </div>
+            <span id="engagement-rate-period-label" class="record-count"></span>
+          </div>
+          <div class="chart-container"><canvas id="chartEngagementRate" aria-label="Monthly engagement rate trend" role="img"></canvas></div>
+        </div>
+
         <div class="card mb-6">
           <div class="flex items-center justify-between mb-4 flex-wrap gap-4">
             <div>
@@ -1763,7 +1775,6 @@ function renderStatsCards() {
     container.appendChild(card);
   });
 }
-
 function updateCharts() {
   const records = getDashboardRecords();
   const selectedYear = Number($('dashboard-year-filter').value) || new Date().getFullYear();
@@ -1778,21 +1789,11 @@ function updateCharts() {
   TYPES.forEach(type => {
     const typeRecords = records.filter(r => r.type === type);
     const count = typeRecords.length;
-    
     if (count > 0) {
       const totalReach = typeRecords.reduce((sum, r) => sum + getMetric(r, 'reach'), 0);
       const totalReactions = typeRecords.reduce((sum, r) => sum + getMetric(r, 'reactions'), 0);
-      
-      avgPerformanceData.reach.push({
-        type,
-        value: totalReach / count,
-        count
-      });
-      avgPerformanceData.reactions.push({
-        type,
-        value: totalReactions / count,
-        count
-      });
+      avgPerformanceData.reach.push({ type, value: totalReach / count, count });
+      avgPerformanceData.reactions.push({ type, value: totalReactions / count, count });
     } else {
       avgPerformanceData.reach.push({ type, value: 0, count: 0 });
       avgPerformanceData.reactions.push({ type, value: 0, count: 0 });
@@ -1804,6 +1805,7 @@ function updateCharts() {
   $('bar-period-label').textContent = `Year ${selectedYear}${quarterLabel}`;
   $('engagement-period-label').textContent = `Year ${selectedYear}${quarterLabel}`;
   $('avg-performance-period-label').textContent = `Year ${selectedYear}${quarterLabel}`;
+  $('engagement-rate-period-label').textContent = `Year ${selectedYear}${quarterLabel}`;
 
   // Shared premium tooltip configuration
   const premiumTooltip = {
@@ -1815,14 +1817,10 @@ function updateCharts() {
     padding: 12,
     cornerRadius: 8,
     displayColors: true,
-    boxPadding: 6,
-    callbacks: { 
-      label: context => ` ${context.dataset.label}: ${context.raw.toLocaleString('en-PH')}` 
-    }
+    boxPadding: 6
   };
 
   const softGrid = { color: '#f1f5f9', drawBorder: false };
-  const colors = TYPES.map(type => CONFIG[type].color);
 
   // 1. Doughnut Chart (Category Distribution)
   if (chartDonutInstance) chartDonutInstance.destroy();
@@ -1832,19 +1830,15 @@ function updateCharts() {
       labels: TYPES,
       datasets: [{ 
         data: TYPES.map(type => typeCounts[type]), 
-        backgroundColor: colors, 
-        borderWidth: 2,
-        borderColor: '#ffffff',
-        hoverOffset: 8
+        backgroundColor: TYPES.map(t => CONFIG[t].color), 
+        borderWidth: 2, borderColor: '#ffffff', hoverOffset: 8
       }]
     },
     options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      cutout: '70%',
+      responsive: true, maintainAspectRatio: false, cutout: '70%',
       plugins: {
         legend: { position: 'bottom', labels: { boxWidth: 12, usePointStyle: true, pointStyle: 'circle', padding: 20, font: { family: 'Inter', size: 12 } } },
-        tooltip: premiumTooltip
+        tooltip: { ...premiumTooltip, callbacks: { label: context => ` ${context.label}: ${context.raw.toLocaleString('en-PH')}` } }
       }
     }
   });
@@ -1856,16 +1850,12 @@ function updateCharts() {
     data: {
       labels: MONTH_NAMES.map(month => month.slice(0, 3)),
       datasets: TYPES.map(type => ({
-        label: type,
-        data: monthlyData.map(month => month[type]),
-        backgroundColor: CONFIG[type].color,
-        borderRadius: 4,
-        borderSkipped: false
+        label: type, data: monthlyData.map(month => month[type]),
+        backgroundColor: CONFIG[type].color, borderRadius: 4, borderSkipped: false
       }))
     },
     options: {
-      responsive: true,
-      maintainAspectRatio: false,
+      responsive: true, maintainAspectRatio: false,
       interaction: { mode: 'index', intersect: false },
       scales: {
         x: { stacked: true, grid: { display: false }, ticks: { font: { family: 'Inter' } } },
@@ -1873,7 +1863,7 @@ function updateCharts() {
       },
       plugins: { 
         legend: { position: 'bottom', labels: { boxWidth: 12, usePointStyle: true, pointStyle: 'rectRounded', padding: 15, font: { family: 'Inter', size: 12 } } },
-        tooltip: premiumTooltip 
+        tooltip: { ...premiumTooltip, callbacks: { label: context => ` ${context.dataset.label}: ${context.raw.toLocaleString('en-PH')}` } } 
       }
     }
   });
@@ -1895,222 +1885,104 @@ function updateCharts() {
     data: {
       labels: MONTH_NAMES.map(month => month.slice(0, 3)),
       datasets: [
-        { 
-          label: 'Reach', 
-          data: monthlyEngagement.map(month => month.reach), 
-          borderColor: '#0b2f5b', 
-          backgroundColor: 'rgba(11,47,91,0.05)', 
-          borderWidth: 2.5,
-          pointBackgroundColor: '#ffffff', 
-          pointBorderColor: '#0b2f5b', 
-          pointBorderWidth: 2, 
-          pointRadius: 4, 
-          pointHoverRadius: 6,
-          yAxisID: 'yReach', 
-          tension: 0.4, 
-          fill: true 
-        },
-        { 
-          label: 'Reactions', 
-          data: monthlyEngagement.map(month => month.reactions), 
-          borderColor: '#e11d48', 
-          backgroundColor: 'transparent', 
-          borderWidth: 2.5,
-          pointBackgroundColor: '#ffffff', 
-          pointBorderColor: '#e11d48', 
-          pointBorderWidth: 2, 
-          pointRadius: 4, 
-          pointHoverRadius: 6,
-          yAxisID: 'yEngagement', 
-          tension: 0.4 
-        },
-        { 
-          label: 'Shares', 
-          data: monthlyEngagement.map(month => month.shares), 
-          borderColor: '#059669', 
-          backgroundColor: 'transparent', 
-          borderWidth: 2.5,
-          pointBackgroundColor: '#ffffff', 
-          pointBorderColor: '#059669', 
-          pointBorderWidth: 2, 
-          pointRadius: 4, 
-          pointHoverRadius: 6,
-          yAxisID: 'yEngagement', 
-          tension: 0.4 
-        }
+        { label: 'Reach', data: monthlyEngagement.map(m => m.reach), borderColor: '#0b2f5b', backgroundColor: 'rgba(11,47,91,0.05)', borderWidth: 2.5, pointBackgroundColor: '#ffffff', pointBorderColor: '#0b2f5b', pointBorderWidth: 2, pointRadius: 4, pointHoverRadius: 6, yAxisID: 'yReach', tension: 0.4, fill: true },
+        { label: 'Reactions', data: monthlyEngagement.map(m => m.reactions), borderColor: '#e11d48', backgroundColor: 'transparent', borderWidth: 2.5, pointBackgroundColor: '#ffffff', pointBorderColor: '#e11d48', pointBorderWidth: 2, pointRadius: 4, pointHoverRadius: 6, yAxisID: 'yEngagement', tension: 0.4 },
+        { label: 'Shares', data: monthlyEngagement.map(m => m.shares), borderColor: '#059669', backgroundColor: 'transparent', borderWidth: 2.5, pointBackgroundColor: '#ffffff', pointBorderColor: '#059669', pointBorderWidth: 2, pointRadius: 4, pointHoverRadius: 6, yAxisID: 'yEngagement', tension: 0.4 }
       ]
     },
     options: {
-      responsive: true,
-      maintainAspectRatio: false,
+      responsive: true, maintainAspectRatio: false,
       interaction: { mode: 'index', intersect: false },
       scales: {
         x: { grid: { display: false }, ticks: { font: { family: 'Inter' } } },
-        yReach: { 
-          type: 'linear', position: 'left', beginAtZero: true, 
-          ticks: { callback: value => value.toLocaleString('en-PH'), font: { family: 'Inter' } }, 
-          title: { display: true, text: 'Reach', font: { family: 'Inter', weight: '600' }, color: '#0b2f5b' },
-          grid: softGrid
-        },
-        yEngagement: { 
-          type: 'linear', position: 'right', beginAtZero: true, 
-          grid: { drawOnChartArea: false }, 
-          ticks: { precision: 0, callback: value => value.toLocaleString('en-PH'), font: { family: 'Inter' } }, 
-          title: { display: true, text: 'Reactions / Shares', font: { family: 'Inter', weight: '600' }, color: '#475569' } 
-        }
+        yReach: { type: 'linear', position: 'left', beginAtZero: true, ticks: { callback: v => v.toLocaleString('en-PH'), font: { family: 'Inter' } }, title: { display: true, text: 'Reach', font: { family: 'Inter', weight: '600' }, color: '#0b2f5b' }, grid: softGrid },
+        yEngagement: { type: 'linear', position: 'right', beginAtZero: true, grid: { drawOnChartArea: false }, ticks: { precision: 0, callback: v => v.toLocaleString('en-PH'), font: { family: 'Inter' } }, title: { display: true, text: 'Reactions / Shares', font: { family: 'Inter', weight: '600' }, color: '#475569' } }
       },
       plugins: {
         legend: { position: 'bottom', labels: { boxWidth: 12, usePointStyle: true, pointStyle: 'circle', padding: 20, font: { family: 'Inter', size: 12 } } },
-        tooltip: premiumTooltip
+        tooltip: { ...premiumTooltip, callbacks: { label: context => ` ${context.dataset.label}: ${context.raw.toLocaleString('en-PH')}` } }
       }
     }
   });
 
-  // 4. NEW: Average Performance Chart (Efficiency Metrics)
+  // 4. Average Performance Chart (Efficiency Metrics)
   if (chartAvgPerformanceInstance) chartAvgPerformanceInstance.destroy();
   chartAvgPerformanceInstance = new Chart($('chartAvgPerformance').getContext('2d'), {
     type: 'bar',
     data: {
       labels: TYPES,
       datasets: [
-        {
-          label: 'Average Reach',
-          data: avgPerformanceData.reach.map(d => d.value),
-          backgroundColor: '#0b2f5b',
-          borderRadius: 4,
-          borderSkipped: false,
-          borderWidth: 0,
-          hoverBackgroundColor: '#123f75'
-        },
-        {
-          label: 'Average Reactions',
-          data: avgPerformanceData.reactions.map(d => d.value),
-          backgroundColor: '#e11d48',
-          borderRadius: 4,
-          borderSkipped: false,
-          borderWidth: 0,
-          hoverBackgroundColor: '#b91c1c'
-        }
+        { label: 'Average Reach', data: avgPerformanceData.reach.map(d => d.value), backgroundColor: '#0b2f5b', borderRadius: 4, borderSkipped: false },
+        { label: 'Average Reactions', data: avgPerformanceData.reactions.map(d => d.value), backgroundColor: '#e11d48', borderRadius: 4, borderSkipped: false }
       ]
     },
     options: {
-      responsive: true,
-      maintainAspectRatio: false,
+      responsive: true, maintainAspectRatio: false,
       interaction: { mode: 'index', intersect: false },
       scales: {
-        x: { 
-          stacked: true,
-          grid: { display: false },
-          ticks: { 
-            font: { family: 'Inter' },
-            maxRotation: 0,
-            minRotation: 0,
-            callback: (value, index) => {
-              const type = TYPES[index];
-              const count = avgPerformanceData.reach[index].count;
-              return count > 0 ? `${type}\n(${count})` : `${type}\n(0)`;
-            }
-          }
-        },
+        x: { stacked: true, grid: { display: false }, ticks: { font: { family: 'Inter' }, maxRotation: 0, callback: (v, i) => `${TYPES[i]}\n(${avgPerformanceData.reach[i].count})` } },
+        y: { stacked: true, beginAtZero: true, ticks: { precision: 0, callback: v => v.toLocaleString('en-PH'), font: { family: 'Inter' } }, grid: softGrid }
+      },
+      plugins: {
+        legend: { position: 'bottom', labels: { boxWidth: 12, usePointStyle: true, pointStyle: 'circle', padding: 20, font: { family: 'Inter', size: 12 } } },
+        tooltip: { ...premiumTooltip, callbacks: { label: c => ` ${c.dataset.label}: ${c.raw.toLocaleString('en-PH')} (n=${avgPerformanceData.reach[c.dataIndex].count})` } }
+      }
+    }
+  });
+
+  // 5. Engagement Rate Trend Chart
+  const engagementRates = monthlyEngagement.map(m => {
+    if (m.reach === 0) return 0;
+    return parseFloat((((m.reactions + m.shares) / m.reach) * 100).toFixed(2));
+  });
+
+  const ctxRate = $('chartEngagementRate').getContext('2d');
+  const gradientRate = ctxRate.createLinearGradient(0, 0, 0, 400);
+  gradientRate.addColorStop(0, 'rgba(99, 102, 241, 0.25)');
+  gradientRate.addColorStop(1, 'rgba(99, 102, 241, 0)');
+
+  if (chartEngagementRateInstance) chartEngagementRateInstance.destroy();
+  chartEngagementRateInstance = new Chart(ctxRate, {
+    type: 'line',
+    data: {
+      labels: MONTH_NAMES.map(month => month.slice(0, 3)),
+      datasets: [{
+        label: 'Engagement Rate (%)',
+        data: engagementRates,
+        borderColor: '#6366f1',
+        backgroundColor: gradientRate,
+        borderWidth: 3,
+        pointBackgroundColor: '#ffffff',
+        pointBorderColor: '#6366f1',
+        pointBorderWidth: 2.5,
+        pointRadius: 5,
+        pointHoverRadius: 7,
+        tension: 0.4,
+        fill: true
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { family: 'Inter' } } },
         y: {
-          stacked: true,
           beginAtZero: true,
-          ticks: { 
-            precision: 0,
-            callback: value => value.toLocaleString('en-PH'),
-            font: { family: 'Inter' }
-          },
-          grid: softGrid
+          ticks: { callback: value => value + '%', font: { family: 'Inter' } },
+          grid: softGrid,
+          title: { display: true, text: 'Engagement Rate (%)', font: { family: 'Inter', weight: '600' }, color: '#6366f1' }
         }
       },
       plugins: {
-        legend: { 
-          position: 'bottom',
-          labels: {
-            boxWidth: 12,
-            usePointStyle: true,
-            pointStyle: 'circle',
-            padding: 20,
-            font: { family: 'Inter', size: 12 }
-          }
-        },
+        legend: { display: false },
         tooltip: {
           ...premiumTooltip,
-          callbacks: {
-            label: (context) => {
-              const value = context.raw;
-              const count = avgPerformanceData.reach[context.dataIndex].count;
-              return ` ${context.dataset.label}: ${value.toLocaleString('en-PH')} (n=${count})`;
-            }
-          }
+          callbacks: { label: context => ` Engagement Rate: ${context.raw}%` }
         }
       }
     }
   });
 }
-
-  if (chartBarInstance) chartBarInstance.destroy();
-  chartBarInstance = new Chart($('chartBar').getContext('2d'), {
-    type: 'bar',
-    data: {
-      labels: MONTH_NAMES.map(month => month.slice(0, 3)),
-      datasets: TYPES.map(type => ({
-        label: type,
-        data: monthlyData.map(month => month[type]),
-        backgroundColor: CONFIG[type].color,
-        borderRadius: 3
-      }))
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      interaction: { mode: 'index', intersect: false },
-      scales: {
-        x: { stacked: true, grid: { display: false } },
-        y: { stacked: true, beginAtZero: true, ticks: { precision: 0 } }
-      },
-      plugins: { legend: { position: 'bottom', labels: { boxWidth: 14, usePointStyle: true } } }
-    }
-  });
-
-  const monthlyEngagement = Array.from({ length: 12 }, () => ({ reach: 0, reactions: 0, shares: 0 }));
-  records.forEach(record => {
-    const date = getRecordDate(record);
-    if (!date) return;
-    const month = monthlyEngagement[date.getMonth()];
-    month.reach += getMetric(record, 'reach');
-    month.reactions += getMetric(record, 'reactions');
-    month.shares += getMetric(record, 'shares');
-  });
-
-  $('engagement-period-label').textContent = `Year ${selectedYear}`;
-  if (chartEngagementInstance) chartEngagementInstance.destroy();
-  chartEngagementInstance = new Chart($('chartEngagement').getContext('2d'), {
-    type: 'line',
-    data: {
-      labels: MONTH_NAMES.map(month => month.slice(0, 3)),
-      datasets: [
-        { label: 'Reach', data: monthlyEngagement.map(month => month.reach), borderColor: '#0b2f5b', backgroundColor: 'rgba(11,47,91,0.10)', yAxisID: 'yReach', tension: 0.3, fill: true },
-        { label: 'Reactions', data: monthlyEngagement.map(month => month.reactions), borderColor: '#e11d48', backgroundColor: 'rgba(225,29,72,0.08)', yAxisID: 'yEngagement', tension: 0.3 },
-        { label: 'Shares', data: monthlyEngagement.map(month => month.shares), borderColor: '#059669', backgroundColor: 'rgba(5,150,105,0.08)', yAxisID: 'yEngagement', tension: 0.3 }
-      ]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      interaction: { mode: 'index', intersect: false },
-      scales: {
-        x: { grid: { display: false } },
-        yReach: { type: 'linear', position: 'left', beginAtZero: true, ticks: { callback: value => NUMBER_FORMATTER.format(value) }, title: { display: true, text: 'Reach' } },
-        yEngagement: { type: 'linear', position: 'right', beginAtZero: true, grid: { drawOnChartArea: false }, ticks: { precision: 0, callback: value => NUMBER_FORMATTER.format(value) }, title: { display: true, text: 'Reactions / Shares' } }
-      },
-      plugins: {
-        legend: { position: 'bottom', labels: { boxWidth: 14, usePointStyle: true } },
-        tooltip: { callbacks: { label: context => `${context.dataset.label}: ${formatMetric(context.raw)}` } }
-      }
-    }
-  });
-},
 
 function renderQuarterlyTable() {
   const records = getDashboardRecords();
