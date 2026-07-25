@@ -560,12 +560,19 @@
             <p class="text-muted">Monitor PAU outputs, Means of Verification, and Facebook engagement by reporting year.</p>
           </div>
           <div class="section-actions flex gap-2 items-center">
-            <select id="dashboard-year-filter" aria-label="Dashboard reporting year" style="width: 120px;"></select>
-            <button id="print-dashboard-btn" class="btn btn-outline h-9" type="button">
-              <i class="fas fa-print" aria-hidden="true"></i> Print Dashboard
-            </button>
-          </div>
-        </div>
+        <select id="dashboard-year-filter" aria-label="Dashboard reporting year" style="width: 120px;"></select>
+        <select id="dashboard-quarter-filter" aria-label="Dashboard reporting quarter" style="width: 100px;">
+          <option value="all">All Quarters</option>
+          <option value="1">Q1</option>
+          <option value="2">Q2</option>
+          <option value="3">Q3</option>
+          <option value="4">Q4</option>
+        </select>
+        <button id="print-dashboard-btn" class="btn btn-outline h-9" type="button">
+          <i class="fas fa-print" aria-hidden="true"></i> Print Dashboard
+        </button>
+      </div>
+    </div>
 
         <div id="stats-container" class="stats-grid"></div>
         <div class="engagement-note">
@@ -1716,7 +1723,20 @@ function populateYearDropdowns() {
 // -----------------------------------------------------------------------------
 function getDashboardRecords() {
   const selectedYear = Number($('dashboard-year-filter').value) || new Date().getFullYear();
-  return movsData.filter(record => getRecordDate(record)?.getFullYear() === selectedYear);
+  const selectedQuarter = $('dashboard-quarter-filter').value;
+  
+  return movsData.filter(record => {
+    const recordDate = getRecordDate(record);
+    if (!recordDate || recordDate.getFullYear() !== selectedYear) return false;
+    
+    // If quarter filter is not "all", filter by specific quarter
+    if (selectedQuarter !== 'all') {
+      const recordQuarter = Math.floor(recordDate.getMonth() / 3) + 1;
+      return recordQuarter === Number(selectedQuarter);
+    }
+    
+    return true;
+  });
 }
 
 function renderDashboard() {
@@ -1770,6 +1790,7 @@ function renderStatsCards() {
 function updateCharts() {
   const records = getDashboardRecords();
   const selectedYear = Number($('dashboard-year-filter').value) || new Date().getFullYear();
+  const selectedQuarter = $('dashboard-quarter-filter').value;
   const typeCounts = Object.fromEntries(TYPES.map(type => [type, 0]));
   const monthlyData = Array.from({ length: 12 }, () => Object.fromEntries(TYPES.map(type => [type, 0])));
 
@@ -1780,8 +1801,10 @@ function updateCharts() {
     monthlyData[date.getMonth()][record.type] += 1;
   });
 
-  $('donut-period-label').textContent = `Year ${selectedYear}`;
-  $('bar-period-label').textContent = `Year ${selectedYear}`;
+  const quarterLabel = selectedQuarter === 'all' ? '' : ` Q${selectedQuarter}`;
+  $('donut-period-label').textContent = `Year ${selectedYear}${quarterLabel}`;
+  $('bar-period-label').textContent = `Year ${selectedYear}${quarterLabel}`;
+  $('engagement-period-label').textContent = `Year ${selectedYear}${quarterLabel}`;
 
   const colors = TYPES.map(type => CONFIG[type].color);
   if (chartDonutInstance) chartDonutInstance.destroy();
@@ -1922,6 +1945,7 @@ function renderQuarterlyTable() {
 }
 
 $('dashboard-year-filter').addEventListener('change', renderDashboard);
+$('dashboard-quarter-filter').addEventListener('change', renderDashboard);
 $('q-summary-filter').addEventListener('change', renderQuarterlyTable);
 $('print-dashboard-btn').addEventListener('click', () => {
   if (!can('print')) return showToast('Your role is not authorized to print the dashboard.', 'error');
