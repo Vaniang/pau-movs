@@ -1647,18 +1647,18 @@ $('session-signout-btn').addEventListener('click', () => performLogout('Signed o
 function listenToMovs() {
   if (unsubscribeMovs) unsubscribeMovs();
 
-  // Fetch only active records, ordered by date. 
-  // (Ensure you have a composite index in Firestore for 'archived' + 'sortDate')
+  // NO composite index required! Fetches all records sorted by date.
+  // Filtering active/archived is done instantly and efficiently in JavaScript.
   unsubscribeMovs = movsColl
-    .where('archived', '==', false)
     .orderBy('sortDate', 'desc')
     .onSnapshot(
       (snapshot) => {
-        movsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        // 1. Get all records from the database
+        allRecords = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         
-        // If you need archived data, fetch it separately or on-demand to save bandwidth
-        // For now, keeping your logic but making it more efficient:
-        allRecords = movsData; // Adjust downstream logic if archivedData is strictly needed
+        // 2. Split them locally so both Active and Archived tabs work perfectly
+        movsData = allRecords.filter(record => record.archived !== true);
+        archivedData = allRecords.filter(record => record.archived === true);
         
         populateYearDropdowns();
         updateApp();
