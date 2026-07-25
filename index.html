@@ -164,13 +164,10 @@
 
     /* --- Main Content --- */
     .content {
-      flex: 1;
-      height: 100vh;
-      overflow-y: auto;
-      padding: 2rem 2.5rem;
-      position: relative;
-      width: 100%;
-    }
+  width: 100%;
+  max-width: 100%;
+  padding: 2rem 2.5rem;
+}
     h1 { font-size: 1.85rem; font-weight: 700; line-height: 1.2; color: var(--foreground); letter-spacing: -0.02em; }
     h3 { color: var(--foreground); font-weight: 600; }
     
@@ -252,20 +249,18 @@
     }
     .card:hover { box-shadow: 0 4px 12px rgba(15,23,42,0.06); }
 
-    .stats-grid { 
-      display: grid; 
-      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); 
-      gap: 1.25rem; 
-      margin-bottom: 2rem; 
-    }
-    .stat-card { 
-      border: 1px solid var(--border); 
-      border-radius: var(--radius); 
-      padding: 1.25rem; 
-      background: #fff; 
-      box-shadow: 0 1px 3px rgba(15,23,42,0.03); 
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
+   .stats-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)) !important;
+  gap: 1.25rem !important;
+  margin-bottom: 2rem !important;
+  width: 100% !important;
+  max-width: 100% !important;
+}
+    ..stat-card {
+  width: 100%;
+  min-width: 0;
+}
     .stat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 16px -4px rgba(15,23,42,0.08); }
     
     .variant-primary { background: var(--primary-soft); border-color: var(--primary-border); } .variant-primary i { color: var(--primary); }
@@ -383,11 +378,15 @@
 
     /* --- Responsive Design --- */
     @media (max-width: 1120px) {
-      .charts-row { grid-template-columns: 1fr; }
-      .form-wide { grid-column: span 1; }
-    }
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
 
     @media (max-width: 780px) {
+      .stats-grid {
+    grid-template-columns: 1fr !important;
+  }
       .app-shell { display: block; overflow: visible; }
       .sidebar { width: 100%; min-width: 0; height: auto; position: sticky; top: 0; z-index: 100; border-right: none; border-bottom: 1px solid rgba(255,255,255,0.08); }
       .brand { padding: 1rem 1.25rem; }
@@ -429,6 +428,11 @@
       .badge { border: 1px solid #94a3b8; color: #0f172a !important; background: #fff !important; }
       .chart-container { height: 260px; }
     }
+      #dashboard {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+}
   </style>
 
   <script src="https://www.gstatic.com/firebasejs/11.0.0/firebase-app-compat.js"></script>
