@@ -1,5 +1,5 @@
 // sw.js - Service Worker for PAUMOVision
-const CACHE_NAME = 'pauvision-v8'; // Changed from v1 to v2
+const CACHE_NAME = 'pauvision-v9'; // Changed from v1 to v2
 const urlsToCache = [
   './',
   './index.html',
