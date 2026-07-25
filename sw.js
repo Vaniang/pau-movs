@@ -1,5 +1,5 @@
 // sw.js - Service Worker for PAUMOVision
-const CACHE_NAME = 'pauvision-v11'; // Changed from v1 to v2
+const CACHE_NAME = 'pauvision-v11'; // Bumped to v11
 const urlsToCache = [
   './',
   './index.html',
@@ -17,28 +17,30 @@ self.addEventListener('install', event => {
       })
       .catch(err => console.log('Cache install error:', err))
   );
-  // Activate immediately
   self.skipWaiting();
 });
 
 // Fetch event - serve from cache, fallback to network
 self.addEventListener('fetch', event => {
+  // ✅ FIX: Ignore requests from Chrome extensions or other non-http schemes
+  if (!event.request.url.startsWith('http')) {
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request)
       .then(response => {
-        // Cache hit - return response
         if (response) {
           return response;
         }
-        // Clone the request
+        
         const fetchRequest = event.request.clone();
         
         return fetch(fetchRequest).then(response => {
-          // Check if valid response
           if (!response || response.status !== 200 || response.type !== 'basic') {
             return response;
           }
-          // Clone the response
+          
           const responseToCache = response.clone();
           
           caches.open(CACHE_NAME)
@@ -49,7 +51,6 @@ self.addEventListener('fetch', event => {
           return response;
         }).catch(err => {
           console.log('Fetch error:', err);
-          // Return offline page if you have one
           return caches.match('./index.html');
         });
       })
@@ -71,6 +72,5 @@ self.addEventListener('activate', event => {
       );
     })
   );
-  // Claim all clients immediately
   self.clients.claim();
 });
