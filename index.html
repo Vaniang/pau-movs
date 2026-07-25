@@ -478,6 +478,28 @@
       .badge { border: 1px solid #000; color: #000 !important; background: #fff !important; }
       .chart-container { height: 240px; }
     }
+
+    /* Optional: Style the quarter filter dropdown */
+#dashboard-quarter-filter {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--background);
+  color: var(--foreground);
+  font-size: 0.875rem;
+  padding: 0 0.5rem;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+#dashboard-quarter-filter:hover {
+  border-color: var(--primary);
+}
+
+#dashboard-quarter-filter:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(11,47,91,0.1);
+}
   </style>
 
   <script src="https://www.gstatic.com/firebasejs/11.0.0/firebase-app-compat.js"></script>
@@ -562,7 +584,7 @@
   <div class="section-actions flex gap-2 items-center">
   <select id="dashboard-year-filter" aria-label="Dashboard reporting year" style="width: 120px;"></select>
   
-  <select id="dashboard-quarter-filter" aria-label="Dashboard reporting quarter" style="width: 130px;">
+  <select id="dashboard-quarter-filter" class="btn btn-outline" aria-label="Dashboard reporting quarter" style="width: 130px;">
     <option value="all">All Quarters</option>
     <option value="1">Quarter 1</option>
     <option value="2">Quarter 2</option>
