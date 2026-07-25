@@ -434,6 +434,11 @@
     a { color: #0b2f5b !important; text-decoration: underline !important; word-break: break-all; }
     .badge { border: 1px solid #94a3b8; color: #0f172a !important; background: #fff !important; }
     .chart-container { height: 260px; }
+     #chartAvgPerformance {
+    height: 280px !important;
+    max-height: 280px !important;
+    min-height: 280px !important;
+  }
   }
 </style>
   <script src="https://www.gstatic.com/firebasejs/11.0.0/firebase-app-compat.js"></script>
@@ -564,6 +569,17 @@
           </div>
           <div class="chart-container"><canvas id="chartEngagement" aria-label="Monthly Facebook engagement chart" role="img"></canvas></div>
         </div>
+
+          <div class="card mb-6">
+  <div class="flex justify-between items-center mb-4 flex-wrap gap-3">
+    <div>
+      <h3 class="text-sm font-semibold">Average Performance by Output Type</h3>
+      <p class="text-muted">Average reach and reactions per post for the selected reporting period. Shows which content types deliver the highest audience engagement efficiency.</p>
+    </div>
+    <span id="avg-performance-period-label" class="record-count"></span>
+  </div>
+  <div class="chart-container"><canvas id="chartAvgPerformance" aria-label="Average performance by output type" role="img"></canvas></div>
+</div>
 
         <div class="card mb-6">
           <div class="flex items-center justify-between mb-4 flex-wrap gap-4">
@@ -999,6 +1015,7 @@ const DEFAULT_DISPLAY_NAMES = {
   viewer: 'Public Affairs Unit'
 };
 
+
 let currentUser = null;
 let currentProfile = { role: 'viewer', displayName: '' };
 let unsubscribeMovs = null;
@@ -1027,7 +1044,8 @@ let inactivitySecondsRemaining = 60;
 let lastActivityHeartbeatAt = 0;
 let lastInactivityResetAt = 0;
 let isLoggingOut = false;
-
+let chartAvgPerformanceInstance = null;
+   
 const SESSION_TIMEOUT_MS = 30 * 60 * 1000;
 const SESSION_WARNING_MS = 60 * 1000;
 const ACTIVITY_HEARTBEAT_MS = 5 * 60 * 1000;
@@ -1748,39 +1766,286 @@ function updateCharts() {
   const records = getDashboardRecords();
   const selectedYear = Number($('dashboard-year-filter').value) || new Date().getFullYear();
   const selectedQuarter = $('dashboard-quarter-filter').value;
+  const quarterLabel = selectedQuarter === 'all' ? '' : ` Q${selectedQuarter}`;
+  
   const typeCounts = Object.fromEntries(TYPES.map(type => [type, 0]));
   const monthlyData = Array.from({ length: 12 }, () => Object.fromEntries(TYPES.map(type => [type, 0])));
+  const avgPerformanceData = { reach: [], reactions: [] };
 
-  records.forEach(record => {
-    const date = getRecordDate(record);
-    if (!date || !Object.hasOwn(typeCounts, record.type)) return;
-    typeCounts[record.type] += 1;
-    monthlyData[date.getMonth()][record.type] += 1;
+  // Calculate average performance per output type
+  TYPES.forEach(type => {
+    const typeRecords = records.filter(r => r.type === type);
+    const count = typeRecords.length;
+    
+    if (count > 0) {
+      const totalReach = typeRecords.reduce((sum, r) => sum + getMetric(r, 'reach'), 0);
+      const totalReactions = typeRecords.reduce((sum, r) => sum + getMetric(r, 'reactions'), 0);
+      
+      avgPerformanceData.reach.push({
+        type,
+        value: totalReach / count,
+        count
+      });
+      avgPerformanceData.reactions.push({
+        type,
+        value: totalReactions / count,
+        count
+      });
+    } else {
+      avgPerformanceData.reach.push({ type, value: 0, count: 0 });
+      avgPerformanceData.reactions.push({ type, value: 0, count: 0 });
+    }
   });
 
-  const quarterLabel = selectedQuarter === 'all' ? '' : ` Q${selectedQuarter}`;
+  // Update all period labels
   $('donut-period-label').textContent = `Year ${selectedYear}${quarterLabel}`;
   $('bar-period-label').textContent = `Year ${selectedYear}${quarterLabel}`;
   $('engagement-period-label').textContent = `Year ${selectedYear}${quarterLabel}`;
+  $('avg-performance-period-label').textContent = `Year ${selectedYear}${quarterLabel}`;
 
+  // Shared premium tooltip configuration
+  const premiumTooltip = {
+    backgroundColor: 'rgba(15, 23, 42, 0.95)',
+    titleColor: '#ffffff',
+    bodyColor: '#e2e8f0',
+    titleFont: { family: 'Inter', size: 13, weight: '600' },
+    bodyFont: { family: 'Inter', size: 12 },
+    padding: 12,
+    cornerRadius: 8,
+    displayColors: true,
+    boxPadding: 6,
+    callbacks: { 
+      label: context => ` ${context.dataset.label}: ${context.raw.toLocaleString('en-PH')}` 
+    }
+  };
+
+  const softGrid = { color: '#f1f5f9', drawBorder: false };
   const colors = TYPES.map(type => CONFIG[type].color);
+
+  // 1. Doughnut Chart (Category Distribution)
   if (chartDonutInstance) chartDonutInstance.destroy();
   chartDonutInstance = new Chart($('chartDonut').getContext('2d'), {
     type: 'doughnut',
     data: {
       labels: TYPES,
-      datasets: [{ data: TYPES.map(type => typeCounts[type]), backgroundColor: colors, borderWidth: 0 }]
+      datasets: [{ 
+        data: TYPES.map(type => typeCounts[type]), 
+        backgroundColor: colors, 
+        borderWidth: 2,
+        borderColor: '#ffffff',
+        hoverOffset: 8
+      }]
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      cutout: '65%',
+      cutout: '70%',
       plugins: {
-        legend: { position: 'bottom', labels: { boxWidth: 14, usePointStyle: true } },
-        tooltip: { callbacks: { label: context => `${context.label}: ${context.raw}` } }
+        legend: { position: 'bottom', labels: { boxWidth: 12, usePointStyle: true, pointStyle: 'circle', padding: 20, font: { family: 'Inter', size: 12 } } },
+        tooltip: premiumTooltip
       }
     }
   });
+
+  // 2. Bar Chart (Monthly Production Trend)
+  if (chartBarInstance) chartBarInstance.destroy();
+  chartBarInstance = new Chart($('chartBar').getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels: MONTH_NAMES.map(month => month.slice(0, 3)),
+      datasets: TYPES.map(type => ({
+        label: type,
+        data: monthlyData.map(month => month[type]),
+        backgroundColor: CONFIG[type].color,
+        borderRadius: 4,
+        borderSkipped: false
+      }))
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      scales: {
+        x: { stacked: true, grid: { display: false }, ticks: { font: { family: 'Inter' } } },
+        y: { stacked: true, beginAtZero: true, ticks: { precision: 0, font: { family: 'Inter' } }, grid: softGrid }
+      },
+      plugins: { 
+        legend: { position: 'bottom', labels: { boxWidth: 12, usePointStyle: true, pointStyle: 'rectRounded', padding: 15, font: { family: 'Inter', size: 12 } } },
+        tooltip: premiumTooltip 
+      }
+    }
+  });
+
+  // 3. Line Chart (Monthly Facebook Performance)
+  const monthlyEngagement = Array.from({ length: 12 }, () => ({ reach: 0, reactions: 0, shares: 0 }));
+  records.forEach(record => {
+    const date = getRecordDate(record);
+    if (!date) return;
+    const month = monthlyEngagement[date.getMonth()];
+    month.reach += getMetric(record, 'reach');
+    month.reactions += getMetric(record, 'reactions');
+    month.shares += getMetric(record, 'shares');
+  });
+
+  if (chartEngagementInstance) chartEngagementInstance.destroy();
+  chartEngagementInstance = new Chart($('chartEngagement').getContext('2d'), {
+    type: 'line',
+    data: {
+      labels: MONTH_NAMES.map(month => month.slice(0, 3)),
+      datasets: [
+        { 
+          label: 'Reach', 
+          data: monthlyEngagement.map(month => month.reach), 
+          borderColor: '#0b2f5b', 
+          backgroundColor: 'rgba(11,47,91,0.05)', 
+          borderWidth: 2.5,
+          pointBackgroundColor: '#ffffff', 
+          pointBorderColor: '#0b2f5b', 
+          pointBorderWidth: 2, 
+          pointRadius: 4, 
+          pointHoverRadius: 6,
+          yAxisID: 'yReach', 
+          tension: 0.4, 
+          fill: true 
+        },
+        { 
+          label: 'Reactions', 
+          data: monthlyEngagement.map(month => month.reactions), 
+          borderColor: '#e11d48', 
+          backgroundColor: 'transparent', 
+          borderWidth: 2.5,
+          pointBackgroundColor: '#ffffff', 
+          pointBorderColor: '#e11d48', 
+          pointBorderWidth: 2, 
+          pointRadius: 4, 
+          pointHoverRadius: 6,
+          yAxisID: 'yEngagement', 
+          tension: 0.4 
+        },
+        { 
+          label: 'Shares', 
+          data: monthlyEngagement.map(month => month.shares), 
+          borderColor: '#059669', 
+          backgroundColor: 'transparent', 
+          borderWidth: 2.5,
+          pointBackgroundColor: '#ffffff', 
+          pointBorderColor: '#059669', 
+          pointBorderWidth: 2, 
+          pointRadius: 4, 
+          pointHoverRadius: 6,
+          yAxisID: 'yEngagement', 
+          tension: 0.4 
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { family: 'Inter' } } },
+        yReach: { 
+          type: 'linear', position: 'left', beginAtZero: true, 
+          ticks: { callback: value => value.toLocaleString('en-PH'), font: { family: 'Inter' } }, 
+          title: { display: true, text: 'Reach', font: { family: 'Inter', weight: '600' }, color: '#0b2f5b' },
+          grid: softGrid
+        },
+        yEngagement: { 
+          type: 'linear', position: 'right', beginAtZero: true, 
+          grid: { drawOnChartArea: false }, 
+          ticks: { precision: 0, callback: value => value.toLocaleString('en-PH'), font: { family: 'Inter' } }, 
+          title: { display: true, text: 'Reactions / Shares', font: { family: 'Inter', weight: '600' }, color: '#475569' } 
+        }
+      },
+      plugins: {
+        legend: { position: 'bottom', labels: { boxWidth: 12, usePointStyle: true, pointStyle: 'circle', padding: 20, font: { family: 'Inter', size: 12 } } },
+        tooltip: premiumTooltip
+      }
+    }
+  });
+
+  // 4. NEW: Average Performance Chart (Efficiency Metrics)
+  if (chartAvgPerformanceInstance) chartAvgPerformanceInstance.destroy();
+  chartAvgPerformanceInstance = new Chart($('chartAvgPerformance').getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels: TYPES,
+      datasets: [
+        {
+          label: 'Average Reach',
+          data: avgPerformanceData.reach.map(d => d.value),
+          backgroundColor: '#0b2f5b',
+          borderRadius: 4,
+          borderSkipped: false,
+          borderWidth: 0,
+          hoverBackgroundColor: '#123f75'
+        },
+        {
+          label: 'Average Reactions',
+          data: avgPerformanceData.reactions.map(d => d.value),
+          backgroundColor: '#e11d48',
+          borderRadius: 4,
+          borderSkipped: false,
+          borderWidth: 0,
+          hoverBackgroundColor: '#b91c1c'
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      scales: {
+        x: { 
+          stacked: true,
+          grid: { display: false },
+          ticks: { 
+            font: { family: 'Inter' },
+            maxRotation: 0,
+            minRotation: 0,
+            callback: (value, index) => {
+              const type = TYPES[index];
+              const count = avgPerformanceData.reach[index].count;
+              return count > 0 ? `${type}\n(${count})` : `${type}\n(0)`;
+            }
+          }
+        },
+        y: {
+          stacked: true,
+          beginAtZero: true,
+          ticks: { 
+            precision: 0,
+            callback: value => value.toLocaleString('en-PH'),
+            font: { family: 'Inter' }
+          },
+          grid: softGrid
+        }
+      },
+      plugins: {
+        legend: { 
+          position: 'bottom',
+          labels: {
+            boxWidth: 12,
+            usePointStyle: true,
+            pointStyle: 'circle',
+            padding: 20,
+            font: { family: 'Inter', size: 12 }
+          }
+        },
+        tooltip: {
+          ...premiumTooltip,
+          callbacks: {
+            label: (context) => {
+              const value = context.raw;
+              const count = avgPerformanceData.reach[context.dataIndex].count;
+              return ` ${context.dataset.label}: ${value.toLocaleString('en-PH')} (n=${count})`;
+            }
+          }
+        }
+      }
+    }
+  });
+}
 
   if (chartBarInstance) chartBarInstance.destroy();
   chartBarInstance = new Chart($('chartBar').getContext('2d'), {
