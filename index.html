@@ -963,7 +963,7 @@ const firebaseConfig = {
   measurementId: "G-SCJBGH476G"
 };
 
-ffirebase.firestore().enablePersistence({ synchronizeTabs: true })
+firebase.firestore().enablePersistence({ synchronizeTabs: true })
   .catch((err) => {
     if (err.code === 'failed-precondition') {
       console.warn('Multiple tabs open, persistence can only be enabled in one tab at a time.');
