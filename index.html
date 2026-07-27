@@ -521,6 +521,17 @@ tbody tr:last-child td { border-bottom: none; }
   
   h1 { font-size: 1.5rem; }
   .stat-value { font-size: 1.35rem; }
+  .top-performer-row {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .top-performer-info {
+    margin: 0.5rem 0;
+    width: 100%;
+  }
+  .top-performer-reach {
+    margin-left: auto;
+  }
 }
 
 @media print {
@@ -543,7 +554,10 @@ tbody tr:last-child td { border-bottom: none; }
   #movs-table td:nth-child(1), #movs-table td:nth-child(2), #movs-table td:nth-child(3), #movs-table td:nth-child(5), #movs-table td:nth-child(6), #movs-table td:nth-child(7), #movs-table td:nth-child(8), #movs-table td:nth-child(9), #report-table td:nth-child(1), #report-table td:nth-child(5), #report-table td:nth-child(6), #report-table td:nth-child(7), #report-table td:nth-child(8) { text-align: center !important; }
   a { color: #0b2f5b !important; text-decoration: underline !important; word-break: break-all; }
   .badge { border: 1px solid #94a3b8; color: #0f172a !important; background: #fff !important; }
-  .chart-container { height: 260px; }
+ .chart-container {
+  height: 320px !important; /* Forces all charts to be exactly the same height */
+  min-height: 320px !important;
+}
   #chartAvgPerformance {
     height: 280px !important;
     max-height: 280px !important;
@@ -551,45 +565,92 @@ tbody tr:last-child td { border-bottom: none; }
   }
 }
    /* Top 5 Performers Widget Styles */
+#top-performers-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 0.25rem 0;
+}
 .top-performer-row {
   display: flex;
   align-items: center;
-  padding: 0.85rem 0.5rem;
-  border-bottom: 1px solid var(--border);
-  gap: 1rem;
-  transition: background-color 0.15s ease;
-  border-radius: 0.5rem;
+  padding: 0.85rem 1rem;
+  background: #f8fafc; /* Light background for rows */
+  border: 1px solid var(--border);
+  border-radius: 0.65rem;
+  transition: all 0.2s ease;
 }
 .top-performer-row:last-child { border-bottom: none; }
-.top-performer-row:hover { background-color: #f8fafc; }
+.top-performer-row:hover {
+  background: #ffffff;
+  border-color: var(--primary);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  transform: translateY(-1px);
+}
 
 .top-performer-rank {
-  width: 32px; height: 32px;
-  display: flex; align-items: center; justify-content: center;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border-radius: 50%;
-  background: var(--primary-soft); color: var(--primary);
-  font-weight: 700; font-size: 0.9rem;
+  background: var(--primary-soft);
+  color: var(--primary);
+  font-weight: 700;
+  font-size: 0.95rem;
   flex-shrink: 0;
 }
+   
 .top-performer-rank.gold { background: var(--gold-soft); color: #b45309; border: 1px solid #fde68a; }
 
-.top-performer-info { flex: 1; min-width: 0; }
-.top-performer-title { 
-  font-weight: 600; color: var(--foreground); 
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; 
-  font-size: 0.9rem; margin-bottom: 0.25rem;
-}
-.top-performer-meta { 
-  font-size: 0.75rem; color: var(--muted-foreground); 
-  display: flex; align-items: center; gap: 0.5rem; 
+.top-performer-rank.gold {
+  background: var(--gold-soft);
+  color: #b45309;
+  border: 1px solid #fde68a;
+  box-shadow: 0 2px 4px rgba(215, 163, 38, 0.2);
 }
 
-.top-performer-reach { 
-  font-weight: 700; color: var(--primary); 
-  font-size: 1.05rem; white-space: nowrap; text-align: right;
+.top-performer-info {
+  flex: 1;
+  min-width: 0;
+  margin: 0 1.25rem;
 }
+
+.top-performer-title {
+  font-weight: 600;
+  color: var(--foreground);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 0.95rem;
+  margin-bottom: 0.25rem;
+}
+
+.top-performer-meta {
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.top-performer-reach {
+  font-weight: 700;
+  color: var(--primary);
+  font-size: 1.15rem;
+  white-space: nowrap;
+  text-align: right;
+  min-width: 80px;
+}
+
 .top-performer-reach-label {
-  font-size: 0.7rem; color: var(--muted-foreground); text-align: right;
+  font-size: 0.7rem;
+  color: var(--muted-foreground);
+  text-align: right;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
 }
 </style>
   <script src="https://www.gstatic.com/firebasejs/11.0.0/firebase-app-compat.js"></script>
@@ -734,26 +795,29 @@ tbody tr:last-child td { border-bottom: none; }
 
            <!-- 3. Option #2: Engagement Rate Trend (Don't forget this one!) -->
         <div class="card mb-6">
-          <div class="flex justify-between items-center mb-4 flex-wrap gap-3">
-            <div>
-              <h3 class="text-sm font-semibold">Monthly Engagement Rate Trend</h3>
-              <p class="text-muted">Calculated as ((Reactions + Shares) / Reach) × 100. Tracks audience interaction efficiency over time.</p>
-            </div>
-            <span id="engagement-rate-period-label" class="record-count"></span>
-          </div>
-          <div class="chart-container"><canvas id="chartEngagementRate" aria-label="Monthly engagement rate trend" role="img"></canvas></div>
-        </div>
+  <!-- This header structure must match exactly -->
+  <div class="flex justify-between items-center mb-4 flex-wrap gap-3">
+    <div>
+      <h3 class="text-sm font-semibold">Monthly Engagement Rate Trend</h3>
+      <p class="text-muted">Calculated as ((Reactions + Shares) / Reach) × 100. Tracks audience interaction efficiency over time.</p>
+    </div>
+    <span id="engagement-rate-period-label" class="record-count"></span>
+  </div>
+  <div class="chart-container"><canvas id="chartEngagementRate" aria-label="Monthly engagement rate trend" role="img"></canvas></div>
+</div>
 
-           <div class="card mb-6">
-          <div class="flex justify-between items-center mb-4 flex-wrap gap-3">
-            <div>
-              <h3 class="text-sm font-semibold">Top 5 Performing Posts</h3>
-              <p class="text-muted">Highest recorded reach for the selected reporting period. Highlights your most successful content.</p>
-            </div>
-            <span id="top-performers-period-label" class="record-count"></span>
-          </div>
-          <div id="top-performers-container"></div>
-        </div>
+         <div class="card mb-6">
+  <!-- This header structure must match exactly -->
+  <div class="flex justify-between items-center mb-4 flex-wrap gap-3">
+    <div>
+      <h3 class="text-sm font-semibold">Top 5 Performing Posts</h3>
+      <p class="text-muted">Highest recorded reach for the selected reporting period. Highlights your most successful content.</p>
+    </div>
+    <span id="top-performers-period-label" class="record-count"></span>
+  </div>
+  <!-- The container where the JS will inject the list -->
+  <div id="top-performers-container"></div>
+</div>
           
         <div class="card mb-6">
           <div class="flex items-center justify-between mb-4 flex-wrap gap-4">
