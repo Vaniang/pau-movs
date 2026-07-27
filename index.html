@@ -294,7 +294,7 @@ input:focus, select:focus, textarea:focus {
 /* Charts - Responsive Grid */
 .charts-row { 
   display: grid; 
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, 1fr); 
   gap: 1.5rem; 
   margin-bottom: 1.5rem; 
 }
@@ -478,8 +478,7 @@ tbody tr:last-child td { border-bottom: none; }
 
 /* RESPONSIVE BREAKPOINTS */
 @media (max-width: 1400px) {
-  .stats-grid { grid-template-columns: repeat(3, 1fr); }
-  .charts-row { grid-template-columns: repeat(2, 1fr); }
+  .charts-row { grid-template-columns: repeat(2, 1fr); } /* 2 columns on medium screens */
 }
 
 @media (max-width: 1120px) {
@@ -688,12 +687,12 @@ tbody tr:last-child td { border-bottom: none; }
   </button>
 </div>
 
-        <div id="stats-container" class="stats-grid"></div>
-        <div class="engagement-note">
+               <div class="engagement-note">
           <i class="fas fa-circle-info" aria-hidden="true"></i>
           Cumulative Post Reach is the sum of the reach recorded for individual Facebook posts. It is not a unique count of people reached across the entire Page.
         </div>
 
+        <!-- NEW 3-Column Charts Row -->
         <div class="charts-row">
           <div class="card">
             <div class="flex justify-between items-center mb-4">
@@ -702,6 +701,7 @@ tbody tr:last-child td { border-bottom: none; }
             </div>
             <div class="chart-container"><canvas id="chartDonut" aria-label="Category distribution chart" role="img"></canvas></div>
           </div>
+          
           <div class="card">
             <div class="flex justify-between items-center mb-4">
               <h3 class="text-sm font-semibold">Monthly Production Trend</h3>
@@ -709,18 +709,14 @@ tbody tr:last-child td { border-bottom: none; }
             </div>
             <div class="chart-container"><canvas id="chartBar" aria-label="Monthly production trend chart" role="img"></canvas></div>
           </div>
-        </div>
 
-               <!-- 1. Existing Monthly Facebook Performance Chart -->
-        <div class="card mb-6">
-          <div class="flex justify-between items-center mb-4 flex-wrap gap-3">
-            <div>
+          <div class="card">
+            <div class="flex justify-between items-center mb-4">
               <h3 class="text-sm font-semibold">Monthly Facebook Performance</h3>
-              <p class="text-muted">Monthly totals of recorded reach, reactions, and shares.</p>
+              <span id="engagement-period-label" class="record-count"></span>
             </div>
-            <span id="engagement-period-label" class="record-count"></span>
+            <div class="chart-container"><canvas id="chartEngagement" aria-label="Monthly Facebook engagement chart" role="img"></canvas></div>
           </div>
-          <div class="chart-container"><canvas id="chartEngagement" aria-label="Monthly Facebook engagement chart" role="img"></canvas></div>
         </div>
 
         <!-- 2. Option #1: Average Performance Chart (The one you just pasted) -->
