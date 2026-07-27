@@ -1859,9 +1859,12 @@ $('session-signout-btn').addEventListener('click', () => performLogout('Signed o
   window.addEventListener(eventName, noteUserActivity, { passive: true });
 });
 
-// -----------------------------------------------------------------------------
-// 6. REAL-TIME DATA
-// -----------------------------------------------------------------------------
+function updateApp() {
+  renderDashboard();
+  renderMovsTable();
+  generateReport();
+}
+
 function listenToMovs() {
   if (unsubscribeMovs) unsubscribeMovs();
 
