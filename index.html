@@ -3711,18 +3711,25 @@ function switchSection(sectionId) {
 }
 
 // Attach event listeners to nav buttons
+d// Attach event listeners to nav buttons
 document.addEventListener('DOMContentLoaded', () => {
-  const navButtons = document.querySelectorAll('.nav-item');
-  console.log(`Found ${navButtons.length} navigation buttons`);
-  
-  navButtons.forEach(item => {
-    item.addEventListener('click', (e) => {
-      e.preventDefault();
-      const sectionId = item.dataset.section;
-      console.log('Navigating to:', sectionId);
-      switchSection(sectionId);
+    const navButtons = document.querySelectorAll('.nav-item');
+    console.log(`Found ${navButtons.length} navigation buttons`);
+    
+    navButtons.forEach((item, index) => {
+        if (item) {  // Check if element exists
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+                const sectionId = item.dataset.section;
+                console.log('Navigating to:', sectionId);
+                if (sectionId) {
+                    switchSection(sectionId);
+                }
+            });
+        } else {
+            console.warn(`Nav button at index ${index} is null`);
+        }
     });
-  });
 });
    // Debug: Log when nav buttons are clicked
 document.addEventListener('click', (e) => {
