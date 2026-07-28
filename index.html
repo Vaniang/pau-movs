@@ -3706,22 +3706,6 @@ document.querySelectorAll('.mqd-input').forEach((input, index, inputs) => {
     }
   });
 });
-
-// 7. UPDATED switchSection function to load the feedback table
-function switchSection(sectionId) {
-  if (sectionId === 'login-activity' && !can('viewLoginActivity')) {
-    return showToast('Only the PAU Administrator may view login activity.', 'error');
-  }
-  document.querySelectorAll('.nav-item').forEach(item => item.classList.toggle('active', item.dataset.section === sectionId));
-  document.querySelectorAll('.section').forEach(section => section.classList.toggle('active', section.id === sectionId));
-  
-  if (sectionId === 'reports') generateReport();
-  if (sectionId === 'movs') renderMovsTable();
-  if (sectionId === 'login-activity') renderLoginActivityTable();
-  if (sectionId === 'feedback') renderFeedbackTable(); // <-- NEW LINE
-  
-  document.querySelector('.content')?.scrollTo({ top: 0, behavior: 'smooth' });
-}
 </script>
 </body>
 </html>
