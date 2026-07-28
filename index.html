@@ -1961,7 +1961,7 @@ function renderDashboard() {
   updateCharts();
   renderTopPerformers();
   renderQuarterlyTable();
-  renderCAPAlerts(); // <-- ADD THIS LINE
+  renderCAPAlerts(); // ✅ Add this line
 }
 
 function populateYearDropdowns() {
@@ -3783,36 +3783,7 @@ document.querySelectorAll('.mqd-input').forEach((input, index, inputs) => {
     }
   });
 });
-   // =============================================================================
-// NAVIGATION - FINAL VERSION
-// =============================================================================
-function switchSection(sectionId) {
-  try {
-    if (sectionId === 'login-activity' && !can('viewLoginActivity')) {
-      return showToast('Only the PAU Administrator may view login activity.', 'error');
-    }
-    
-    document.querySelectorAll('.nav-item').forEach(item => {
-      item.classList.toggle('active', item.dataset.section === sectionId);
-    });
-    
-    document.querySelectorAll('.section').forEach(section => {
-      section.classList.toggle('active', section.id === sectionId);
-    });
-    
-    // Load section-specific data
-    if (sectionId === 'reports') generateReport();
-    if (sectionId === 'movs') renderMovsTable();
-    if (sectionId === 'login-activity') renderLoginActivityTable();
-    if (sectionId === 'feedback') renderFeedbackTable();
-    if (sectionId === 'metrics') renderMetricsTable(); // ✅ Added Metrics handler
-    
-    document.querySelector('.content')?.scrollTo({ top: 0, behavior: 'smooth' });
-  } catch (error) {
-    console.error('Error switching section:', error);
-    showToast('Error navigating to section: ' + error.message, 'error');
-  }
-}
+
    async function renderCAPAlerts() {
   const container = $('cap-alerts-container');
   if (!container) return;
@@ -3902,6 +3873,67 @@ function switchSection(sectionId) {
     `;
   }).join('');
 }
+   // =============================================================================
+// NAVIGATION - FINAL VERSION
+// =============================================================================
+function switchSection(sectionId) {
+  try {
+    if (sectionId === 'login-activity' && !can('viewLoginActivity')) {
+      return showToast('Only the PAU Administrator may view login activity.', 'error');
+    }
+    
+    // Update active nav button
+    document.querySelectorAll('.nav-item').forEach(item => {
+      item.classList.toggle('active', item.dataset.section === sectionId);
+    });
+    
+    // Show/hide sections
+    document.querySelectorAll('.section').forEach(section => {
+      section.classList.toggle('active', section.id === sectionId);
+    });
+    
+    // Load section-specific data
+    if (sectionId === 'reports') generateReport();
+    if (sectionId === 'movs') renderMovsTable();
+    if (sectionId === 'login-activity') renderLoginActivityTable();
+    if (sectionId === 'feedback') renderFeedbackTable();
+    if (sectionId === 'metrics') renderMetricsTable(); // ✅ Added Metrics handler
+    
+    // Scroll to top
+    document.querySelector('.content')?.scrollTo({ top: 0, behavior: 'smooth' });
+  } catch (error) {
+    console.error('Error switching section:', error);
+    showToast('Error navigating to section: ' + error.message, 'error');
+  }
+}
+
+// Attach event listeners to nav buttons (IMMEDIATELY, not waiting for DOMContentLoaded)
+(function attachNavListeners() {
+  const navButtons = document.querySelectorAll('.nav-item');
+  console.log(`Found ${navButtons.length} navigation buttons`);
+  
+  navButtons.forEach((item, index) => {
+    if (item) {
+      item.addEventListener('click', (e) => {
+        e.preventDefault();
+        const sectionId = item.dataset.section;
+        console.log('Navigating to:', sectionId);
+        if (sectionId) {
+          switchSection(sectionId);
+        }
+      });
+    } else {
+      console.warn(`Nav button at index ${index} is null`);
+    }
+  });
+})();
+
+// Debug: Log when nav buttons are clicked
+document.addEventListener('click', (e) => {
+  if (e.target.closest('.nav-item')) {
+    console.log('Nav button clicked:', e.target.closest('.nav-item').dataset.section);
+  }
+});
 </script>
 </body>
 </html>
