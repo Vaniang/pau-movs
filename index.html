@@ -160,6 +160,7 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--p
 .variant-info { background: var(--info-soft); border-color: #e0f2fe; } .variant-info i { color: #0ea5e9; }
 .variant-purple { background: var(--purple-soft); border-color: #ede9fe; } .variant-purple i { color: #8b5cf6; }
 .variant-rose { background: var(--rose-soft); border-color: #ffe4e6; } .variant-rose i { color: #f43f5e; }
+.variant-indigo { background: #eef2ff; border-color: #c7d2fe; } .variant-indigo i { color: #4f46e5; }
 .variant-gold { background: var(--gold-soft); border-color: #f4dfa4; } .variant-gold i { color: var(--gold); }
 .stat-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; }
 .stat-title { font-size: 0.85rem; font-weight: 500; color: var(--muted-foreground); margin-bottom: 0.35rem; }
@@ -937,7 +938,8 @@ const CONFIG = {
   'Photo Release': { variant: 'variant-warning', icon: 'fa-camera', color: '#d97706' },
   'PILU EduAksyon': { variant: 'variant-info', icon: 'fa-book-open', color: '#0284c7' },
   'Social Cards (others)': { variant: 'variant-purple', icon: 'fa-layer-group', color: '#7c3aed' },
-  'Social Cards (PAU)': { variant: 'variant-rose', icon: 'fa-users', color: '#e11d48' }
+  'Social Cards (PAU)': { variant: 'variant-rose', icon: 'fa-users', color: '#e11d48' },
+  'Press Conference': { variant: 'variant-indigo', icon: 'fa-microphone-lines', color: '}
 };
 
 const TYPES = Object.keys(CONFIG);
@@ -3271,6 +3273,19 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
     navigator.serviceWorker.register('./sw.js').catch(error => console.warn('Service worker registration failed:', error));
   });
 }
+   // Dynamically change the Link label when "Press Conference" is selected
+$('input-type').addEventListener('change', function() {
+    const linkLabel = document.querySelector('label[for="input-link"]');
+    const linkInput = $('input-link');
+    
+    if (this.value === 'Press Conference') {
+        linkLabel.textContent = 'Press Conference Link / Source URL';
+        linkInput.placeholder = 'https://bomoradyo.com/...';
+    } else {
+        linkLabel.textContent = 'MOV link';
+        linkInput.placeholder = 'https://...';
+    }
+});
 </script>
 </body>
 </html>
