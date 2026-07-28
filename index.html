@@ -971,43 +971,57 @@ tbody tr:last-child td { border-bottom: none; }
     You are offline. Live data, login activity, and record updates may be unavailable until the connection returns.
   </div>
 
-  <div id="quick-metrics-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="quick-metrics-title">
-    <div class="modal-card">
-      <div class="flex justify-between items-center gap-3">
-        <div>
-          <h2 id="quick-metrics-title">Update Facebook Metrics</h2>
-          <p id="quick-metrics-record-title" class="text-muted" style="margin-top:.35rem;"></p>
-        </div>
-        <button id="close-quick-metrics-btn" class="btn btn-ghost h-icon" type="button" aria-label="Close metrics update">
-          <i class="fas fa-xmark" aria-hidden="true"></i>
-        </button>
+ <div id="quick-metrics-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="quick-metrics-title">
+  <div class="modal-card">
+    <div class="flex justify-between items-center gap-3">
+      <div>
+        <h2 id="quick-metrics-title">Update Facebook Metrics</h2>
+        <p id="quick-metrics-record-title" class="text-muted" style="margin-top:.35rem;"></p>
       </div>
-      <div class="metric-modal-grid">
-        <div>
-          <label for="quick-reach">Reach</label>
-          <input id="quick-reach" type="number" min="0" step="1" inputmode="numeric" />
-        </div>
-        <div>
-          <label for="quick-reactions">Reactions</label>
-          <input id="quick-reactions" type="number" min="0" step="1" inputmode="numeric" />
-        </div>
-        <div>
-          <label for="quick-shares">Shares</label>
-          <input id="quick-shares" type="number" min="0" step="1" inputmode="numeric" />
-        </div>
-        <div>
-          <label for="quick-metrics-date">Metrics updated on</label>
-          <input id="quick-metrics-date" type="date" />
-        </div>
+      <button id="close-quick-metrics-btn" class="btn btn-ghost h-icon" type="button" aria-label="Close metrics update">
+        <i class="fas fa-xmark" aria-hidden="true"></i>
+      </button>
+    </div>
+    <div class="metric-modal-grid">
+      <div>
+        <label for="quick-reach">Reach</label>
+        <input id="quick-reach" type="number" min="0" step="1" inputmode="numeric" />
       </div>
-      <div class="modal-actions">
-        <button id="cancel-quick-metrics-btn" class="btn btn-outline h-9" type="button">Cancel</button>
-        <button id="save-quick-metrics-btn" class="btn btn-gold h-9" type="button">
-          <i class="fas fa-chart-simple" aria-hidden="true"></i> Save Metrics
-        </button>
+      <div>
+        <label for="quick-reactions">Reactions</label>
+        <input id="quick-reactions" type="number" min="0" step="1" inputmode="numeric" />
+      </div>
+      <div>
+        <label for="quick-shares">Shares</label>
+        <input id="quick-shares" type="number" min="0" step="1" inputmode="numeric" />
+      </div>
+      <div>
+        <label for="quick-metrics-date">Metrics updated on</label>
+        <input id="quick-metrics-date" type="date" />
+      </div>
+      
+      <!-- ✅ NEW: Negative Sentiment Checkbox -->
+      <div class="full" style="grid-column: 1 / -1; margin-top: 0.5rem;">
+        <label style="display: flex; align-items: flex-start; gap: 0.6rem; cursor: pointer; font-weight: 500; margin-bottom: 0;">
+          <input id="quick-negative-sentiment" type="checkbox" style="width: auto; height: auto; margin-top: 0.25rem;" />
+          <span>Significant negative sentiment, public confusion, or recurring concern was observed.</span>
+        </label>
+      </div>
+      
+      <!-- ✅ NEW: Sentiment Notes Textarea -->
+      <div class="full" style="grid-column: 1 / -1;">
+        <label for="quick-sentiment-notes">Sentiment / Observation Notes</label>
+        <textarea id="quick-sentiment-notes" placeholder="Describe the negative sentiment, confusion, or notable audience response..." style="min-height: 80px;"></textarea>
       </div>
     </div>
+    <div class="modal-actions">
+      <button id="cancel-quick-metrics-btn" class="btn btn-outline h-9" type="button">Cancel</button>
+      <button id="save-quick-metrics-btn" class="btn btn-gold h-9" type="button">
+        <i class="fas fa-chart-simple" aria-hidden="true"></i> Save Metrics
+      </button>
+    </div>
   </div>
+</div>
 
   <div id="session-warning-modal" class="modal-backdrop hidden" role="alertdialog" aria-modal="true" aria-labelledby="session-warning-title">
     <div class="modal-card" style="max-width:430px;text-align:center;">
@@ -2472,13 +2486,17 @@ function openQuickMetricsModal(id) {
   if (!can('edit')) return showToast('Only the Administrator / PAU Encoder may update metrics.', 'error');
   const record = movsData.find(item => item.id === id);
   if (!record) return;
-
   quickMetricsRecordId = id;
   $('quick-metrics-record-title').textContent = record.title || 'Selected MOV record';
   $('quick-reach').value = String(getMetric(record, 'reach'));
   $('quick-reactions').value = String(getMetric(record, 'reactions'));
   $('quick-shares').value = String(getMetric(record, 'shares'));
   $('quick-metrics-date').value = normalizeText(record.metricsAsOfDate) || dateToISO(new Date());
+  
+  // --- ✅ ADD THESE TWO LINES ---
+  $('quick-negative-sentiment').checked = record.negativeSentiment === true;
+  $('quick-sentiment-notes').value = record.sentimentNotes || '';
+
   $('quick-metrics-modal').classList.remove('hidden');
   $('quick-reach').focus();
 }
@@ -2498,11 +2516,14 @@ $('save-quick-metrics-btn').addEventListener('click', saveQuickMetrics);
 
 async function saveQuickMetrics() {
   if (!quickMetricsRecordId || !can('edit')) return;
-
   const reach = parseMetricValue($('quick-reach').value);
   const reactions = parseMetricValue($('quick-reactions').value);
   const shares = parseMetricValue($('quick-shares').value);
   const metricsAsOfDate = $('quick-metrics-date').value;
+  
+  // --- ✅ NEW: Capture Sentiment Data ---
+  const negativeSentiment = $('quick-negative-sentiment').checked;
+  const sentimentNotes = normalizeText($('quick-sentiment-notes').value);
 
   if ([reach, reactions, shares].includes(null)) {
     return showToast('Reach, reactions, and shares must be whole numbers of zero or higher.', 'error');
@@ -2510,39 +2531,37 @@ async function saveQuickMetrics() {
   if (!parseDate(metricsAsOfDate)) {
     return showToast('Select a valid metrics update date.', 'error');
   }
-
   const record = movsData.find(item => item.id === quickMetricsRecordId);
   if (!record) return closeQuickMetricsModal();
-
   const previousMetrics = {
     reach: getMetric(record, 'reach'),
     reactions: getMetric(record, 'reactions'),
     shares: getMetric(record, 'shares'),
-    metricsAsOfDate: normalizeText(record.metricsAsOfDate)
+    metricsAsOfDate: normalizeText(record.metricsAsOfDate),
+    negativeSentiment: record.negativeSentiment === true
   };
-
   $('save-quick-metrics-btn').disabled = true;
   setLoading(true, 'Updating Facebook metrics...');
-
   try {
     await movsColl.doc(quickMetricsRecordId).update({
       reach,
       reactions,
       shares,
       metricsAsOfDate,
+      // --- ✅ NEW: Save Sentiment Data to Firestore ---
+      negativeSentiment: negativeSentiment,
+      sentimentNotes: sentimentNotes,
       metricsUpdatedAt: firebase.firestore.FieldValue.serverTimestamp(),
       updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
       updatedBy: currentUser.uid,
       updatedByName: currentDisplayName()
     });
-
     await logAudit('METRICS_UPDATE', quickMetricsRecordId, {
       title: record.title,
       previous: previousMetrics,
-      updated: { reach, reactions, shares, metricsAsOfDate }
+      updated: { reach, reactions, shares, metricsAsOfDate, negativeSentiment }
     });
-
-    showToast('Facebook metrics updated successfully.');
+    showToast('Facebook metrics and sentiment updated successfully.');
     closeQuickMetricsModal();
   } catch (error) {
     console.error(error);
