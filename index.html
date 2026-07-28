@@ -982,38 +982,39 @@ tbody tr:last-child td { border-bottom: none; }
         <i class="fas fa-xmark" aria-hidden="true"></i>
       </button>
     </div>
+
     <div class="metric-modal-grid">
-      <div>
-        <label for="quick-reach">Reach</label>
-        <input id="quick-reach" type="number" min="0" step="1" inputmode="numeric" />
-      </div>
-      <div>
-        <label for="quick-reactions">Reactions</label>
-        <input id="quick-reactions" type="number" min="0" step="1" inputmode="numeric" />
-      </div>
-      <div>
-        <label for="quick-shares">Shares</label>
-        <input id="quick-shares" type="number" min="0" step="1" inputmode="numeric" />
-      </div>
-      <div>
-        <label for="quick-metrics-date">Metrics updated on</label>
-        <input id="quick-metrics-date" type="date" />
-      </div>
-      
-      <!-- ✅ NEW: Negative Sentiment Checkbox -->
-      <div class="full" style="grid-column: 1 / -1; margin-top: 0.5rem;">
-        <label style="display: flex; align-items: flex-start; gap: 0.6rem; cursor: pointer; font-weight: 500; margin-bottom: 0;">
-          <input id="quick-negative-sentiment" type="checkbox" style="width: auto; height: auto; margin-top: 0.25rem;" />
-          <span>Significant negative sentiment, public confusion, or recurring concern was observed.</span>
-        </label>
-      </div>
-      
-      <!-- ✅ NEW: Sentiment Notes Textarea -->
-      <div class="full" style="grid-column: 1 / -1;">
-        <label for="quick-sentiment-notes">Sentiment / Observation Notes</label>
-        <textarea id="quick-sentiment-notes" placeholder="Describe the negative sentiment, confusion, or notable audience response..." style="min-height: 80px;"></textarea>
-      </div>
-    </div>
+  <div>
+    <label for="quick-reach">Reach</label>
+    <input id="quick-reach" type="number" min="0" step="1" inputmode="numeric" />
+  </div>
+  <div>
+    <label for="quick-reactions">Reactions</label>
+    <input id="quick-reactions" type="number" min="0" step="1" inputmode="numeric" />
+  </div>
+  <div>
+    <label for="quick-shares">Shares</label>
+    <input id="quick-shares" type="number" min="0" step="1" inputmode="numeric" />
+  </div>
+  <div>
+    <label for="quick-metrics-date">Metrics updated on</label>
+    <input id="quick-metrics-date" type="date" />
+  </div>
+  
+  <!-- ✅ ADD THESE TWO NEW FIELDS HERE -->
+  <div class="full" style="grid-column: 1 / -1; margin-top: 0.5rem;">
+    <label style="display: flex; align-items: flex-start; gap: 0.6rem; cursor: pointer; font-weight: 500; margin-bottom: 0;">
+      <input id="quick-negative-sentiment" type="checkbox" style="width: auto; height: auto; margin-top: 0.25rem;" />
+      <span>Significant negative sentiment, public confusion, or recurring concern was observed.</span>
+    </label>
+  </div>
+  
+  <div class="full" style="grid-column: 1 / -1;">
+    <label for="quick-sentiment-notes">Sentiment / Observation Notes</label>
+    <textarea id="quick-sentiment-notes" placeholder="Describe the negative sentiment, confusion, or notable audience response..." style="min-height: 80px;"></textarea>
+  </div>
+</div>
+    
     <div class="modal-actions">
       <button id="cancel-quick-metrics-btn" class="btn btn-outline h-9" type="button">Cancel</button>
       <button id="save-quick-metrics-btn" class="btn btn-gold h-9" type="button">
