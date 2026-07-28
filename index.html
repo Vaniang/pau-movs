@@ -598,6 +598,16 @@ tbody tr:last-child td { border-bottom: none; }
             </div>
           </div>
           <div id="quarterly-table-container"></div>
+            <!-- CAP ALERTS WIDGET -->
+          <div class="card mb-6">
+            <div class="flex items-center gap-2 mb-4">
+              <i class="fas fa-triangle-exclamation" style="color: var(--destructive);"></i>
+              <h3 class="font-bold" style="color: var(--destructive);">Corrective Action Plan (CAP) Alerts</h3>
+            </div>
+            <div id="cap-alerts-container">
+              <div class="empty-state">Loading alerts...</div>
+            </div>
+          </div>
         </div>
 
         <div id="add-mov-section" class="card">
@@ -852,6 +862,35 @@ tbody tr:last-child td { border-bottom: none; }
         </div>
     </div>
 </section> <!-- END OF FEEDBACK SECTION -->
+
+      <section id="metrics" class="section">
+  <div class="section-header flex justify-between items-center mb-6">
+    <div>
+      <h1>External Audience Metrics</h1>
+      <p class="text-muted">Track reach, engagement, and sentiment alerts for published materials.</p>
+    </div>
+  </div>
+  <div class="card" style="padding: 0;">
+    <div class="table-wrapper" style="border: none;">
+      <table id="metrics-table">
+        <thead>
+          <tr>
+            <th>Date Logged</th>
+            <th>Material Title</th>
+            <th>Reach</th>
+            <th>Reactions</th>
+            <th>Shares</th>
+            <th>Sentiment Alert</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td colspan="7" class="empty-state">Loading external metrics...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
      
       <section id="reports" class="section">
         <div class="print-report-header">
@@ -924,6 +963,14 @@ tbody tr:last-child td { border-bottom: none; }
           <p id="executive-summary-text"></p>
         </div>
 
+          <div id="cap-report-area" class="card mb-6 hidden" style="background: #fff1f2; border-color: #f5c2c7;">
+          <div class="flex items-center gap-2 mb-4">
+            <i class="fas fa-triangle-exclamation" style="color: #991b1b;"></i>
+            <h3 class="font-bold" style="color: #991b1b;">Quality Assurance & CAP Alerts</h3>
+          </div>
+          <div id="cap-report-content"></div>
+        </div>
+        
         <div class="card" style="padding:0;">
           <div class="table-wrapper" style="border:none;">
             <table id="report-table">
@@ -1907,8 +1954,9 @@ function listenToMovs() {
 function renderDashboard() {
   renderStatsCards();
   updateCharts();
-  renderTopPerformers(); // <-- Add this line
+  renderTopPerformers();
   renderQuarterlyTable();
+  renderCAPAlerts(); // <-- ADD THIS LINE
 }
 
 function populateYearDropdowns() {
@@ -2949,7 +2997,65 @@ function generateReport() {
   renderReportSummary();
   renderExecutiveSummary();
   renderReportTable();
+  await renderCAPReport();
   updatePrintMetadata();
+}
+
+  // NEW FUNCTION: Render CAP Alerts in the Report
+async function renderCAPReport() {
+  const area = $('cap-report-area');
+  const content = $('cap-report-content');
+  
+  try {
+    const feedbackSnap = await feedbackColl.get();
+    const capFeedback = [];
+    feedbackSnap.forEach(doc => {
+      const data = doc.data();
+      const avg = data.ratings.reduce((a, b) => a + Number(b), 0) / 6;
+      if (avg <= 2.49) {
+        capFeedback.push({ type: 'Low MQD Rating', subject: data.subject, detail: `Avg: ${avg.toFixed(2)}` });
+      }
+    });
+
+    const negativeMovs = filteredReportData.filter(m => m.negativeSentiment === true);
+    const capMovs = negativeMovs.map(m => ({
+      type: 'Negative Sentiment',
+      subject: m.title,
+      detail: m.sentimentNotes || 'No notes provided.'
+    }));
+
+    const allAlerts = [...capFeedback, ...capMovs];
+
+    if (allAlerts.length === 0) {
+      area.classList.add('hidden');
+      return;
+    }
+
+    area.classList.remove('hidden');
+    content.innerHTML = `
+      <table class="report-table" style="width: 100%; text-align: left;">
+        <thead>
+          <tr>
+            <th style="width: 25%;">Alert Type</th>
+            <th style="width: 35%;">Material / Subject</th>
+            <th>Details / Observation</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${allAlerts.map(alert => `
+            <tr>
+              <td><span class="badge cap-alert">${alert.type}</span></td>
+              <td class="font-semibold">${alert.subject}</td>
+              <td class="text-muted">${alert.detail}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    `;
+  } catch (error) {
+    console.error(error);
+    area.classList.add('hidden');
+  }
 }
 
 function setActiveReportPreset(key = '') {
@@ -3742,6 +3848,95 @@ document.addEventListener('click', (e) => {
     console.log('Nav button clicked:', e.target.closest('.nav-item').dataset.section);
   }
 });
+   async function renderCAPAlerts() {
+  const container = $('cap-alerts-container');
+  if (!container) return;
+  
+  try {
+    // 1. Check Feedback for low ratings (Avg <= 2.49)
+    const feedbackSnap = await feedbackColl.get();
+    const capFeedback = [];
+    feedbackSnap.forEach(doc => {
+      const data = doc.data();
+      const avg = data.ratings.reduce((a, b) => a + Number(b), 0) / 6;
+      if (avg <= 2.49) {
+        capFeedback.push({ 
+          type: 'Low MQD Rating', 
+          subject: data.subject, 
+          detail: `Average rating: ${avg.toFixed(2)} (Requires improvement)`, 
+          date: data.date 
+        });
+      }
+    });
+
+    // 2. Check MOVs for Negative Sentiment
+    const negativeMovs = movsData.filter(m => m.negativeSentiment === true);
+    const capMovs = negativeMovs.map(m => ({
+      type: 'Negative Sentiment',
+      subject: m.title,
+      detail: m.sentimentNotes || 'No specific notes provided.',
+      date: m.metricsAsOfDate || m.date
+    }));
+
+    const allAlerts = [...capFeedback, ...capMovs];
+
+    if (allAlerts.length === 0) {
+      container.innerHTML = '<div class="notice-box"><i class="fas fa-check-circle"></i> No Corrective Action Plan (CAP) triggers detected. Excellent work!</div>';
+      return;
+    }
+
+    container.innerHTML = allAlerts.map(alert => `
+      <div class="cap-alert-box">
+        <div class="flex justify-between items-start gap-3">
+          <div style="flex: 1;">
+            <span class="badge cap-alert">${alert.type}</span>
+            <div class="font-semibold mt-2">${alert.subject}</div>
+            <div class="text-muted text-sm mt-1">${alert.detail}</div>
+            <div class="text-muted text-sm mt-1"><i class="fas fa-calendar"></i> ${formatDisplayDate(alert.date)}</div>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  } catch (error) {
+    console.error(error);
+    container.innerHTML = '<div class="empty-state">Error loading CAP alerts.</div>';
+  }
+}
+   function renderMetricsTable() {
+  const tbody = document.querySelector('#metrics-table tbody');
+  tbody.innerHTML = '<tr><td colspan="7" class="empty-state">Loading external metrics...</td></tr>';
+  
+  // Filter MOVs that have metrics logged
+  const metricsRecords = movsData.filter(m => m.reach > 0 || m.reactions > 0 || m.shares > 0 || m.negativeSentiment === true)
+                                 .sort((a, b) => (getRecordDate(b)?.getTime() || 0) - (getRecordDate(a)?.getTime() || 0));
+
+  if (metricsRecords.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No external metrics logged yet.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = metricsRecords.map(m => {
+    const sentimentBadge = m.negativeSentiment 
+      ? '<span class="badge cap-alert">Yes</span>' 
+      : '<span class="badge" style="background: #dcfce7; color: #166534;">No</span>';
+    
+    return `
+      <tr>
+        <td>${formatDisplayDate(m.metricsAsOfDate || m.date)}</td>
+        <td class="font-semibold">${m.title || 'Untitled'}</td>
+        <td>${formatMetric(m.reach)}</td>
+        <td>${formatMetric(m.reactions)}</td>
+        <td>${formatMetric(m.shares)}</td>
+        <td>${sentimentBadge}</td>
+        <td>
+          <button class="btn btn-ghost h-icon" title="Edit Metrics" onclick="openQuickMetricsModal('${m.id}')" style="color: var(--primary);">
+            <i class="fas fa-pen"></i>
+          </button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
 </script>
 </body>
 </html>
