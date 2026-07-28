@@ -661,188 +661,173 @@ tbody tr:last-child td { border-bottom: none; }
         </div>
       </section>
 
-      <section id="movs" class="section">
-        <div class="section-header flex justify-between items-center mb-6">
-          <div>
-            <h1>MOV Records</h1>
-            <p class="text-muted">Administrator workspace for managing, editing, archiving, and restoring records.</p>
-          </div>
-          <div class="section-actions flex gap-2">
-            <span id="mov-record-count" class="record-count items-center flex"></span>
-          </div>
+      <!-- ✅ CLEAN MOVs SECTION -->
+<section id="movs" class="section">
+  <div class="section-header flex justify-between items-center mb-6">
+    <div>
+      <h1>MOV Records</h1>
+      <p class="text-muted">Administrator workspace for managing, editing, archiving, and restoring records.</p>
+    </div>
+    <div class="section-actions flex gap-2">
+      <span id="mov-record-count" class="record-count items-center flex"></span>
+    </div>
+  </div>
+  <div class="card mb-4">
+    <div class="filter-bar">
+      <div>
+        <label for="movs-filter-type">Output type</label>
+        <select id="movs-filter-type"></select>
+      </div>
+      <div>
+        <label for="global-search">Search</label>
+        <input type="search" id="global-search" placeholder="Title, activity, output type, remarks..." />
+      </div>
+    </div>
+  </div>
+  <div class="card" style="padding:0;">
+    <div class="table-wrapper" style="border:none;">
+      <table id="movs-table">
+        <thead>
+          <tr>
+            <th style="width:42px;"><input type="checkbox" id="selectAll" aria-label="Select all visible records" /></th>
+            <th class="sortable" data-sort="date">Date <i class="fas fa-sort" aria-hidden="true"></i></th>
+            <th class="sortable" data-sort="type">Type <i class="fas fa-sort" aria-hidden="true"></i></th>
+            <th class="sortable" data-sort="title">Title / Details <i class="fas fa-sort" aria-hidden="true"></i></th>
+            <th class="sortable" data-sort="reach">Reach <i class="fas fa-sort" aria-hidden="true"></i></th>
+            <th class="sortable" data-sort="reactions">Reactions <i class="fas fa-sort" aria-hidden="true"></i></th>
+            <th class="sortable" data-sort="shares">Shares <i class="fas fa-sort" aria-hidden="true"></i></th>
+            <th>Link</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ✅ CLEAN FEEDBACK SECTION (Placed completely outside MOVs) -->
+<section id="feedback" class="section">
+  <div class="section-header flex justify-between items-center mb-6">
+    <div>
+      <h1>Client Feedback (MQD)</h1>
+      <p class="text-muted">Record one completed IECA Material Monitoring and Evaluation Form per respondent.</p>
+    </div>
+  </div>
+  <div class="card mb-6">
+    <form id="feedback-form">
+      <input type="hidden" id="feedback-id" />
+      <div class="form-grid">
+        <div>
+          <label for="feedback-date">Date of Evaluation *</label>
+          <input type="date" id="feedback-date" required />
         </div>
-
-        <div class="card mb-4">
-          <div class="filter-bar">
-            <div>
-              <label for="movs-filter-type">Output type</label>
-              <select id="movs-filter-type"></select>
-            </div>
-            <div id="record-scope-wrap">
-              <label for="record-scope">Record scope</label>
-              <select id="record-scope">
-                <option value="active">Active Records</option>
-                <option value="archived">Archived Records</option>
-              </select>
-            </div>
-            <div>
-              <label for="global-search">Search</label>
-              <input type="search" id="global-search" placeholder="Title, activity, output type, remarks..." />
-            </div>
-          </div>
+        <div>
+          <label for="feedback-client">Full Name of Client/Evaluator</label>
+          <input type="text" id="feedback-client" placeholder="Leave blank for anonymous" />
         </div>
-
-        <div class="card" style="padding:0;">
-          <div class="table-wrapper" style="border:none;">
-            <table id="movs-table">
-              <thead>
-                <tr>
-                  <th style="width:42px;"><input type="checkbox" id="selectAll" aria-label="Select all visible records" /></th>
-                  <th class="sortable" data-sort="date">Date <i class="fas fa-sort" aria-hidden="true"></i></th>
-                  <th class="sortable" data-sort="type">Type <i class="fas fa-sort" aria-hidden="true"></i></th>
-                  <th class="sortable" data-sort="title">Title / Details <i class="fas fa-sort" aria-hidden="true"></i></th>
-                  <th class="sortable" data-sort="reach">Reach <i class="fas fa-sort" aria-hidden="true"></i></th>
-                  <th class="sortable" data-sort="reactions">Reactions <i class="fas fa-sort" aria-hidden="true"></i></th>
-                  <th class="sortable" data-sort="shares">Shares <i class="fas fa-sort" aria-hidden="true"></i></th>
-                  <th>Link</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody></tbody>
-            </table>
-          </div>
+        <div>
+          <label for="feedback-unit">Unit / Section *</label>
+          <input type="text" id="feedback-unit" required placeholder="e.g., Schools Division Office" />
         </div>
-
-        <div class="flex justify-end mt-4 no-print">
+        <div>
+          <label for="feedback-material-type">Material Type *</label>
+          <select id="feedback-material-type" required>
+            <option value="Poster / Social Media Card">Poster / Social Media Card</option>
+            <option value="Infographic">Infographic</option>
+            <option value="Video / AVP">Video / AVP</option>
+            <option value="Caption / Written Content">Caption / Written Content</option>
+            <option value="Tarpaulin / Print Material">Tarpaulin / Print Material</option>
+            <option value="Website Content">Website Content</option>
+            <option value="Other IECA Material">Other IECA Material</option>
+          </select>
         </div>
-      </section>
-
-      <section id="feedback" class="section">
-            <div class="section-header flex justify-between items-center mb-6">
-              <div>
-                <h1>Client Feedback (MQD)</h1>
-                <p class="text-muted">Record one completed IECA Material Monitoring and Evaluation Form per respondent.</p>
-              </div>
-            </div>
-          
-            <div class="card mb-6">
-              <form id="feedback-form">
-                <input type="hidden" id="feedback-id" />
-                <div class="form-grid">
-                  <div>
-                    <label for="feedback-date">Date of Evaluation *</label>
-                    <input type="date" id="feedback-date" required />
-                  </div>
-                  <div>
-                    <label for="feedback-client">Full Name of Client/Evaluator</label>
-                    <input type="text" id="feedback-client" placeholder="Leave blank for anonymous" />
-                  </div>
-                  <div>
-                    <label for="feedback-unit">Unit / Section *</label>
-                    <input type="text" id="feedback-unit" required placeholder="e.g., Schools Division Office" />
-                  </div>
-                  <div>
-                    <label for="feedback-material-type">Material Type *</label>
-                    <select id="feedback-material-type" required>
-                      <option value="Poster / Social Media Card">Poster / Social Media Card</option>
-                      <option value="Infographic">Infographic</option>
-                      <option value="Video / AVP">Video / AVP</option>
-                      <option value="Caption / Written Content">Caption / Written Content</option>
-                      <option value="Tarpaulin / Print Material">Tarpaulin / Print Material</option>
-                      <option value="Website Content">Website Content</option>
-                      <option value="Other IECA Material">Other IECA Material</option>
-                    </select>
-                  </div>
-                  <div class="form-wide">
-                    <label for="feedback-subject">Purpose / Subject of Material *</label>
-                    <input type="text" id="feedback-subject" required placeholder="Title or purpose of the IECA material" />
-                  </div>
-                </div>
-          
-                <h3 class="font-semibold mt-4 mb-2">Material Quality Dimensions (MQD)</h3>
-                <div class="rating-grid">
-                  <div class="rating-scale-guide">
-                    Enter one number only: <b>5 – Excellent</b>, <b>4 – Very Satisfactory</b>, <b>3 – Satisfactory</b>, <b>2 – Needs Improvement</b>, and <b>1 – Poor</b>.
-                  </div>
-                  <div class="rating-box">
-                    <strong>MQD1 — Clarity & Comprehension</strong>
-                    <span>Message and content are clear and easy to understand.</span>
-                    <input id="mqd1" class="mqd-input" type="number" min="1" max="5" step="1" required placeholder="1-5" />
-                  </div>
-                  <div class="rating-box">
-                    <strong>MQD2 — Relevance & Utility</strong>
-                    <span>Information is relevant and useful to the intended audience.</span>
-                    <input id="mqd2" class="mqd-input" type="number" min="1" max="5" step="1" required placeholder="1-5" />
-                  </div>
-                  <div class="rating-box">
-                    <strong>MQD3 — Visual Appeal & Aesthetics</strong>
-                    <span>Design, graphics, layout, and typography are professional.</span>
-                    <input id="mqd3" class="mqd-input" type="number" min="1" max="5" step="1" required placeholder="1-5" />
-                  </div>
-                  <div class="rating-box">
-                    <strong>MQD4 — Accuracy & Trustworthiness</strong>
-                    <span>Information, data, facts, and spellings are accurate and reliable.</span>
-                    <input id="mqd4" class="mqd-input" type="number" min="1" max="5" step="1" required placeholder="1-5" />
-                  </div>
-                  <div class="rating-box">
-                    <strong>MQD5 — Engagement</strong>
-                    <span>The material captures attention and keeps the audience engaged.</span>
-                    <input id="mqd5" class="mqd-input" type="number" min="1" max="5" step="1" required placeholder="1-5" />
-                  </div>
-                  <div class="rating-box">
-                    <strong>MQD6 — Overall Effectiveness</strong>
-                    <span>The material achieves its purpose and conveys the intended call to action.</span>
-                    <input id="mqd6" class="mqd-input" type="number" min="1" max="5" step="1" required placeholder="1-5" />
-                  </div>
-                </div>
-          
-                <div class="form-grid mt-4">
-                  <div>
-                    <label for="feedback-class">Feedback Classification</label>
-                    <select id="feedback-class">
-                      <option value="Strength">Strength</option>
-                      <option value="For Improvement">For Improvement</option>
-                      <option value="For Action">For Action</option>
-                      <option value="General Suggestion">General Suggestion</option>
-                    </select>
-                  </div>
-                  <div class="form-wide">
-                    <label for="feedback-comments">Detailed Comments / Suggestions</label>
-                    <textarea id="feedback-comments" placeholder="Enter the evaluator's comments or suggestions"></textarea>
-                  </div>
-                </div>
-          
-                <div class="flex gap-2 mt-4 justify-end">
-                  <button type="button" id="cancel-feedback-btn" class="btn btn-outline h-9 hidden">Cancel Edit</button>
-                  <button type="submit" class="btn btn-gold h-9">
-                    <i class="fas fa-floppy-disk" aria-hidden="true"></i> Save Feedback
-                  </button>
-                </div>
-              </form>
-            </div>
-          
-            <div class="card" style="padding: 0;">
-              <div class="table-wrapper" style="border: none;">
-                <table id="feedback-table">
-                  <thead>
-                    <tr>
-                      <th>Date</th>
-                      <th>Evaluator / Unit</th>
-                      <th>Material Type</th>
-                      <th>Subject</th>
-                      <th>Avg. MQD</th>
-                      <th>Interpretation</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr><td colspan="7" class="empty-state">No feedback records encoded yet.</td></tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </section>
-
+        <div class="form-wide">
+          <label for="feedback-subject">Purpose / Subject of Material *</label>
+          <input type="text" id="feedback-subject" required placeholder="Title or purpose of the IECA material" />
+        </div>
+      </div>
+      <h3 class="font-semibold mt-4 mb-2">Material Quality Dimensions (MQD)</h3>
+      <div class="rating-grid">
+        <div class="rating-scale-guide">
+          Enter one number only: <b>5 – Excellent</b>, <b>4 – Very Satisfactory</b>, <b>3 – Satisfactory</b>, <b>2 – Needs Improvement</b>, and <b>1 – Poor</b>.
+        </div>
+        <div class="rating-box">
+          <strong>MQD1 — Clarity & Comprehension</strong>
+          <span>Message and content are clear and easy to understand.</span>
+          <input id="mqd1" class="mqd-input" type="number" min="1" max="5" step="1" required placeholder="1-5" />
+        </div>
+        <div class="rating-box">
+          <strong>MQD2 — Relevance & Utility</strong>
+          <span>Information is relevant and useful to the intended audience.</span>
+          <input id="mqd2" class="mqd-input" type="number" min="1" max="5" step="1" required placeholder="1-5" />
+        </div>
+        <div class="rating-box">
+          <strong>MQD3 — Visual Appeal & Aesthetics</strong>
+          <span>Design, graphics, layout, and typography are professional.</span>
+          <input id="mqd3" class="mqd-input" type="number" min="1" max="5" step="1" required placeholder="1-5" />
+        </div>
+        <div class="rating-box">
+          <strong>MQD4 — Accuracy & Trustworthiness</strong>
+          <span>Information, data, facts, and spellings are accurate and reliable.</span>
+          <input id="mqd4" class="mqd-input" type="number" min="1" max="5" step="1" required placeholder="1-5" />
+        </div>
+        <div class="rating-box">
+          <strong>MQD5 — Engagement</strong>
+          <span>The material captures attention and keeps the audience engaged.</span>
+          <input id="mqd5" class="mqd-input" type="number" min="1" max="5" step="1" required placeholder="1-5" />
+        </div>
+        <div class="rating-box">
+          <strong>MQD6 — Overall Effectiveness</strong>
+          <span>The material achieves its purpose and conveys the intended call to action.</span>
+          <input id="mqd6" class="mqd-input" type="number" min="1" max="5" step="1" required placeholder="1-5" />
+        </div>
+      </div>
+      <div class="form-grid mt-4">
+        <div>
+          <label for="feedback-class">Feedback Classification</label>
+          <select id="feedback-class">
+            <option value="Strength">Strength</option>
+            <option value="For Improvement">For Improvement</option>
+            <option value="For Action">For Action</option>
+            <option value="General Suggestion">General Suggestion</option>
+          </select>
+        </div>
+        <div class="form-wide">
+          <label for="feedback-comments">Detailed Comments / Suggestions</label>
+          <textarea id="feedback-comments" placeholder="Enter the evaluator's comments or suggestions"></textarea>
+        </div>
+      </div>
+      <div class="flex gap-2 mt-4 justify-end">
+        <button type="button" id="cancel-feedback-btn" class="btn btn-outline h-9 hidden">Cancel Edit</button>
+        <button type="submit" class="btn btn-gold h-9">
+          <i class="fas fa-floppy-disk" aria-hidden="true"></i> Save Feedback
+        </button>
+      </div>
+    </form>
+  </div>
+  <div class="card" style="padding: 0;">
+    <div class="table-wrapper" style="border: none;">
+      <table id="feedback-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Evaluator / Unit</th>
+            <th>Material Type</th>
+            <th>Subject</th>
+            <th>Avg. MQD</th>
+            <th>Interpretation</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td colspan="7" class="empty-state">No feedback records encoded yet.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+     
       <section id="reports" class="section">
         <div class="print-report-header">
           <img src="logo.png" alt="PAUMOVision logo" />
