@@ -460,7 +460,11 @@ tbody tr:last-child td { border-bottom: none; }
         <button id="nav-feedback" class="nav-item" data-section="feedback" type="button">
           <i class="fas fa-clipboard-check" aria-hidden="true"></i> Encode Client Feedback
         </button>
-      
+
+        <button class="nav-item" data-section="metrics" type="button">
+        <i class="fas fa-chart-bar" aria-hidden="true"></i> External Metrics
+      </button>
+        
         <!-- ADMINISTRATION -->
         <div style="padding: 0.5rem 1rem; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; font-weight: 700; margin-top: 1rem;">Administration</div>
         <button id="nav-login-activity" class="nav-item" data-section="login-activity" type="button">
@@ -580,35 +584,37 @@ tbody tr:last-child td { border-bottom: none; }
   <div id="top-performers-container"></div>
 </div>
           
-        <div class="card mb-6">
-          <div class="flex items-center justify-between mb-4 flex-wrap gap-4">
-            <div>
-              <h3 class="text-sm font-semibold">Quarterly Summary</h3>
-              <p class="text-muted">Counts are based on the selected dashboard year.</p>
-            </div>
-            <div class="flex gap-2 items-center no-print">
-              <label for="q-summary-filter" style="margin:0;">Quarter</label>
-              <select id="q-summary-filter" style="width:120px;">
-                <option value="all">All</option>
-                <option value="1">Q1</option>
-                <option value="2">Q2</option>
-                <option value="3">Q3</option>
-                <option value="4">Q4</option>
-              </select>
-            </div>
-          </div>
-          <div id="quarterly-table-container"></div>
-            <!-- CAP ALERTS WIDGET -->
-          <div class="card mb-6">
-            <div class="flex items-center gap-2 mb-4">
-              <i class="fas fa-triangle-exclamation" style="color: var(--destructive);"></i>
-              <h3 class="font-bold" style="color: var(--destructive);">Corrective Action Plan (CAP) Alerts</h3>
-            </div>
-            <div id="cap-alerts-container">
-              <div class="empty-state">Loading alerts...</div>
-            </div>
-          </div>
-        </div>
+      <!-- Quarterly Summary Card -->
+<div class="card mb-6">
+  <div class="flex items-center justify-between mb-4 flex-wrap gap-4">
+    <div>
+      <h3 class="text-sm font-semibold">Quarterly Summary</h3>
+      <p class="text-muted">Counts are based on the selected dashboard year.</p>
+    </div>
+    <div class="flex gap-2 items-center no-print">
+      <label for="q-summary-filter" style="margin:0;">Quarter</label>
+      <select id="q-summary-filter" style="width:120px;">
+        <option value="all">All</option>
+        <option value="1">Q1</option>
+        <option value="2">Q2</option>
+        <option value="3">Q3</option>
+        <option value="4">Q4</option>
+      </select>
+    </div>
+  </div>
+  <div id="quarterly-table-container"></div>
+</div>
+
+<!-- ✅ CORRECT: CAP Alerts Widget is now a separate, standalone card -->
+<div class="card mb-6">
+  <div class="flex items-center gap-2 mb-4">
+    <i class="fas fa-triangle-exclamation" style="color: var(--destructive);"></i>
+    <h3 class="font-bold" style="color: var(--destructive);">Corrective Action Plan (CAP) Alerts</h3>
+  </div>
+  <div id="cap-alerts-container">
+    <div class="empty-state">Loading alerts...</div>
+  </div>
+</div>
 
         <div id="add-mov-section" class="card">
           <div class="flex justify-between items-center mb-4 flex-wrap gap-3">
@@ -891,7 +897,6 @@ tbody tr:last-child td { border-bottom: none; }
     </div>
   </div>
 </section>
-     
       <section id="reports" class="section">
         <div class="print-report-header">
           <img src="logo.png" alt="PAUMOVision logo" />
@@ -2962,45 +2967,33 @@ async function runBatches(items, addOperation, size = 400) {
 // -----------------------------------------------------------------------------
 // 9. REPORTS
 // -----------------------------------------------------------------------------
-function generateReport() {
+async function generateReport() {
   const yearValue = $('filter-report-year').value;
   const month = $('filter-report-month').value;
   const type = $('filter-report-type').value;
-
+  
   filteredReportData = movsData
     .filter(record => {
       const date = getRecordDate(record);
       if (!date) return false;
-
       const matchesDateRange = reportRangeOverride
         ? date >= reportRangeOverride.start && date <= reportRangeOverride.end
         : (yearValue === 'all' || date.getFullYear() === Number(yearValue))
           && (month === 'all' || date.getMonth() === Number(month));
-
       return matchesDateRange && (type === 'all' || record.type === type);
     })
     .sort((a, b) => {
-      // Most recent MOV date appears first. If dates match, the most recently
-      // created record appears first.
-      const dateDifference =
-        (getRecordDate(b)?.getTime() || 0) -
-        (getRecordDate(a)?.getTime() || 0);
-
+      const dateDifference = (getRecordDate(b)?.getTime() || 0) - (getRecordDate(a)?.getTime() || 0);
       if (dateDifference !== 0) return dateDifference;
-
-      return (
-        (parseDate(b.createdAt)?.getTime() || 0) -
-        (parseDate(a.createdAt)?.getTime() || 0)
-      );
+      return (parseDate(b.createdAt)?.getTime() || 0) - (parseDate(a.createdAt)?.getTime() || 0);
     });
 
   renderReportSummary();
   renderExecutiveSummary();
   renderReportTable();
-  await renderCAPReport();
+  await renderCAPReport(); // ✅ Now this works perfectly
   updatePrintMetadata();
 }
-
   // NEW FUNCTION: Render CAP Alerts in the Report
 async function renderCAPReport() {
   const area = $('cap-report-area');
@@ -3799,12 +3792,10 @@ function switchSection(sectionId) {
       return showToast('Only the PAU Administrator may view login activity.', 'error');
     }
     
-    // Update active nav button
     document.querySelectorAll('.nav-item').forEach(item => {
       item.classList.toggle('active', item.dataset.section === sectionId);
     });
     
-    // Show/hide sections
     document.querySelectorAll('.section').forEach(section => {
       section.classList.toggle('active', section.id === sectionId);
     });
@@ -3814,42 +3805,14 @@ function switchSection(sectionId) {
     if (sectionId === 'movs') renderMovsTable();
     if (sectionId === 'login-activity') renderLoginActivityTable();
     if (sectionId === 'feedback') renderFeedbackTable();
+    if (sectionId === 'metrics') renderMetricsTable(); // ✅ Added Metrics handler
     
-    // Scroll to top
     document.querySelector('.content')?.scrollTo({ top: 0, behavior: 'smooth' });
   } catch (error) {
     console.error('Error switching section:', error);
     showToast('Error navigating to section: ' + error.message, 'error');
   }
 }
-
-// Attach event listeners to nav buttons (FIXED: Removed stray 'd' character)
-document.addEventListener('DOMContentLoaded', () => {
-  const navButtons = document.querySelectorAll('.nav-item');
-  console.log(`Found ${navButtons.length} navigation buttons`);
-  
-  navButtons.forEach((item, index) => {
-    if (item) {
-      item.addEventListener('click', (e) => {
-        e.preventDefault();
-        const sectionId = item.dataset.section;
-        console.log('Navigating to:', sectionId);
-        if (sectionId) {
-          switchSection(sectionId);
-        }
-      });
-    } else {
-      console.warn(`Nav button at index ${index} is null`);
-    }
-  });
-});
-
-// Debug: Log when nav buttons are clicked
-document.addEventListener('click', (e) => {
-  if (e.target.closest('.nav-item')) {
-    console.log('Nav button clicked:', e.target.closest('.nav-item').dataset.section);
-  }
-});
    async function renderCAPAlerts() {
   const container = $('cap-alerts-container');
   if (!container) return;
