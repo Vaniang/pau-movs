@@ -88,7 +88,7 @@ h3 { font-size: clamp(1rem, 0.9rem + 0.5vw, 1.15rem); color: var(--foreground); 
 .sidebar-user .role { color: #94a3b8; font-size: 0.75rem; margin-top: 0.2rem; text-transform: capitalize; }
 
 /* Main Content - Added max-width for ultra-wide monitors */
-..content {
+.content {
   flex: 1;
   height: 100vh;
   overflow-y: auto;
@@ -195,19 +195,18 @@ table {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
 }
-
 #quarterly-table-container table {
   min-width: 100%; /* Allows it to fit the card perfectly */
   width: 100%;
   table-layout: auto;
 }
-
 #quarterly-table-container th,
 #quarterly-table-container td {
   padding: 0.75rem 1rem;
   white-space: nowrap;
   font-size: 0.8rem;
 }
+   
 #movs-table { min-width: 1220px; }
 .activity-table { min-width: 920px; }
 
@@ -1725,12 +1724,6 @@ function getDashboardRecords() {
     return true;
   });
 }
-   
-function renderDashboard() {
-  renderStatsCards();
-  updateCharts();
-  renderQuarterlyTable();
-}
 
 function renderStatsCards() {
   const records = getDashboardRecords();
@@ -1912,30 +1905,39 @@ function updateCharts() {
     }
   });
 
-  // 4. Average Performance Chart (Efficiency Metrics)
-  if (chartAvgPerformanceInstance) chartAvgPerformanceInstance.destroy();
-  chartAvgPerformanceInstance = new Chart($('chartAvgPerformance').getContext('2d'), {
-    type: 'bar',
-    data: {
-      labels: TYPES,
-      datasets: [
-        { label: 'Average Reach', data: avgPerformanceData.reach.map(d => d.value), backgroundColor: '#0b2f5b', borderRadius: 4, borderSkipped: false },
-        { label: 'Average Reactions', data: avgPerformanceData.reactions.map(d => d.value), backgroundColor: '#e11d48', borderRadius: 4, borderSkipped: false }
-      ]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      interaction: { mode: 'index', intersect: false },
-      scales: {
-        x: { stacked: true, grid: { display: false }, ticks: { font: { family: 'Inter' }, maxRotation: 0, callback: (v, i) => `${TYPES[i]}\n(${avgPerformanceData.reach[i].count})` } },
-        y: { stacked: true, beginAtZero: true, ticks: { precision: 0, callback: v => v.toLocaleString('en-PH'), font: { family: 'Inter' } }, grid: softGrid }
+ // 4. Average Performance Chart (Efficiency Metrics)
+if (chartAvgPerformanceInstance) chartAvgPerformanceInstance.destroy();
+chartAvgPerformanceInstance = new Chart($('chartAvgPerformance').getContext('2d'), {
+  type: 'bar',
+  data: {
+    labels: TYPES,
+    datasets: [
+      { label: 'Average Reach', data: avgPerformanceData.reach.map(d => d.value), backgroundColor: '#0b2f5b', borderRadius: 4, borderSkipped: false },
+      { label: 'Average Reactions', data: avgPerformanceData.reactions.map(d => d.value), backgroundColor: '#e11d48', borderRadius: 4, borderSkipped: false }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    interaction: { mode: 'index', intersect: false },
+    scales: {
+      x: { 
+        stacked: false, // <-- CHANGE THIS FROM true TO false
+        grid: { display: false }, 
+        ticks: { font: { family: 'Inter' }, maxRotation: 0, callback: (v, i) => `${TYPES[i]}\n(${avgPerformanceData.reach[i].count})` } 
       },
-      plugins: {
-        legend: { position: 'bottom', labels: { boxWidth: 12, usePointStyle: true, pointStyle: 'circle', padding: 20, font: { family: 'Inter', size: 12 } } },
-        tooltip: { ...premiumTooltip, callbacks: { label: c => ` ${c.dataset.label}: ${c.raw.toLocaleString('en-PH')} (n=${avgPerformanceData.reach[c.dataIndex].count})` } }
+      y: { 
+        stacked: false, // <-- CHANGE THIS FROM true TO false
+        beginAtZero: true, 
+        ticks: { precision: 0, callback: v => v.toLocaleString('en-PH'), font: { family: 'Inter' } }, 
+        grid: softGrid 
       }
+    },
+    plugins: {
+      legend: { position: 'bottom', labels: { boxWidth: 12, usePointStyle: true, pointStyle: 'circle', padding: 20, font: { family: 'Inter', size: 12 } } },
+      tooltip: { ...premiumTooltip, callbacks: { label: c => ` ${c.dataset.label}: ${c.raw.toLocaleString('en-PH')} (n=${avgPerformanceData.reach[c.dataIndex].count})` } }
     }
-  });
+  }
+});
 
   // 5. Engagement Rate Trend Chart
   const engagementRates = monthlyEngagement.map(m => {
