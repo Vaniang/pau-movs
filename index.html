@@ -714,9 +714,6 @@ tbody tr:last-child td { border-bottom: none; }
         </div>
 
         <div class="flex justify-end mt-4 no-print">
-          <button id="bulk-action-btn" class="btn btn-destructive h-9" type="button">
-            <i class="fas fa-box-archive" aria-hidden="true"></i> Archive Selected
-          </button>
         </div>
       </section>
 
@@ -2570,60 +2567,6 @@ async function saveQuickMetrics() {
     setLoading(false);
   }
 }
-
-// Add this near your other save functions in the <script> tag
-async function saveFeedbackRecord(event) {
-  event.preventDefault(); // Prevent page reload
-
-  // 1. Gather data from the new HTML form inputs
-  const newFeedback = {
-    date: $('feedback-date').value,
-    clientName: $('feedback-client-name').value.trim() || "Anonymous Evaluator",
-    unit: $('feedback-unit').value.trim(),
-    materialType: $('feedback-material-type').value,
-    subject: $('feedback-subject').value.trim(),
-    
-    // This creates the array of 6 numbers: [5, 4, 5, 5, 4, 5]
-    ratings: [
-      Number($('mqd1').value),
-      Number($('mqd2').value),
-      Number($('mqd3').value),
-      Number($('mqd4').value),
-      Number($('mqd5').value),
-      Number($('mqd6').value)
-    ],
-    
-    feedbackSummary: $('feedback-summary').value.trim(),
-    feedbackClass: $('feedback-class').value,
-    comments: $('feedback-comments').value.trim(),
-    
-    // Firebase automatically adds the timestamp and user ID
-    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-    createdBy: currentUser.uid
-  };
-
-  // 2. Validate that all 6 MQD ratings are between 1 and 5
-  const invalidRatings = newFeedback.ratings.some(rating => rating < 1 || rating > 5 || isNaN(rating));
-  if (invalidRatings) {
-    return showToast("All 6 MQD ratings must be a number between 1 and 5.", "error");
-  }
-
-  // 3. Save to the 'ieca_feedback' collection in Firebase
-  try {
-    setLoading(true, "Saving client feedback...");
-    await feedbackColl.add(newFeedback); // <--- THIS IS WHERE THE DOCUMENT IS CREATED
-    
-    showToast("Client feedback saved successfully!");
-    resetFeedbackForm(); // Clear the form
-    renderDashboard(); // Refresh the dashboard to show the new MQD stats
-    
-  } catch (error) {
-    console.error(error);
-    showToast("Error saving feedback: " + error.message, "error");
-  } finally {
-    setLoading(false);
-  }
-}
    
 async function archiveItem(id) {
   if (!can('archive')) return showToast('Only the Administrator / PAU Encoder may archive records.', 'error');
@@ -3448,26 +3391,6 @@ function exportImportIssues(issues) {
   XLSX.utils.book_append_sheet(workbook, worksheet, 'Import Issues');
   XLSX.writeFile(workbook, `PAUMOVision_Import_Issues_${Date.now()}.xlsx`);
 }
-
-// -----------------------------------------------------------------------------
-// 11. NAVIGATION AND INITIALIZATION
-// -----------------------------------------------------------------------------
-function switchSection(sectionId) {
-  if (sectionId === 'login-activity' && !can('viewLoginActivity')) {
-    return showToast('Only the PAU Administrator may view login activity.', 'error');
-  }
-
-  document.querySelectorAll('.nav-item').forEach(item => item.classList.toggle('active', item.dataset.section === sectionId));
-  document.querySelectorAll('.section').forEach(section => section.classList.toggle('active', section.id === sectionId));
-  if (sectionId === 'reports') generateReport();
-  if (sectionId === 'movs') renderMovsTable();
-  if (sectionId === 'login-activity') renderLoginActivityTable();
-  document.querySelector('.content')?.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-document.querySelectorAll('.nav-item').forEach(item => {
-  item.addEventListener('click', () => switchSection(item.dataset.section));
-});
 
 function isStandaloneMode() {
   return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
