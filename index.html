@@ -3791,7 +3791,7 @@ document.querySelectorAll('.mqd-input').forEach((input, index, inputs) => {
   });
 });
    // =============================================================================
-// NAVIGATION - FINAL VERSION (Replace the one at the end of your script)
+// NAVIGATION - FINAL VERSION
 // =============================================================================
 function switchSection(sectionId) {
   try {
@@ -3823,26 +3823,28 @@ function switchSection(sectionId) {
   }
 }
 
+// Attach event listeners to nav buttons (FIXED: Removed stray 'd' character)
 document.addEventListener('DOMContentLoaded', () => {
-    const navButtons = document.querySelectorAll('.nav-item');
-    console.log(`Found ${navButtons.length} navigation buttons`);
-    
-    navButtons.forEach((item, index) => {
-        if (item) {  // Check if element exists
-            item.addEventListener('click', (e) => {
-                e.preventDefault();
-                const sectionId = item.dataset.section;
-                console.log('Navigating to:', sectionId);
-                if (sectionId) {
-                    switchSection(sectionId);
-                }
-            });
-        } else {
-            console.warn(`Nav button at index ${index} is null`);
+  const navButtons = document.querySelectorAll('.nav-item');
+  console.log(`Found ${navButtons.length} navigation buttons`);
+  
+  navButtons.forEach((item, index) => {
+    if (item) {
+      item.addEventListener('click', (e) => {
+        e.preventDefault();
+        const sectionId = item.dataset.section;
+        console.log('Navigating to:', sectionId);
+        if (sectionId) {
+          switchSection(sectionId);
         }
-    });
+      });
+    } else {
+      console.warn(`Nav button at index ${index} is null`);
+    }
+  });
 });
-   // Debug: Log when nav buttons are clicked
+
+// Debug: Log when nav buttons are clicked
 document.addEventListener('click', (e) => {
   if (e.target.closest('.nav-item')) {
     console.log('Nav button clicked:', e.target.closest('.nav-item').dataset.section);
