@@ -692,7 +692,35 @@ tbody tr:last-child td { border-bottom: none; }
           </div>
         </div>
 
-        <section id="feedback" class="section">
+        <div class="card" style="padding:0;">
+          <div class="table-wrapper" style="border:none;">
+            <table id="movs-table">
+              <thead>
+                <tr>
+                  <th style="width:42px;"><input type="checkbox" id="selectAll" aria-label="Select all visible records" /></th>
+                  <th class="sortable" data-sort="date">Date <i class="fas fa-sort" aria-hidden="true"></i></th>
+                  <th class="sortable" data-sort="type">Type <i class="fas fa-sort" aria-hidden="true"></i></th>
+                  <th class="sortable" data-sort="title">Title / Details <i class="fas fa-sort" aria-hidden="true"></i></th>
+                  <th class="sortable" data-sort="reach">Reach <i class="fas fa-sort" aria-hidden="true"></i></th>
+                  <th class="sortable" data-sort="reactions">Reactions <i class="fas fa-sort" aria-hidden="true"></i></th>
+                  <th class="sortable" data-sort="shares">Shares <i class="fas fa-sort" aria-hidden="true"></i></th>
+                  <th>Link</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="flex justify-end mt-4 no-print">
+          <button id="bulk-action-btn" class="btn btn-destructive h-9" type="button">
+            <i class="fas fa-box-archive" aria-hidden="true"></i> Archive Selected
+          </button>
+        </div>
+      </section>
+
+      <section id="feedback" class="section">
             <div class="section-header flex justify-between items-center mb-6">
               <div>
                 <h1>Client Feedback (MQD)</h1>
@@ -817,34 +845,6 @@ tbody tr:last-child td { border-bottom: none; }
               </div>
             </div>
           </section>
-
-        <div class="card" style="padding:0;">
-          <div class="table-wrapper" style="border:none;">
-            <table id="movs-table">
-              <thead>
-                <tr>
-                  <th style="width:42px;"><input type="checkbox" id="selectAll" aria-label="Select all visible records" /></th>
-                  <th class="sortable" data-sort="date">Date <i class="fas fa-sort" aria-hidden="true"></i></th>
-                  <th class="sortable" data-sort="type">Type <i class="fas fa-sort" aria-hidden="true"></i></th>
-                  <th class="sortable" data-sort="title">Title / Details <i class="fas fa-sort" aria-hidden="true"></i></th>
-                  <th class="sortable" data-sort="reach">Reach <i class="fas fa-sort" aria-hidden="true"></i></th>
-                  <th class="sortable" data-sort="reactions">Reactions <i class="fas fa-sort" aria-hidden="true"></i></th>
-                  <th class="sortable" data-sort="shares">Shares <i class="fas fa-sort" aria-hidden="true"></i></th>
-                  <th>Link</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody></tbody>
-            </table>
-          </div>
-        </div>
-
-        <div class="flex justify-end mt-4 no-print">
-          <button id="bulk-action-btn" class="btn btn-destructive h-9" type="button">
-            <i class="fas fa-box-archive" aria-hidden="true"></i> Archive Selected
-          </button>
-        </div>
-      </section>
 
       <section id="reports" class="section">
         <div class="print-report-header">
