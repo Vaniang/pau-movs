@@ -3594,7 +3594,10 @@ function exportReport() {
 // -----------------------------------------------------------------------------
 // 10. EXCEL IMPORT
 // -----------------------------------------------------------------------------
-$('upload-excel').addEventListener('change', importExcel);
+const uploadExcelInput = $('upload-excel');
+if (uploadExcelInput) {
+    uploadExcelInput.addEventListener('change', importExcel);
+}
 
 // Add this helper near your other utility functions (e.g., near normalizeText)
 function matchOutputType(inputType) {
@@ -3854,18 +3857,20 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
   });
 }
    // Dynamically change the Link label when "Press Conference" is selected
-$('input-type').addEventListener('change', function() {
-    const linkLabel = document.querySelector('label[for="input-link"]');
-    const linkInput = $('input-link');
-    
-    if (this.value === 'Press Conference') {
-        linkLabel.textContent = 'Press Conference Link / Source URL';
-        linkInput.placeholder = 'https://bomoradyo.com/...';
-    } else {
-        linkLabel.textContent = 'MOV link';
-        linkInput.placeholder = 'https://...';
-    }
-});
+const inputTypeSelect = $('input-type');
+if (inputTypeSelect) {
+    inputTypeSelect.addEventListener('change', function() {
+        const linkLabel = document.querySelector('label[for="input-link"]');
+        const linkInput = $('input-link');
+        if (this.value === 'Press Conference') {
+            linkLabel.textContent = 'Press Conference Link / Source URL';
+            linkInput.placeholder = 'https://bomoradyo.com/...';
+        } else {
+            linkLabel.textContent = 'MOV link';
+            linkInput.placeholder = 'https://...';
+        }
+    });
+}
    // =============================================================================
 // IECA CLIENT FEEDBACK (MQD) MODULE - FINAL INTEGRATION
 // =============================================================================
