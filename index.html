@@ -4103,12 +4103,6 @@ async function renderIECAReport() {
     
     // 7. Render HTML
     const reportHTML = `
-      <div class="report-header">
-        <div class="republic">Republic of the Philippines</div>
-        <div class="department">Department of Education</div>
-        <div class="region">Regional Office I</div>
-        <hr>
-      </div>
       <div class="report-title">IECA MATERIALS MONITORING AND EVALUATION REPORT</div>
       <div class="report-meta">
         <p>Unit/Section: <b>${escapeHTML(settings.unit)}</b></p>
@@ -4143,12 +4137,6 @@ async function renderIECAReport() {
         </tbody>
       </table>
       <div class="page-break"></div>
-      <div class="report-header">
-        <div class="republic">Republic of the Philippines</div>
-        <div class="department">Department of Education</div>
-        <div class="region">Regional Office I</div>
-        <hr>
-      </div>
       <h3>IV. Summary of Ratings Requiring Improvement</h3>
       <table class="report-table">
         <thead>
