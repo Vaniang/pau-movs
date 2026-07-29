@@ -4152,21 +4152,25 @@ function saveIECASettings() {
   localStorage.setItem('ieca_report_settings', JSON.stringify(settings));
   showToast('Report signatory settings saved successfully.');
 }
-
 async function renderIECAReport() {
   setLoading(true, 'Generating formal report...');
   
-  // Hide MOV report elements
-  const reportCards = document.querySelectorAll('#reports > .card');
-  reportCards.forEach(card => {
-    if (!card.querySelector('#ieca-report-output')) {
-      card.classList.add('hidden');
-    }
-  });
+  // Hide all MOV report elements
+  $('report-summary-area').classList.add('hidden');
+  $('executive-summary-area').classList.add('hidden');
+  $('cap-report-area').classList.add('hidden');
+  
+  // Hide the MOV report table card
+  const reportTableCard = document.querySelector('#report-table')?.closest('.card');
+  if (reportTableCard) reportTableCard.classList.add('hidden');
+  
+  // Hide the filter/preset card
+  const filterCard = document.querySelector('#filter-report-btn')?.closest('.card');
+  if (filterCard) filterCard.classList.add('hidden');
   
   // Show IECA report settings and actions
-  document.querySelector('.settings-box').classList.remove('hidden');
-  document.querySelector('.report-actions').classList.remove('hidden');
+  document.querySelector('.settings-box')?.classList.remove('hidden');
+  document.querySelector('.report-actions')?.classList.remove('hidden');
   
   await generateReport();
   const yearValue = $('filter-report-year').value;
@@ -4320,6 +4324,7 @@ async function renderIECAReport() {
     setLoading(false);
   }
 }
+
 function exportIECAReportToWord() {
   const content = $('ieca-report-output').innerHTML;
   if (!content || $('ieca-report-output').classList.contains('hidden')) {
@@ -4373,7 +4378,7 @@ loadIECASettings();
     toggle.setAttribute('aria-expanded', 'false');
   }
 }
-
+	 
 // Update dropdown item click handlers
 document.addEventListener('click', (e) => {
   const dropdownItem = e.target.closest('.dropdown-item');
@@ -4381,28 +4386,35 @@ document.addEventListener('click', (e) => {
     const sectionId = dropdownItem.dataset.section;
     const reportType = dropdownItem.dataset.reportType;
     
-    // 1. Update Active States
+    // 1. Update Active States - remove from ALL nav items and dropdown items
     document.querySelectorAll('.nav-item, .dropdown-item').forEach(nav => {
       nav.classList.remove('active');
     });
+    
+    // Add active to clicked dropdown item
     dropdownItem.classList.add('active');
+    
+    // Also add active to parent dropdown toggle for visual feedback
+    const parentDropdown = dropdownItem.closest('.nav-dropdown');
+    if (parentDropdown) {
+      const toggle = parentDropdown.querySelector('.dropdown-toggle');
+      if (toggle) toggle.classList.add('active');
+    }
     
     // 2. Switch to the Section
     if (sectionId) {
       switchSection(sectionId);
       
       // 3. Handle specific report types
-      if (sectionId === 'reports') {
-        if (reportType === 'movs') {
-          setTimeout(() => {
+      if (sectionId === 'reports' && reportType) {
+        setTimeout(() => {
+          if (reportType === 'movs') {
             showMOVReport();
             applyReportPreset('annual');
-          }, 150);
-        } else if (reportType === 'ieca') {
-          setTimeout(() => {
+          } else if (reportType === 'ieca') {
             renderIECAReport();
-          }, 150);
-        }
+          }
+        }, 150);
       }
     }
   }
@@ -4421,16 +4433,23 @@ function applyReportFilter(type) {
     renderIECAReport();
   }
 }
-	 function showMOVReport() {
-  // Show MOV report elements
-  const reportCards = document.querySelectorAll('#reports > .card');
-  reportCards.forEach(card => {
-    if (!card.classList.contains('settings-box')) {
-      card.classList.remove('hidden');
-    }
-  });
+	function showMOVReport() {
+  // Show all MOV report elements
+  $('report-summary-area').classList.remove('hidden');
+  $('executive-summary-area').classList.remove('hidden');
+  $('cap-report-area').classList.remove('hidden');
   
-  // Hide IECA report
+  // Show the MOV report table card
+  const reportTableCard = document.querySelector('#report-table')?.closest('.card');
+  if (reportTableCard) reportTableCard.classList.remove('hidden');
+  
+  // Show the filter/preset card
+  const filterCard = document.querySelector('#filter-report-btn')?.closest('.card');
+  if (filterCard) filterCard.classList.remove('hidden');
+  
+  // Hide IECA report elements
+  document.querySelector('.settings-box')?.classList.add('hidden');
+  document.querySelector('.report-actions')?.classList.add('hidden');
   $('ieca-report-output').classList.add('hidden');
   
   generateReport();
