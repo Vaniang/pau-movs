@@ -347,6 +347,15 @@ tbody tr:last-child td { border-bottom: none; }
 .charts-row {
   width: 100%;
   max-width: 100%;
+  .report-paper { 
+    box-shadow: none !important; 
+    border: 0 !important; 
+    max-width: none !important; 
+    margin: 0 !important; 
+    padding: 0 !important; 
+    display: block !important; 
+  }
+  .hidden { display: none !important; }
 }
     .print-report-header { display: block !important; }
     .signature-grid { display: grid !important; }
@@ -1003,6 +1012,34 @@ tbody tr:last-child td { border-bottom: none; }
           <div><div class="signature-line">Prepared by</div></div>
           <div><div class="signature-line">Reviewed by</div></div>
         </div>
+
+          <!-- ========================================== -->
+  <!-- FORMAL IECA M&E REPORT GENERATOR           -->
+  <!-- ========================================== -->
+  <div class="card settings-box no-print" style="margin-top: 2rem; border-left: 4px solid var(--primary);">
+    <h3 class="section-title"><i class="fas fa-file-signature"></i> Formal IECA M&E Report Settings</h3>
+    <p class="text-muted" style="margin-bottom: 1rem;">Configure the signatories for the official generated report.</p>
+    <div class="form-grid three">
+      <div class="field"><label>Unit/Section</label><input id="settingUnit" value="ORD-Public Affairs Unit"></div>
+      <div class="field"><label>Prepared by</label><input id="preparedBy" placeholder="Name"></div>
+      <div class="field"><label>Position</label><input id="preparedPosition" placeholder="Position"></div>
+      <div class="field"><label>Reviewed by</label><input id="reviewedBy" value="Head of Office"></div>
+      <div class="field"><label>Position</label><input id="reviewedPosition" placeholder="Position"></div>
+      <div class="field"><label>Verified and Approved by</label><input id="approvedBy" value="ESTELA P. LEON-CARIÑO, EdD, CESO III"></div>
+      <div class="field"><label>Position</label><input id="approvedPosition" value="Director IV/Regional Director"></div>
+    </div>
+    <div class="actions" style="margin-top: 1rem;">
+      <button class="btn btn-default h-9" type="button" onclick="saveIECASettings()"><i class="fas fa-save"></i> Save Settings</button>
+    </div>
+  </div>
+
+  <div class="report-actions no-print" style="margin-top: 1.5rem;">
+    <button class="btn btn-gold h-9" type="button" onclick="renderIECAReport()"><i class="fas fa-file-contract"></i> Generate Formal IECA M&E Report</button>
+    <button class="btn btn-outline h-9" type="button" onclick="window.print()"><i class="fas fa-print"></i> Print Report</button>
+    <button class="btn btn-outline h-9" type="button" onclick="exportIECAReportToWord()"><i class="fas fa-file-word"></i> Export to Word</button>
+  </div>
+
+  <div id="ieca-report-output" class="report-paper hidden" style="margin-top: 2rem;"></div>
       </section>
 
       <section id="login-activity" class="section">
@@ -3934,6 +3971,250 @@ document.addEventListener('click', (e) => {
     console.log('Nav button clicked:', e.target.closest('.nav-item').dataset.section);
   }
 });
+   // =============================================================================
+// FORMAL IECA M&E REPORT GENERATOR
+// =============================================================================
+
+function loadIECASettings() {
+  const defaults = {
+    unit: "ORD-Public Affairs Unit",
+    preparedBy: "",
+    preparedPosition: "",
+    reviewedBy: "Head of Office",
+    reviewedPosition: "",
+    approvedBy: "ESTELA P. LEON-CARIÑO, EdD, CESO III",
+    approvedPosition: "Director IV/Regional Director"
+  };
+  const settings = JSON.parse(localStorage.getItem('ieca_report_settings') || JSON.stringify(defaults));
+  $('settingUnit').value = settings.unit;
+  $('preparedBy').value = settings.preparedBy;
+  $('preparedPosition').value = settings.preparedPosition;
+  $('reviewedBy').value = settings.reviewedBy;
+  $('reviewedPosition').value = settings.reviewedPosition;
+  $('approvedBy').value = settings.approvedBy;
+  $('approvedPosition').value = settings.approvedPosition;
+}
+
+function saveIECASettings() {
+  const settings = {
+    unit: $('settingUnit').value.trim(),
+    preparedBy: $('preparedBy').value.trim(),
+    preparedPosition: $('preparedPosition').value.trim(),
+    reviewedBy: $('reviewedBy').value.trim(),
+    reviewedPosition: $('reviewedPosition').value.trim(),
+    approvedBy: $('approvedBy').value.trim(),
+    approvedPosition: $('approvedPosition').value.trim()
+  };
+  localStorage.setItem('ieca_report_settings', JSON.stringify(settings));
+  showToast('Report signatory settings saved successfully.');
+}
+
+async function renderIECAReport() {
+  setLoading(true, 'Generating formal report...');
+  const yearValue = $('filter-report-year').value;
+  const month = $('filter-report-month').value;
+  const settings = JSON.parse(localStorage.getItem('ieca_report_settings') || '{"unit":"ORD-Public Affairs Unit","preparedBy":"","preparedPosition":"","reviewedBy":"Head of Office","reviewedPosition":"","approvedBy":"ESTELA P. LEON-CARIÑO, EdD, CESO III","approvedPosition":"Director IV/Regional Director"}');
+
+  try {
+    // 1. Get Feedback for the period
+    const feedbackSnap = await feedbackColl.get();
+    const periodFeedback = [];
+    feedbackSnap.forEach(doc => {
+      const data = doc.data();
+      const date = parseDate(data.date);
+      if (!date) return;
+      const matchesYear = yearValue === 'all' || date.getFullYear() === Number(yearValue);
+      const matchesMonth = month === 'all' || date.getMonth() === Number(month);
+      if (matchesYear && matchesMonth) periodFeedback.push(data);
+    });
+
+    // 2. Get Metrics for the period
+    const periodMetrics = filteredReportData.filter(m => m.reach > 0 || m.reactions > 0 || m.shares > 0 || m.negativeSentiment);
+
+    // 3. Calculate MQD Averages
+    const n = periodFeedback.length;
+    const averages = MQD.map((_, i) => n ? periodFeedback.reduce((sum, e) => sum + Number(e.ratings[i] || 0), 0) / n : null);
+    const overall = n ? averages.reduce((a, b) => a + (b || 0), 0) / 6 : null;
+
+    const details = MQD.map((item, i) => {
+      const count2 = periodFeedback.filter(e => Number(e.ratings[i]) === 2).length;
+      const count1 = periodFeedback.filter(e => Number(e.ratings[i]) === 1).length;
+      const lowCount = count1 + count2;
+      const lowPct = n ? (lowCount / n) * 100 : 0;
+      const avg = averages[i];
+      const capRequired = n > 0 && ((avg !== null && avg <= 2.49) || lowPct > 20);
+      return { ...item, avg, count2, count1, lowCount, lowPct, capRequired };
+    });
+
+    // 4. External Totals
+    const external = periodMetrics.reduce((acc, m) => {
+      acc.reach += getMetric(m, 'reach');
+      acc.reactions += getMetric(m, 'reactions');
+      acc.shares += getMetric(m, 'shares');
+      if (m.negativeSentiment) acc.negative++;
+      return acc;
+    }, { reach: 0, reactions: 0, shares: 0, negative: 0 });
+
+    // 5. Aggregate Comments
+    const commentMap = new Map();
+    periodFeedback.forEach(e => {
+      const text = (e.comments || e.feedbackSummary || "").trim();
+      if (!text) return;
+      const key = text.toLowerCase();
+      if (!commentMap.has(key)) commentMap.set(key, { text: e.comments || e.feedbackSummary, frequency: 0, remarks: new Set() });
+      const item = commentMap.get(key);
+      item.frequency++;
+      if (e.feedbackClass) item.remarks.add(e.feedbackClass);
+    });
+    const aggregatedComments = [...commentMap.values()]
+      .map(x => ({ ...x, remarks: [...x.remarks].join(", ") }))
+      .sort((a, b) => b.frequency - a.frequency || a.text.localeCompare(b.text));
+
+    // 6. CAP Triggers
+    const improvementRows = details.filter(d => d.lowCount > 0 || d.capRequired);
+    let seq = 0;
+    const currentQ = month === 'all' ? Math.ceil((new Date().getMonth() + 1) / 3) : Math.ceil((Number(month) + 1) / 3);
+    const currentY = yearValue === 'all' ? new Date().getFullYear() : Number(yearValue);
+    
+    const improveHtml = improvementRows.length ? improvementRows.map(d => {
+      const cap = d.capRequired;
+      const ref = cap ? `CAP-Q${currentQ}-${currentY}-${String(++seq).padStart(2, "0")}` : "—";
+      return `<tr>
+        <td class="num">${improvementRows.indexOf(d) + 1}</td>
+        <td>${d.code} (${escapeHTML(d.name)})</td>
+        <td class="num">${d.count2}</td>
+        <td class="num">${d.count1}</td>
+        <td class="num"><b>${cap ? "Yes" : "No"}</b></td>
+        <td class="num">${ref}</td>
+      </tr>`;
+    }).join("") : '<tr><td colspan="6" class="num">No ratings requiring improvement were recorded.</td></tr>';
+
+    const negativeAlert = external.negative > 0
+      ? `<div style="border:1px solid #111;padding:8px;margin-top:10px">
+         <b>External Sentiment Corrective Action Alert:</b> ${external.negative} online material(s) were marked as having significant negative sentiment, recurring concern, or public confusion. A corrective action review is required.
+        </div>` : "";
+
+    const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    const periodText = month === 'all' ? `Year ${yearValue}` : `${monthNames[Number(month)]} ${yearValue}`;
+
+    // 7. Render HTML
+    const reportHTML = `
+      <div class="report-header">
+        <div class="republic">Republic of the Philippines</div>
+        <div class="department">Department of Education</div>
+        <div class="region">Regional Office I</div>
+        <hr>
+      </div>
+      <div class="report-title">IECA MATERIALS MONITORING AND EVALUATION REPORT</div>
+      <div class="report-meta">
+        <p>Unit/Section: <b>${escapeHTML(settings.unit)}</b></p>
+        <p>Period Covered: <b>${escapeHTML(periodText)}</b></p>
+        <p>Number of Respondents: <b>${n}</b></p>
+      </div>
+
+      <h3>I. Internal Client Feedback Summary <i>(From the MQD Surveys)</i></h3>
+      <table class="report-table">
+        <thead><tr><th style="width:14%">Code</th><th>Criteria Area</th><th style="width:20%">Average Rating</th></tr></thead>
+        <tbody>
+          ${averages.map((avg, i) => `<tr><td class="num"><b>${MQD[i].code}</b></td><td>${escapeHTML(MQD[i].name)}</td><td class="num">${avg === null ? "—" : avg.toFixed(2)}</td></tr>`).join('')}
+          <tr><td colspan="2"><b>Overall Average Rating</b></td><td class="num"><b>${overall === null ? "—" : overall.toFixed(2)}</b></td></tr>
+        </tbody>
+      </table>
+      <p><b>General Interpretation:</b> ${overall === null ? "No Data" : getInterpretation(overall)}</p>
+      <p class="report-footnote">(Excellent / Very Satisfactory / Satisfactory / Needs Improvement / Poor)</p>
+
+      <h3>II. External Audience Engagement (Social Media / Online Metrics)</h3>
+      <table class="report-table" style="max-width:560px;margin:0 auto">
+        <thead><tr><th>Metric Category</th><th style="width:35%">Total for the Period</th></tr></thead>
+        <tbody>
+          <tr><td>Total Reach / Views</td><td class="num">${formatNumber(external.reach)}</td></tr>
+          <tr><td>Total Reactions</td><td class="num">${formatNumber(external.reactions)}</td></tr>
+          <tr><td>Total Shares</td><td class="num">${formatNumber(external.shares)}</td></tr>
+        </tbody>
+      </table>
+
+      <h3>III. Summary of Comments and Suggestions</h3>
+      <table class="report-table">
+        <thead><tr><th>Common Feedback/Concern</th><th style="width:24%">Frequency/No. of Mentions</th><th style="width:23%">Remarks</th></tr></thead>
+        <tbody>
+          ${aggregatedComments.length ? aggregatedComments.map(c => `<tr><td>${escapeHTML(c.text)}</td><td class="num">${c.frequency}</td><td>${escapeHTML(c.remarks || "General Feedback")}</td></tr>`).join('') : '<tr><td colspan="3" class="num">No comments or suggestions recorded.</td></tr>'}
+        </tbody>
+      </table>
+
+      <div class="page-break"></div>
+
+      <div class="report-header">
+        <div class="republic">Republic of the Philippines</div>
+        <div class="department">Department of Education</div>
+        <div class="region">Regional Office I</div>
+        <hr>
+      </div>
+
+      <h3>IV. Summary of Ratings Requiring Improvement</h3>
+      <table class="report-table">
+        <thead>
+          <tr>
+            <th style="width:7%">No.</th>
+            <th>Code / Area Evaluated</th>
+            <th style="width:17%">No. of Needs Improvement (Rating 2)</th>
+            <th style="width:14%">No. of Poor (Rating 1)</th>
+            <th style="width:16%">Corrective Action Required</th>
+            <th style="width:15%">CAP Reference No.</th>
+          </tr>
+        </thead>
+        <tbody>${improveHtml}</tbody>
+      </table>
+      ${negativeAlert}
+
+      <div class="report-signatures">
+        <div class="signature">Prepared by:<strong>${escapeHTML(settings.preparedBy || "NAME")}</strong><div>${escapeHTML(settings.preparedPosition || "Position")}</div></div>
+        <div class="signature">Reviewed by:<strong>${escapeHTML(settings.reviewedBy || "Head of Office")}</strong><div>${escapeHTML(settings.reviewedPosition || "Position")}</div></div>
+        <div class="signature approved">Verified and Approved by:<strong>${escapeHTML(settings.approvedBy)}</strong><div>${escapeHTML(settings.approvedPosition)}</div></div>
+      </div>
+    `;
+
+    $('ieca-report-output').innerHTML = reportHTML;
+    $('ieca-report-output').classList.remove('hidden');
+    $('ieca-report-output').scrollIntoView({ behavior: 'smooth' });
+  } catch (error) {
+    console.error(error);
+    showToast('Error generating report: ' + error.message, 'error');
+  } finally {
+    setLoading(false);
+  }
+}
+
+function exportIECAReportToWord() {
+  const content = $('ieca-report-output').innerHTML;
+  if (!content || $('ieca-report-output').classList.contains('hidden')) {
+    return showToast('Please generate the IECA M&E Report first.', 'warning');
+  }
+  const doc = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+  <style>
+    body{font-family:"Times New Roman",serif;font-size:12pt;color:#000}
+    .report-header{text-align:center}.report-header .republic{font-size:11pt}.report-header .department{font-size:16pt;font-weight:bold}.report-header .region{font-size:11pt;margin-top:3px}.report-header hr{border:0;border-top:2px solid #111;margin-top:10px}
+    .report-title{text-align:center;font-weight:bold;margin:24px 0}
+    table{border-collapse:collapse;width:100%}th,td{border:1px solid #000;padding:5px}
+    th{text-align:center}.num{text-align:center}
+    h3{font-size:12pt;margin-top:18px}.report-signatures{margin-top:40px}
+    .signature{margin:35px 0}.signature strong{display:block;margin-top:35px}
+    .page-break{page-break-before:always}
+  </style></head><body>${content}</body></html>`;
+  
+  const blob = new Blob([doc], { type: "application/msword" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `IECA_ME_Report_${new Date().toISOString().slice(0,10)}.doc`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 500);
+  showToast('Report exported to Word successfully.');
+}
+
+// Load settings on initialization
+loadIECASettings();
 </script>
 </body>
 </html>
