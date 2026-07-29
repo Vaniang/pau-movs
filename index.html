@@ -4458,27 +4458,31 @@ function applyReportFilter(type) {
     renderIECAReport();
   }
 }
-	function showMOVReport() {
-  // Show all MOV report elements
-  $('report-summary-area').classList.remove('hidden');
-  $('executive-summary-area').classList.remove('hidden');
-  $('cap-report-area').classList.remove('hidden');
-  
-  // Show the MOV report table card
-  const reportTableCard = document.querySelector('#report-table')?.closest('.card');
-  if (reportTableCard) reportTableCard.classList.remove('hidden');
-  
-  // Show the filter/preset card
-  const filterCard = document.querySelector('#filter-report-btn')?.closest('.card');
-  if (filterCard) filterCard.classList.remove('hidden');
-  
-  // Hide IECA report elements
-  document.querySelector('.settings-box')?.classList.add('hidden');
-  document.querySelector('.report-actions')?.classList.add('hidden');
+
+function showMOVReport() {
+  // 1. Handle all cards in the Reports section
+  const reportCards = document.querySelectorAll('#reports > .card');
+  reportCards.forEach(card => {
+    if (card.classList.contains('settings-box')) {
+      // Explicitly hide the IECA Settings box
+      card.classList.add('hidden');
+    } else {
+      // Show all other MOV report cards
+      card.classList.remove('hidden');
+    }
+  });
+
+  // 2. Hide the IECA Report Output
   $('ieca-report-output').classList.add('hidden');
-  
+
+  // 3. Hide the IECA Action Buttons (Generate/Print/Export Word)
+  const actionButtons = document.querySelector('.report-actions');
+  if (actionButtons) actionButtons.classList.add('hidden');
+
+  // 4. Generate the MOV Report data
   generateReport();
 }
+	 
 	 function renderIECARecordsTable() {
   // Reuse the existing feedback data
   const tbody = document.querySelector('#ieca-records-table tbody');
