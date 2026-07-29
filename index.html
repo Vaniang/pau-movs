@@ -577,9 +577,9 @@ tbody tr:last-child td { border-bottom: none; }
 		<button class="nav-item dropdown-item" data-section="movs-records" type="button">
 		  <i class="fas fa-folder-open" aria-hidden="true"></i> MOVs Record
 		</button>
-      <button class="nav-item dropdown-item" data-section="feedback" type="button">
-        <i class="fas fa-clipboard-list" aria-hidden="true"></i> IECA Records
-      </button>
+     <button class="nav-item dropdown-item" data-section="ieca-records" type="button">
+	  <i class="fas fa-clipboard-list" aria-hidden="true"></i> IECA Records
+	</button>
       <button class="nav-item dropdown-item" data-section="omrm-records" type="button">
         <i class="fas fa-folder" aria-hidden="true"></i> OM/RM Records
       </button>
@@ -922,7 +922,7 @@ tbody tr:last-child td { border-bottom: none; }
         </div>
     </div>
     
-   <div class="card mb-6 hidden">  <!-- Add 'hidden' class here -->
+   <div class="card mb-6">  <!-- Add 'hidden' class here -->
   		<form id="feedback-form">
             <input type="hidden" id="feedback-id" />
             <div class="form-grid">
@@ -1039,6 +1039,39 @@ tbody tr:last-child td { border-bottom: none; }
         </div>
     </div>
 </section> <!-- END OF FEEDBACK SECTION -->
+
+		<!-- ========================================== -->
+<!-- IECA RECORDS - READ-ONLY VIEW              -->
+<!-- ========================================== -->
+<section id="ieca-records" class="section">
+  <div class="section-header flex justify-between items-center mb-6">
+    <div>
+      <h1>IECA Records</h1>
+      <p class="text-muted">Read-only archive of all encoded Client Feedback (MQD) records. Use Inputs &gt; Client Feedback to add or edit records.</p>
+    </div>
+  </div>
+
+  <div class="card" style="padding: 0;">
+    <div class="table-wrapper" style="border: none;">
+      <table id="ieca-records-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Evaluator / Unit</th>
+            <th>Material Type</th>
+            <th>Subject</th>
+            <th>Avg. MQD</th>
+            <th>Interpretation</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td colspan="7" class="empty-state">No feedback records encoded yet.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
 
       <section id="metrics" class="section">
   <div class="section-header flex justify-between items-center mb-6">
@@ -4210,11 +4243,17 @@ function switchSection(sectionId) {
     });
     // Load section-specific data
     if (sectionId === 'reports') generateReport();
-    if (sectionId === 'movs') renderMovsTable();
-    if (sectionId === 'movs-records') renderMovsRecordsTable();
-    if (sectionId === 'login-activity') renderLoginActivityTable();
-    if (sectionId === 'feedback') renderFeedbackTable();
-    if (sectionId === 'metrics') renderMetricsTable();
+	  if (sectionId === 'movs') renderMovsTable();
+	  if (sectionId === 'movs-records') renderMovsRecordsTable();
+	  if (sectionId === 'feedback') {
+	    renderFeedbackTable();
+	    // Ensure the form is visible when navigating via Inputs
+	    const formCard = $('feedback-form')?.closest('.card');
+	    if (formCard) formCard.classList.remove('hidden'); 
+	  }
+	  if (sectionId === 'ieca-records') renderIECARecordsTable(); // NEW
+	  if (sectionId === 'login-activity') renderLoginActivityTable();
+	  if (sectionId === 'metrics') renderMetricsTable();
     // Scroll to top
     document.querySelector('.content')?.scrollTo({ top: 0, behavior: 'smooth' });
   } catch (error) {
@@ -4588,6 +4627,52 @@ function applyReportFilter(type) {
   $('ieca-report-output').classList.add('hidden');
   
   generateReport();
+}
+	 function renderIECARecordsTable() {
+  // Reuse the existing feedback data
+  const tbody = document.querySelector('#ieca-records-table tbody');
+  tbody.replaceChildren();
+
+  if (!feedbackData || feedbackData.length === 0) {
+    const row = document.createElement('tr');
+    const cell = document.createElement('td');
+    cell.colSpan = 7;
+    cell.className = 'empty-state';
+    cell.textContent = 'No feedback records encoded yet.';
+    row.appendChild(cell);
+    tbody.appendChild(row);
+    return;
+  }
+
+  // Sort by date (newest first)
+  const sortedFeedback = [...feedbackData].sort((a, b) => {
+    return new Date(b.date) - new Date(a.date);
+  });
+
+  sortedFeedback.forEach(record => {
+    const row = document.createElement('tr');
+    const avg = calculateAverageMQD(record.ratings);
+    const interpretation = getInterpretation(avg);
+    const interpClass = avg >= 4.5 ? 'excellent' : avg >= 3.5 ? 'satisfactory' : 'needs-improvement';
+
+    row.innerHTML = `
+      <td>${formatDisplayDate(record.date)}</td>
+      <td><strong>${escapeHTML(record.client || 'Anonymous')}</strong><br><span class="text-muted">${escapeHTML(record.unit)}</span></td>
+      <td>${escapeHTML(record.materialType)}</td>
+      <td>${escapeHTML(record.subject)}</td>
+      <td><strong>${avg.toFixed(2)}</strong></td>
+      <td><span class="badge ${interpClass}">${interpretation}</span></td>
+      <td>
+        <button class="btn btn-ghost h-8" onclick="editFeedback('${record.id}')" title="Edit">
+          <i class="fas fa-pen" aria-hidden="true"></i>
+        </button>
+        <button class="btn btn-ghost h-8 text-destructive" onclick="deleteFeedback('${record.id}')" title="Delete">
+          <i class="fas fa-trash" aria-hidden="true"></i>
+        </button>
+      </td>
+    `;
+    tbody.appendChild(row);
+  });
 }
 </script>
 </body>
