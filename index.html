@@ -549,7 +549,8 @@ tbody tr:last-child td { border-bottom: none; }
       <i class="fas fa-chevron-down dropdown-icon" aria-hidden="true"></i>
     </button>
     <div id="reports-dropdown" class="dropdown-menu hidden">
-      <button class="nav-item dropdown-item" data-section="reports" data-report-type="movs" type="button">
+      <!-- Inside your Reports Dropdown -->
+		<button class="nav-item dropdown-item" data-section="reports" data-report-type="movs" type="button">
 		  <i class="fas fa-file-lines" aria-hidden="true"></i> MOVs Report
 		</button>
 		<button class="nav-item dropdown-item" data-section="reports" data-report-type="ieca" type="button">
@@ -4362,30 +4363,29 @@ loadIECASettings();
 }
 
 // Update dropdown item click handlers
-// Update the dropdown click handler
 document.addEventListener('click', (e) => {
-  if (e.target.closest('.dropdown-item')) {
-    const item = e.target.closest('.dropdown-item');
-    const sectionId = item.dataset.section;
-    const reportType = item.dataset.reportType; // Add this attribute
-    
-    // Remove active class from all nav items
+  const dropdownItem = e.target.closest('.dropdown-item');
+  
+  if (dropdownItem) {
+    const sectionId = dropdownItem.dataset.section;
+    const reportType = dropdownItem.dataset.reportType; 
+
+    // 1. Update Active States
     document.querySelectorAll('.nav-item, .dropdown-item').forEach(nav => {
       nav.classList.remove('active');
     });
-    
-    // Add active class to clicked item
-    item.classList.add('active');
-    
-    // Switch to section
+    dropdownItem.classList.add('active');
+
+    // 2. Switch to the Section
     if (sectionId) {
       switchSection(sectionId);
-      
-      // Auto-apply filters based on report type
-      if (sectionId === 'reports' && reportType) {
+
+      // 3. Auto-populate the table if "MOVs Report" is clicked
+      if (sectionId === 'reports' && reportType === 'movs') {
         setTimeout(() => {
-          applyReportFilter(reportType);
-        }, 100);
+          // Automatically select "Annual Report" so the table populates immediately
+          applyReportPreset('annual'); 
+        }, 150); // Small delay ensures the section is fully visible first
       }
     }
   }
