@@ -549,12 +549,12 @@ tbody tr:last-child td { border-bottom: none; }
       <i class="fas fa-chevron-down dropdown-icon" aria-hidden="true"></i>
     </button>
     <div id="reports-dropdown" class="dropdown-menu hidden">
-      <button class="nav-item dropdown-item" data-section="movs-report" type="button">
-        <i class="fas fa-file-lines" aria-hidden="true"></i> MOVs Report
-      </button>
-      <button class="nav-item dropdown-item" data-section="ieca-report" type="button">
-        <i class="fas fa-file-signature" aria-hidden="true"></i> IECA M&E Report
-      </button>
+      <button class="nav-item dropdown-item" data-section="reports" data-report-type="movs" type="button">
+		  <i class="fas fa-file-lines" aria-hidden="true"></i> MOVs Report
+		</button>
+		<button class="nav-item dropdown-item" data-section="reports" data-report-type="ieca" type="button">
+		  <i class="fas fa-file-signature" aria-hidden="true"></i> IECA M&E Report
+		</button>
       <button class="nav-item dropdown-item" data-section="omrm-report" type="button">
         <i class="fas fa-chart-bar" aria-hidden="true"></i> OM/RM Report
       </button>
@@ -4362,13 +4362,15 @@ loadIECASettings();
 }
 
 // Update dropdown item click handlers
+// Update the dropdown click handler
 document.addEventListener('click', (e) => {
   if (e.target.closest('.dropdown-item')) {
     const item = e.target.closest('.dropdown-item');
     const sectionId = item.dataset.section;
+    const reportType = item.dataset.reportType; // Add this attribute
     
     // Remove active class from all nav items
-    document.querySelectorAll('.nav-item').forEach(nav => {
+    document.querySelectorAll('.nav-item, .dropdown-item').forEach(nav => {
       nav.classList.remove('active');
     });
     
@@ -4378,9 +4380,30 @@ document.addEventListener('click', (e) => {
     // Switch to section
     if (sectionId) {
       switchSection(sectionId);
+      
+      // Auto-apply filters based on report type
+      if (sectionId === 'reports' && reportType) {
+        setTimeout(() => {
+          applyReportFilter(reportType);
+        }, 100);
+      }
     }
   }
 });
+
+function applyReportFilter(type) {
+  if (type === 'movs') {
+    // Set filters for MOVs report
+    $('filter-report-type').value = 'all';
+    $('filter-report-month').value = 'all';
+    // Trigger report generation
+    generateReport();
+  } else if (type === 'ieca') {
+    // Scroll to IECA section and generate report
+    $('ieca-report-output').scrollIntoView({ behavior: 'smooth' });
+    renderIECAReport();
+  }
+}
 </script>
 </body>
 </html>
