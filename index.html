@@ -474,6 +474,9 @@ tbody tr:last-child td { border-bottom: none; }
     transform: translateY(0);
   }
 }
+   .dropdown-item.hidden {
+  display: none !important;
+}
 </style>
   <script src="https://www.gstatic.com/firebasejs/11.0.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/11.0.0/firebase-auth-compat.js"></script>
@@ -1832,26 +1835,39 @@ auth.onAuthStateChanged(async (user) => {
 });
 
 function applyPermissionUI() {
-  const isAdmin = currentProfile.role === 'admin';
+	const isAdmin = currentProfile.role === 'admin';
+	
+	// ✅ FIX: Use data-section selectors for the new dropdown navbar
+	const navMovsBtn = document.querySelector('.nav-item[data-section="movs"]');
+	const navLoginBtn = document.querySelector('.nav-item[data-section="login-activity"]');
+	
+	if (navMovsBtn) navMovsBtn.classList.toggle('hidden', !isAdmin);
+	if (navLoginBtn) navLoginBtn.classList.toggle('hidden', !isAdmin);
+	// ----------------------------------------------------------------
 
-  // Viewer accounts see only the live Dashboard and Reports.
-  $('nav-movs').classList.toggle('hidden', !isAdmin);
-  $('nav-login-activity').classList.toggle('hidden', !isAdmin);
-  $('add-mov-section').classList.toggle('hidden', !isAdmin);
-  $('import-label').classList.toggle('hidden', !isAdmin);
-  $('record-scope-wrap').classList.toggle('hidden', !isAdmin);
-
-  // These actions are available to both approved roles.
-  $('print-dashboard-btn').classList.toggle('hidden', !can('print'));
-  $('print-report-btn').classList.toggle('hidden', !can('print'));
-  $('export-report-btn').classList.toggle('hidden', !can('export'));
-
-  if (!isAdmin) {
-    resetForm();
-    if ($('movs').classList.contains('active') || $('login-activity').classList.contains('active')) {
-      switchSection('dashboard');
-    }
-  }
+	// Viewer accounts see only the live Dashboard and Reports.
+	$('add-mov-section').classList.toggle('hidden', !isAdmin);
+	$('import-label').classList.toggle('hidden', !isAdmin);
+	$('record-scope-wrap').classList.toggle('hidden', !isAdmin);
+	
+	// These actions are available to both approved roles.
+	$('print-dashboard-btn').classList.toggle('hidden', !can('print'));
+	$('print-report-btn').classList.toggle('hidden', !can('print'));
+	$('export-report-btn').classList.toggle('hidden', !can('export'));
+	
+	if (!isAdmin) {
+		resetForm();
+		// Safely check if restricted sections are active before switching
+		const movsSection = $('movs');
+		const loginSection = $('login-activity');
+		const isOnRestrictedSection = 
+			(movsSection && movsSection.classList.contains('active')) || 
+			(loginSection && loginSection.classList.contains('active'));
+			
+		if (isOnRestrictedSection) {
+			switchSection('dashboard');
+		}
+	}
 }
 
 // -----------------------------------------------------------------------------
