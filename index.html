@@ -408,6 +408,72 @@ tbody tr:last-child td { border-bottom: none; }
   .report-paper { box-shadow: none; border: 0; max-width: none; margin: 0; padding: 0; }
   @page { size: A4; margin: 18mm; }
 }
+   /* Dropdown Navigation Styles */
+.nav-dropdown {
+  width: 100%;
+  margin-bottom: 0.35rem;
+}
+
+.dropdown-toggle {
+  justify-content: space-between;
+  width: 100%;
+}
+
+.dropdown-icon {
+  font-size: 0.75rem;
+  transition: transform 0.3s ease;
+  margin-left: auto;
+}
+
+.dropdown-toggle[aria-expanded="true"] .dropdown-icon {
+  transform: rotate(180deg);
+}
+
+.dropdown-menu {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 0.65rem;
+  margin-top: 0.25rem;
+  padding: 0.4rem 0.5rem;
+}
+
+.dropdown-item {
+  padding-left: 2.5rem;
+  font-size: 0.85rem;
+  justify-content: flex-start;
+}
+
+.dropdown-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+  padding-left: 2.7rem;
+}
+
+.dropdown-item.active {
+  background: var(--sidebar-active);
+  color: #1f2937;
+  font-weight: 600;
+}
+
+.dropdown-item i:first-child {
+  font-size: 0.8rem;
+  margin-right: 0.7rem;
+}
+
+/* Show dropdown when not hidden */
+.dropdown-menu:not(.hidden) {
+  display: block;
+  animation: slideDown 0.2s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 </style>
   <script src="https://www.gstatic.com/firebasejs/11.0.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/11.0.0/firebase-auth-compat.js"></script>
@@ -449,38 +515,77 @@ tbody tr:last-child td { border-bottom: none; }
       </div>
 
       <nav class="nav-list" aria-label="Primary navigation">
-        <!-- OVERVIEW -->
-        <div style="padding: 0.5rem 1rem; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; font-weight: 700; margin-top: 0.5rem;">Overview</div>
-        <button class="nav-item active" data-section="dashboard" type="button">
-          <i class="fas fa-chart-line" aria-hidden="true"></i> Unified Dashboard
-        </button>
-        <button class="nav-item" data-section="reports" type="button">
-          <i class="fas fa-file-lines" aria-hidden="true"></i> Quarterly Reports
-        </button>
-      
-        <!-- MEDIA OPERATIONS (PAU) -->
-        <div style="padding: 0.5rem 1rem; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; font-weight: 700; margin-top: 1rem;">Media Operations</div>
-        <button id="nav-movs" class="nav-item" data-section="movs" type="button">
-          <i class="fas fa-folder-open" aria-hidden="true"></i> MOV Records
-        </button>
-      
-        <!-- QUALITY ASSURANCE (IECA M&E) -->
-        <div style="padding: 0.5rem 1rem; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; font-weight: 700; margin-top: 1rem;">Quality Assurance</div>
-        <button id="nav-feedback" class="nav-item" data-section="feedback" type="button">
-          <i class="fas fa-clipboard-check" aria-hidden="true"></i> Encode Client Feedback
-        </button>
-
-        <button class="nav-item" data-section="metrics" type="button">
-        <i class="fas fa-chart-bar" aria-hidden="true"></i> External Metrics
+  <!-- DASHBOARD -->
+  <button class="nav-item active" data-section="dashboard" type="button">
+    <i class="fas fa-chart-line" aria-hidden="true"></i> Unified Dashboard
+  </button>
+  
+  <!-- INPUTS (Dropdown) -->
+  <div class="nav-dropdown">
+    <button class="nav-item dropdown-toggle" type="button" onclick="toggleDropdown('inputs-dropdown')">
+      <i class="fas fa-folder-plus" aria-hidden="true"></i> Inputs
+      <i class="fas fa-chevron-down dropdown-icon" aria-hidden="true"></i>
+    </button>
+    <div id="inputs-dropdown" class="dropdown-menu hidden">
+      <button class="nav-item dropdown-item" data-section="movs" type="button">
+        <i class="fas fa-file-video" aria-hidden="true"></i> MOVs
       </button>
-        
-        <!-- ADMINISTRATION -->
-        <div style="padding: 0.5rem 1rem; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; font-weight: 700; margin-top: 1rem;">Administration</div>
-        <button id="nav-login-activity" class="nav-item" data-section="login-activity" type="button">
-          <i class="fas fa-clock-rotate-left" aria-hidden="true"></i> Login Activity
-        </button>
-      </nav>
-
+      <button class="nav-item dropdown-item" data-section="feedback" type="button">
+        <i class="fas fa-clipboard-check" aria-hidden="true"></i> Client Feedback
+      </button>
+      <button class="nav-item dropdown-item" data-section="omrm-inputs" type="button">
+        <i class="fas fa-tasks" aria-hidden="true"></i> OM/RM
+      </button>
+    </div>
+  </div>
+  
+  <!-- REPORTS (Dropdown) -->
+  <div class="nav-dropdown">
+    <button class="nav-item dropdown-toggle" type="button" onclick="toggleDropdown('reports-dropdown')">
+      <i class="fas fa-file-alt" aria-hidden="true"></i> Reports
+      <i class="fas fa-chevron-down dropdown-icon" aria-hidden="true"></i>
+    </button>
+    <div id="reports-dropdown" class="dropdown-menu hidden">
+      <button class="nav-item dropdown-item" data-section="movs-report" type="button">
+        <i class="fas fa-file-lines" aria-hidden="true"></i> MOVs Report
+      </button>
+      <button class="nav-item dropdown-item" data-section="ieca-report" type="button">
+        <i class="fas fa-file-signature" aria-hidden="true"></i> IECA M&E Report
+      </button>
+      <button class="nav-item dropdown-item" data-section="omrm-report" type="button">
+        <i class="fas fa-chart-bar" aria-hidden="true"></i> OM/RM Report
+      </button>
+    </div>
+  </div>
+  
+  <!-- RECORDS (Dropdown) -->
+  <div class="nav-dropdown">
+    <button class="nav-item dropdown-toggle" type="button" onclick="toggleDropdown('records-dropdown')">
+      <i class="fas fa-database" aria-hidden="true"></i> Records
+      <i class="fas fa-chevron-down dropdown-icon" aria-hidden="true"></i>
+    </button>
+    <div id="records-dropdown" class="dropdown-menu hidden">
+      <button class="nav-item dropdown-item" data-section="movs" type="button">
+        <i class="fas fa-folder-open" aria-hidden="true"></i> MOVs Record
+      </button>
+      <button class="nav-item dropdown-item" data-section="feedback" type="button">
+        <i class="fas fa-clipboard-list" aria-hidden="true"></i> IECA Records
+      </button>
+      <button class="nav-item dropdown-item" data-section="omrm-records" type="button">
+        <i class="fas fa-folder" aria-hidden="true"></i> OM/RM Records
+      </button>
+      <button class="nav-item dropdown-item" data-section="metrics" type="button">
+        <i class="fas fa-chart-line" aria-hidden="true"></i> External Metrics Records
+      </button>
+    </div>
+  </div>
+  
+  <!-- LOGIN ACTIVITY -->
+  <button class="nav-item" data-section="login-activity" type="button">
+    <i class="fas fa-clock-rotate-left" aria-hidden="true"></i> Login Activity
+  </button>
+</nav>
+      
       <div class="sidebar-user">
         <div>
           <div id="user-name" class="name">Signed-in user</div>
@@ -4217,6 +4322,49 @@ function exportIECAReportToWord() {
 
 // Load settings on initialization
 loadIECASettings();
+   function toggleDropdown(dropdownId) {
+  const dropdown = $(dropdownId);
+  const toggle = dropdown.previousElementSibling;
+  const isHidden = dropdown.classList.contains('hidden');
+  
+  // Close all other dropdowns
+  document.querySelectorAll('.dropdown-menu').forEach(menu => {
+    if (menu.id !== dropdownId) {
+      menu.classList.add('hidden');
+      menu.previousElementSibling.setAttribute('aria-expanded', 'false');
+    }
+  });
+  
+  // Toggle current dropdown
+  if (isHidden) {
+    dropdown.classList.remove('hidden');
+    toggle.setAttribute('aria-expanded', 'true');
+  } else {
+    dropdown.classList.add('hidden');
+    toggle.setAttribute('aria-expanded', 'false');
+  }
+}
+
+// Update dropdown item click handlers
+document.addEventListener('click', (e) => {
+  if (e.target.closest('.dropdown-item')) {
+    const item = e.target.closest('.dropdown-item');
+    const sectionId = item.dataset.section;
+    
+    // Remove active class from all nav items
+    document.querySelectorAll('.nav-item').forEach(nav => {
+      nav.classList.remove('active');
+    });
+    
+    // Add active class to clicked item
+    item.classList.add('active');
+    
+    // Switch to section
+    if (sectionId) {
+      switchSection(sectionId);
+    }
+  }
+});
 </script>
 </body>
 </html>
