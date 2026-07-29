@@ -740,8 +740,8 @@ tbody tr:last-child td { border-bottom: none; }
 </div>
       </section>
 
-    <!-- ========================================== -->
-<!-- 1. MOV RECORDS SECTION (Complete)          -->
+<!-- ========================================== -->
+<!-- 1. MOV RECORDS SECTION (Complete & Fixed)  -->
 <!-- ========================================== -->
 <section id="movs" class="section">
     <div class="section-header flex justify-between items-center mb-6">
@@ -754,7 +754,7 @@ tbody tr:last-child td { border-bottom: none; }
         </div>
     </div>
     
-    <!-- Filter Bar (Fixed Structure) -->
+    <!-- Filter Bar -->
     <div class="card mb-4">
         <div class="filter-bar">
             <div>
@@ -802,7 +802,65 @@ tbody tr:last-child td { border-bottom: none; }
             <i class="fas fa-box-archive" aria-hidden="true"></i> Archive Selected
         </button>
     </div>
-</div>
+
+    <!-- ✅ ADD/EDIT FORM (Restored and properly placed inside the section) -->
+    <div id="add-mov-section" class="card" style="margin-top: 2rem;">
+        <div class="flex justify-between items-center mb-4 flex-wrap gap-3">
+            <div>
+                <h3 id="form-title" class="text-sm font-semibold">Add New MOV Record</h3>
+                <p class="text-muted">All records refer to outputs already posted through the official Public Affairs Unit Facebook page. Enter the latest available post insights. Fields marked with an asterisk are required.</p>
+            </div>
+            <span id="edit-indicator" class="badge edit-badge hidden">Editing existing record</span>
+        </div>
+        <div class="form-grid">
+            <div>
+                <label for="input-date">Date produced *</label>
+                <input type="date" id="input-date" />
+            </div>
+            <div>
+                <label for="input-type">Output type *</label>
+                <select id="input-type"></select>
+            </div>
+            <div class="form-wide">
+                <label for="input-activity">Activity / Program / KRA</label>
+                <input type="text" id="input-activity" maxlength="180" placeholder="Related activity, program, target, or performance indicator" />
+            </div>
+            <div class="form-wide">
+                <label for="input-title">Title / Details *</label>
+                <input type="text" id="input-title" maxlength="300" placeholder="Enter the title or description of the output" />
+            </div>
+            <div class="form-wide">
+                <label for="input-link">MOV link</label>
+                <input type="url" id="input-link" maxlength="1000" placeholder="https://..." />
+            </div>
+            <div>
+                <label for="input-reach">Reach</label>
+                <input type="number" id="input-reach" min="0" step="1" inputmode="numeric" value="0" placeholder="0" />
+            </div>
+            <div>
+                <label for="input-reactions">Reactions</label>
+                <input type="number" id="input-reactions" min="0" step="1" inputmode="numeric" value="0" placeholder="0" />
+            </div>
+            <div>
+                <label for="input-shares">Shares</label>
+                <input type="number" id="input-shares" min="0" step="1" inputmode="numeric" value="0" placeholder="0" />
+            </div>
+            <div class="form-wide">
+                <label for="input-remarks">Remarks</label>
+                <textarea id="input-remarks" maxlength="600" placeholder="Optional notes or additional information"></textarea>
+            </div>
+        </div>
+        <div class="flex gap-2 mt-4 justify-end flex-wrap no-print">
+            <label id="import-label" for="upload-excel" class="btn btn-outline h-9" style="cursor:pointer;">
+                <i class="fas fa-file-excel" aria-hidden="true"></i> Import Excel
+            </label>
+            <input type="file" id="upload-excel" accept=".xlsx,.xls" class="hidden" />
+            <button id="cancel-edit" class="btn btn-outline h-9 hidden" type="button">Cancel Edit</button>
+            <button id="add-mov" class="btn btn-gold h-9" type="button">
+                <i class="fas fa-floppy-disk" aria-hidden="true"></i> Save Record
+            </button>
+        </div>
+    </div>
 </section>
 
 <!-- ========================================== -->
@@ -1013,8 +1071,6 @@ tbody tr:last-child td { border-bottom: none; }
       
       <section id="reports" class="section">
         <div class="print-report-header" style="display: flex; flex-direction: column; align-items: center;">
-    <!-- <img src="logo.png" ... />  <-- You can leave this commented out if you don't want the logo -->
-    <!-- <h2>PAUMOVision...</h2>   <-- You can leave this commented out too -->
     
     <!-- KEEP THESE TWO LINES so the JavaScript doesn't crash -->
     <p id="print-report-period" style="font-weight: bold; margin-top: 10px;"></p>
