@@ -477,6 +477,10 @@ tbody tr:last-child td { border-bottom: none; }
    .dropdown-item.hidden {
   display: none !important;
 }
+	 /* Hide IECA report output by default when in Reports section */
+#reports #ieca-report-output:not(.hidden) ~ .report-actions {
+  margin-top: 1.5rem;
+}
 </style>
   <script src="https://www.gstatic.com/firebasejs/11.0.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/11.0.0/firebase-auth-compat.js"></script>
@@ -3136,10 +3140,12 @@ async function runBatches(items, addOperation, size = 400) {
 // 9. REPORTS
 // -----------------------------------------------------------------------------
 async function generateReport() {
+  // Hide IECA report when generating MOV report
+  $('ieca-report-output').classList.add('hidden');
+  
   const yearValue = $('filter-report-year').value;
   const month = $('filter-report-month').value;
   const type = $('filter-report-type').value;
-  
   filteredReportData = movsData
     .filter(record => {
       const date = getRecordDate(record);
@@ -3147,7 +3153,7 @@ async function generateReport() {
       const matchesDateRange = reportRangeOverride
         ? date >= reportRangeOverride.start && date <= reportRangeOverride.end
         : (yearValue === 'all' || date.getFullYear() === Number(yearValue))
-          && (month === 'all' || date.getMonth() === Number(month));
+        && (month === 'all' || date.getMonth() === Number(month));
       return matchesDateRange && (type === 'all' || record.type === type);
     })
     .sort((a, b) => {
@@ -3155,11 +3161,10 @@ async function generateReport() {
       if (dateDifference !== 0) return dateDifference;
       return (parseDate(b.createdAt)?.getTime() || 0) - (parseDate(a.createdAt)?.getTime() || 0);
     });
-
   renderReportSummary();
   renderExecutiveSummary();
   renderReportTable();
-  await renderCAPReport(); // ✅ Now this works perfectly
+  await renderCAPReport();
   updatePrintMetadata();
 }
   // NEW FUNCTION: Render CAP Alerts in the Report
@@ -4151,9 +4156,19 @@ function saveIECASettings() {
 async function renderIECAReport() {
   setLoading(true, 'Generating formal report...');
   
-  // ✅ FIX 1: Force refresh filteredReportData to match current dropdown filters
-  await generateReport(); 
+  // Hide MOV report elements
+  const reportCards = document.querySelectorAll('#reports > .card');
+  reportCards.forEach(card => {
+    if (!card.querySelector('#ieca-report-output')) {
+      card.classList.add('hidden');
+    }
+  });
   
+  // Show IECA report settings and actions
+  document.querySelector('.settings-box').classList.remove('hidden');
+  document.querySelector('.report-actions').classList.remove('hidden');
+  
+  await generateReport();
   const yearValue = $('filter-report-year').value;
   const month = $('filter-report-month').value;
   const settings = JSON.parse(localStorage.getItem('ieca_report_settings') || '{"unit":"ORD-Public Affairs Unit","preparedBy":"","preparedPosition":"","reviewedBy":"Head of Office","reviewedPosition":"","approvedBy":"ESTELA P. LEON-CARIÑO, EdD, CESO III","approvedPosition":"Director IV/Regional Director"}');
@@ -4171,7 +4186,7 @@ async function renderIECAReport() {
       if (matchesYear && matchesMonth) periodFeedback.push(data);
     });
     
-    // 2. Get Metrics for the period (now guaranteed to be fresh)
+    // 2. Get Metrics for the period
     const periodMetrics = filteredReportData.filter(m => m.reach > 0 || m.reactions > 0 || m.shares > 0 || m.negativeSentiment);
     
     // 3. Calculate MQD Averages
@@ -4211,7 +4226,7 @@ async function renderIECAReport() {
     const aggregatedComments = [...commentMap.values()]
       .map(x => ({ ...x, remarks: [...x.remarks].join(", ") }))
       .sort((a, b) => b.frequency - a.frequency || a.text.localeCompare(b.text));
-      
+    
     // 6. CAP Triggers
     const improvementRows = details.filter(d => d.lowCount > 0 || d.capRequired);
     let seq = 0;
@@ -4232,9 +4247,9 @@ async function renderIECAReport() {
     
     const negativeAlert = external.negative > 0
       ? `<div style="border:1px solid #111;padding:8px;margin-top:10px">
-         <b>External Sentiment Corrective Action Alert:</b> ${external.negative} online material(s) were marked as having significant negative sentiment, recurring concern, or public confusion. A corrective action review is required.
-        </div>` : "";
-        
+        <b>External Sentiment Corrective Action Alert:</b> ${external.negative} online material(s) were marked as having significant negative sentiment, recurring concern, or public confusion. A corrective action review is required.
+      </div>` : "";
+    
     const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
     const periodText = month === 'all' ? `Year ${yearValue}` : `${monthNames[Number(month)]} ${yearValue}`;
     
@@ -4260,7 +4275,6 @@ async function renderIECAReport() {
       <table class="report-table" style="max-width:560px;margin:0 auto">
         <thead><tr><th>Metric Category</th><th style="width:35%">Total for the Period</th></tr></thead>
         <tbody>
-          <!-- ✅ FIX 2: Changed formatNumber to formatMetric -->
           <tr><td>Total Reach / Views</td><td class="num">${formatMetric(external.reach)}</td></tr>
           <tr><td>Total Reactions</td><td class="num">${formatMetric(external.reactions)}</td></tr>
           <tr><td>Total Shares</td><td class="num">${formatMetric(external.shares)}</td></tr>
@@ -4299,7 +4313,6 @@ async function renderIECAReport() {
     $('ieca-report-output').innerHTML = reportHTML;
     $('ieca-report-output').classList.remove('hidden');
     $('ieca-report-output').scrollIntoView({ behavior: 'smooth' });
-    
   } catch (error) {
     console.error(error);
     showToast('Error generating report: ' + error.message, 'error');
@@ -4364,27 +4377,32 @@ loadIECASettings();
 // Update dropdown item click handlers
 document.addEventListener('click', (e) => {
   const dropdownItem = e.target.closest('.dropdown-item');
-  
   if (dropdownItem) {
     const sectionId = dropdownItem.dataset.section;
-    const reportType = dropdownItem.dataset.reportType; 
-
+    const reportType = dropdownItem.dataset.reportType;
+    
     // 1. Update Active States
     document.querySelectorAll('.nav-item, .dropdown-item').forEach(nav => {
       nav.classList.remove('active');
     });
     dropdownItem.classList.add('active');
-
+    
     // 2. Switch to the Section
     if (sectionId) {
       switchSection(sectionId);
-
-      // 3. Auto-populate the table if "MOVs Report" is clicked
-      if (sectionId === 'reports' && reportType === 'movs') {
-        setTimeout(() => {
-          // Automatically select "Annual Report" so the table populates immediately
-          applyReportPreset('annual'); 
-        }, 150); // Small delay ensures the section is fully visible first
+      
+      // 3. Handle specific report types
+      if (sectionId === 'reports') {
+        if (reportType === 'movs') {
+          setTimeout(() => {
+            showMOVReport();
+            applyReportPreset('annual');
+          }, 150);
+        } else if (reportType === 'ieca') {
+          setTimeout(() => {
+            renderIECAReport();
+          }, 150);
+        }
       }
     }
   }
@@ -4402,6 +4420,20 @@ function applyReportFilter(type) {
     $('ieca-report-output').scrollIntoView({ behavior: 'smooth' });
     renderIECAReport();
   }
+}
+	 function showMOVReport() {
+  // Show MOV report elements
+  const reportCards = document.querySelectorAll('#reports > .card');
+  reportCards.forEach(card => {
+    if (!card.classList.contains('settings-box')) {
+      card.classList.remove('hidden');
+    }
+  });
+  
+  // Hide IECA report
+  $('ieca-report-output').classList.add('hidden');
+  
+  generateReport();
 }
 </script>
 </body>
