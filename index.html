@@ -4178,176 +4178,180 @@ function saveIECASettings() {
   showToast('Report signatory settings saved successfully.');
 }
 async function renderIECAReport() {
-  setLoading(true, 'Generating formal report...');
-  
-  // Hide all MOV report elements
-  $('report-summary-area').classList.add('hidden');
-  $('executive-summary-area').classList.add('hidden');
-  $('cap-report-area').classList.add('hidden');
-  
-  // Hide the MOV report table card
-  const reportTableCard = document.querySelector('#report-table')?.closest('.card');
-  if (reportTableCard) reportTableCard.classList.add('hidden');
-  
-  // Hide the filter/preset card
-  const filterCard = document.querySelector('#filter-report-btn')?.closest('.card');
-  if (filterCard) filterCard.classList.add('hidden');
-  
-  // Show IECA report settings and actions
-  document.querySelector('.settings-box')?.classList.remove('hidden');
-  document.querySelector('.report-actions')?.classList.remove('hidden');
-  
-  await generateReport();
-  const yearValue = $('filter-report-year').value;
-  const month = $('filter-report-month').value;
-  const settings = JSON.parse(localStorage.getItem('ieca_report_settings') || '{"unit":"ORD-Public Affairs Unit","preparedBy":"","preparedPosition":"","reviewedBy":"Head of Office","reviewedPosition":"","approvedBy":"ESTELA P. LEON-CARIÑO, EdD, CESO III","approvedPosition":"Director IV/Regional Director"}');
-  
-  try {
-    // 1. Get Feedback for the period
-    const feedbackSnap = await feedbackColl.get();
-    const periodFeedback = [];
-    feedbackSnap.forEach(doc => {
-      const data = doc.data();
-      const date = parseDate(data.date);
-      if (!date) return;
-      const matchesYear = yearValue === 'all' || date.getFullYear() === Number(yearValue);
-      const matchesMonth = month === 'all' || date.getMonth() === Number(month);
-      if (matchesYear && matchesMonth) periodFeedback.push(data);
-    });
+    setLoading(true, 'Generating formal report...');
     
-    // 2. Get Metrics for the period
-    const periodMetrics = filteredReportData.filter(m => m.reach > 0 || m.reactions > 0 || m.shares > 0 || m.negativeSentiment);
+    // 1. First, run generateReport() to refresh the filtered data
+    // (We'll hide the MOV UI elements right after)
+    await generateReport();
     
-    // 3. Calculate MQD Averages
-    const n = periodFeedback.length;
-    const averages = MQD.map((_, i) => n ? periodFeedback.reduce((sum, e) => sum + Number(e.ratings[i] || 0), 0) / n : null);
-    const overall = n ? averages.reduce((a, b) => a + (b || 0), 0) / 6 : null;
-    const details = MQD.map((item, i) => {
-      const count2 = periodFeedback.filter(e => Number(e.ratings[i]) === 2).length;
-      const count1 = periodFeedback.filter(e => Number(e.ratings[i]) === 1).length;
-      const lowCount = count1 + count2;
-      const lowPct = n ? (lowCount / n) * 100 : 0;
-      const avg = averages[i];
-      const capRequired = n > 0 && ((avg !== null && avg <= 2.49) || lowPct > 20);
-      return { ...item, avg, count2, count1, lowCount, lowPct, capRequired };
-    });
+    // 2. NOW hide all MOV report UI elements (generateReport() re-shows them)
+    $('report-summary-area').classList.add('hidden');
+    $('executive-summary-area').classList.add('hidden');
+    $('cap-report-area').classList.add('hidden');
     
-    // 4. External Totals
-    const external = periodMetrics.reduce((acc, m) => {
-      acc.reach += getMetric(m, 'reach');
-      acc.reactions += getMetric(m, 'reactions');
-      acc.shares += getMetric(m, 'shares');
-      if (m.negativeSentiment) acc.negative++;
-      return acc;
-    }, { reach: 0, reactions: 0, shares: 0, negative: 0 });
+    const reportTableCard = document.querySelector('#report-table')?.closest('.card');
+    if (reportTableCard) reportTableCard.classList.add('hidden');
     
-    // 5. Aggregate Comments
-    const commentMap = new Map();
-    periodFeedback.forEach(e => {
-      const text = (e.comments || e.feedbackSummary || "").trim();
-      if (!text) return;
-      const key = text.toLowerCase();
-      if (!commentMap.has(key)) commentMap.set(key, { text: e.comments || e.feedbackSummary, frequency: 0, remarks: new Set() });
-      const item = commentMap.get(key);
-      item.frequency++;
-      if (e.feedbackClass) item.remarks.add(e.feedbackClass);
-    });
-    const aggregatedComments = [...commentMap.values()]
-      .map(x => ({ ...x, remarks: [...x.remarks].join(", ") }))
-      .sort((a, b) => b.frequency - a.frequency || a.text.localeCompare(b.text));
+    const filterCard = document.querySelector('#filter-report-btn')?.closest('.card');
+    if (filterCard) filterCard.classList.add('hidden');
     
-    // 6. CAP Triggers
-    const improvementRows = details.filter(d => d.lowCount > 0 || d.capRequired);
-    let seq = 0;
-    const currentQ = month === 'all' ? Math.ceil((new Date().getMonth() + 1) / 3) : Math.ceil((Number(month) + 1) / 3);
-    const currentY = yearValue === 'all' ? new Date().getFullYear() : Number(yearValue);
-    const improveHtml = improvementRows.length ? improvementRows.map(d => {
-      const cap = d.capRequired;
-      const ref = cap ? `CAP-Q${currentQ}-${currentY}-${String(++seq).padStart(2, "0")}` : "—";
-      return `<tr>
-        <td class="num">${improvementRows.indexOf(d) + 1}</td>
-        <td>${d.code} (${escapeHTML(d.name)})</td>
-        <td class="num">${d.count2}</td>
-        <td class="num">${d.count1}</td>
-        <td class="num"><b>${cap ? "Yes" : "No"}</b></td>
-        <td class="num">${ref}</td>
-      </tr>`;
-    }).join("") : '<tr><td colspan="6" class="num">No ratings requiring improvement were recorded.</td></tr>';
+    const presetCard = document.querySelector('#report-preset-bar')?.closest('.card');
+    if (presetCard) presetCard.classList.add('hidden');
     
-    const negativeAlert = external.negative > 0
-      ? `<div style="border:1px solid #111;padding:8px;margin-top:10px">
-        <b>External Sentiment Corrective Action Alert:</b> ${external.negative} online material(s) were marked as having significant negative sentiment, recurring concern, or public confusion. A corrective action review is required.
-      </div>` : "";
+    // 3. Show IECA report settings and actions
+    document.querySelector('.settings-box')?.classList.remove('hidden');
+    document.querySelector('.report-actions')?.classList.remove('hidden');
     
-    const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-    const periodText = month === 'all' ? `Year ${yearValue}` : `${monthNames[Number(month)]} ${yearValue}`;
+    const yearValue = $('filter-report-year').value;
+    const month = $('filter-report-month').value;
+    const settings = JSON.parse(localStorage.getItem('ieca_report_settings') || '{"unit":"ORD-Public Affairs Unit","preparedBy":"","preparedPosition":"","reviewedBy":"Head of Office","reviewedPosition":"","approvedBy":"ESTELA P. LEON-CARIÑO, EdD, CESO III","approvedPosition":"Director IV/Regional Director"}');
     
-    // 7. Render HTML
-    const reportHTML = `
-      <div class="report-title">IECA MATERIALS MONITORING AND EVALUATION REPORT</div>
-      <div class="report-meta">
-        <p>Unit/Section: <b>${escapeHTML(settings.unit)}</b></p>
-        <p>Period Covered: <b>${escapeHTML(periodText)}</b></p>
-        <p>Number of Respondents: <b>${n}</b></p>
-      </div>
-      <h3>I. Internal Client Feedback Summary <i>(From the MQD Surveys)</i></h3>
-      <table class="report-table">
-        <thead><tr><th style="width:14%">Code</th><th>Criteria Area</th><th style="width:20%">Average Rating</th></tr></thead>
-        <tbody>
-          ${averages.map((avg, i) => `<tr><td class="num"><b>${MQD[i].code}</b></td><td>${escapeHTML(MQD[i].name)}</td><td class="num">${avg === null ? "—" : avg.toFixed(2)}</td></tr>`).join('')}
-          <tr><td colspan="2"><b>Overall Average Rating</b></td><td class="num"><b>${overall === null ? "—" : overall.toFixed(2)}</b></td></tr>
-        </tbody>
-      </table>
-      <p><b>General Interpretation:</b> ${overall === null ? "No Data" : getInterpretation(overall)}</p>
-      <p class="report-footnote">(Excellent / Very Satisfactory / Satisfactory / Needs Improvement / Poor)</p>
-      <h3>II. External Audience Engagement (Social Media / Online Metrics)</h3>
-      <table class="report-table" style="max-width:560px;margin:0 auto">
-        <thead><tr><th>Metric Category</th><th style="width:35%">Total for the Period</th></tr></thead>
-        <tbody>
-          <tr><td>Total Reach / Views</td><td class="num">${formatMetric(external.reach)}</td></tr>
-          <tr><td>Total Reactions</td><td class="num">${formatMetric(external.reactions)}</td></tr>
-          <tr><td>Total Shares</td><td class="num">${formatMetric(external.shares)}</td></tr>
-        </tbody>
-      </table>
-      <h3>III. Summary of Comments and Suggestions</h3>
-      <table class="report-table">
-        <thead><tr><th>Common Feedback/Concern</th><th style="width:24%">Frequency/No. of Mentions</th><th style="width:23%">Remarks</th></tr></thead>
-        <tbody>
-          ${aggregatedComments.length ? aggregatedComments.map(c => `<tr><td>${escapeHTML(c.text)}</td><td class="num">${c.frequency}</td><td>${escapeHTML(c.remarks || "General Feedback")}</td></tr>`).join('') : '<tr><td colspan="3" class="num">No comments or suggestions recorded.</td></tr>'}
-        </tbody>
-      </table>
-      <div class="page-break"></div>
-      <h3>IV. Summary of Ratings Requiring Improvement</h3>
-      <table class="report-table">
-        <thead>
-          <tr>
-            <th style="width:7%">No.</th>
-            <th>Code / Area Evaluated</th>
-            <th style="width:17%">No. of Needs Improvement (Rating 2)</th>
-            <th style="width:14%">No. of Poor (Rating 1)</th>
-            <th style="width:16%">Corrective Action Required</th>
-            <th style="width:15%">CAP Reference No.</th>
-          </tr>
-        </thead>
-        <tbody>${improveHtml}</tbody>
-      </table>
-      ${negativeAlert}
-      <div class="report-signatures">
-        <div class="signature">Prepared by:<strong>${escapeHTML(settings.preparedBy || "NAME")}</strong><div>${escapeHTML(settings.preparedPosition || "Position")}</div></div>
-        <div class="signature">Reviewed by:<strong>${escapeHTML(settings.reviewedBy || "Head of Office")}</strong><div>${escapeHTML(settings.reviewedPosition || "Position")}</div></div>
-        <div class="signature approved">Verified and Approved by:<strong>${escapeHTML(settings.approvedBy)}</strong><div>${escapeHTML(settings.approvedPosition)}</div></div>
-      </div>
-    `;
-    
-    $('ieca-report-output').innerHTML = reportHTML;
-    $('ieca-report-output').classList.remove('hidden');
-    $('ieca-report-output').scrollIntoView({ behavior: 'smooth' });
-  } catch (error) {
-    console.error(error);
-    showToast('Error generating report: ' + error.message, 'error');
-  } finally {
-    setLoading(false);
-  }
+    try {
+        // 4. Get Feedback for the period
+        const feedbackSnap = await feedbackColl.get();
+        const periodFeedback = [];
+        feedbackSnap.forEach(doc => {
+            const data = doc.data();
+            const date = parseDate(data.date);
+            if (!date) return;
+            const matchesYear = yearValue === 'all' || date.getFullYear() === Number(yearValue);
+            const matchesMonth = month === 'all' || date.getMonth() === Number(month);
+            if (matchesYear && matchesMonth) periodFeedback.push(data);
+        });
+        
+        // 5. Get Metrics for the period
+        const periodMetrics = filteredReportData.filter(m => m.reach > 0 || m.reactions > 0 || m.shares > 0 || m.negativeSentiment);
+        
+        // 6. Calculate MQD Averages
+        const n = periodFeedback.length;
+        const averages = MQD.map((_, i) => n ? periodFeedback.reduce((sum, e) => sum + Number(e.ratings[i] || 0), 0) / n : null);
+        const overall = n ? averages.reduce((a, b) => a + (b || 0), 0) / 6 : null;
+        const details = MQD.map((item, i) => {
+            const count2 = periodFeedback.filter(e => Number(e.ratings[i]) === 2).length;
+            const count1 = periodFeedback.filter(e => Number(e.ratings[i]) === 1).length;
+            const lowCount = count1 + count2;
+            const lowPct = n ? (lowCount / n) * 100 : 0;
+            const avg = averages[i];
+            const capRequired = n > 0 && ((avg !== null && avg <= 2.49) || lowPct > 20);
+            return { ...item, avg, count2, count1, lowCount, lowPct, capRequired };
+        });
+        
+        // 7. External Totals
+        const external = periodMetrics.reduce((acc, m) => {
+            acc.reach += getMetric(m, 'reach');
+            acc.reactions += getMetric(m, 'reactions');
+            acc.shares += getMetric(m, 'shares');
+            if (m.negativeSentiment) acc.negative++;
+            return acc;
+        }, { reach: 0, reactions: 0, shares: 0, negative: 0 });
+        
+        // 8. Aggregate Comments
+        const commentMap = new Map();
+        periodFeedback.forEach(e => {
+            const text = (e.comments || e.feedbackSummary || "").trim();
+            if (!text) return;
+            const key = text.toLowerCase();
+            if (!commentMap.has(key)) commentMap.set(key, { text: e.comments || e.feedbackSummary, frequency: 0, remarks: new Set() });
+            const item = commentMap.get(key);
+            item.frequency++;
+            if (e.feedbackClass) item.remarks.add(e.feedbackClass);
+        });
+        const aggregatedComments = [...commentMap.values()]
+            .map(x => ({ ...x, remarks: [...x.remarks].join(", ") }))
+            .sort((a, b) => b.frequency - a.frequency || a.text.localeCompare(b.text));
+        
+        // 9. CAP Triggers
+        const improvementRows = details.filter(d => d.lowCount > 0 || d.capRequired);
+        let seq = 0;
+        const currentQ = month === 'all' ? Math.ceil((new Date().getMonth() + 1) / 3) : Math.ceil((Number(month) + 1) / 3);
+        const currentY = yearValue === 'all' ? new Date().getFullYear() : Number(yearValue);
+        const improveHtml = improvementRows.length ? improvementRows.map(d => {
+            const cap = d.capRequired;
+            const ref = cap ? `CAP-Q${currentQ}-${currentY}-${String(++seq).padStart(2, "0")}` : "—";
+            return `<tr>
+                <td class="num">${improvementRows.indexOf(d) + 1}</td>
+                <td>${d.code} (${escapeHTML(d.name)})</td>
+                <td class="num">${d.count2}</td>
+                <td class="num">${d.count1}</td>
+                <td class="num"><b>${cap ? "Yes" : "No"}</b></td>
+                <td class="num">${ref}</td>
+            </tr>`;
+        }).join("") : '<tr><td colspan="6" class="num">No ratings requiring improvement were recorded.</td></tr>';
+        
+        const negativeAlert = external.negative > 0
+            ? `<div style="border:1px solid #111;padding:8px;margin-top:10px">
+                <b>External Sentiment Corrective Action Alert:</b> ${external.negative} online material(s) were marked as having significant negative sentiment, recurring concern, or public confusion. A corrective action review is required.
+            </div>` : "";
+        
+        const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        const periodText = month === 'all' ? `Year ${yearValue}` : `${monthNames[Number(month)]} ${yearValue}`;
+        
+        // 10. Render HTML
+        const reportHTML = `
+            <div class="report-title">IECA MATERIALS MONITORING AND EVALUATION REPORT</div>
+            <div class="report-meta">
+                <p>Unit/Section: <b>${escapeHTML(settings.unit)}</b></p>
+                <p>Period Covered: <b>${escapeHTML(periodText)}</b></p>
+                <p>Number of Respondents: <b>${n}</b></p>
+            </div>
+            <h3>I. Internal Client Feedback Summary <i>(From the MQD Surveys)</i></h3>
+            <table class="report-table">
+                <thead><tr><th style="width:14%">Code</th><th>Criteria Area</th><th style="width:20%">Average Rating</th></tr></thead>
+                <tbody>
+                    ${averages.map((avg, i) => `<tr><td class="num"><b>${MQD[i].code}</b></td><td>${escapeHTML(MQD[i].name)}</td><td class="num">${avg === null ? "—" : avg.toFixed(2)}</td></tr>`).join('')}
+                    <tr><td colspan="2"><b>Overall Average Rating</b></td><td class="num"><b>${overall === null ? "—" : overall.toFixed(2)}</b></td></tr>
+                </tbody>
+            </table>
+            <p><b>General Interpretation:</b> ${overall === null ? "No Data" : getInterpretation(overall)}</p>
+            <p class="report-footnote">(Excellent / Very Satisfactory / Satisfactory / Needs Improvement / Poor)</p>
+            <h3>II. External Audience Engagement (Social Media / Online Metrics)</h3>
+            <table class="report-table" style="max-width:560px;margin:0 auto">
+                <thead><tr><th>Metric Category</th><th style="width:35%">Total for the Period</th></tr></thead>
+                <tbody>
+                    <tr><td>Total Reach / Views</td><td class="num">${formatMetric(external.reach)}</td></tr>
+                    <tr><td>Total Reactions</td><td class="num">${formatMetric(external.reactions)}</td></tr>
+                    <tr><td>Total Shares</td><td class="num">${formatMetric(external.shares)}</td></tr>
+                </tbody>
+            </table>
+            <h3>III. Summary of Comments and Suggestions</h3>
+            <table class="report-table">
+                <thead><tr><th>Common Feedback/Concern</th><th style="width:24%">Frequency/No. of Mentions</th><th style="width:23%">Remarks</th></tr></thead>
+                <tbody>
+                    ${aggregatedComments.length ? aggregatedComments.map(c => `<tr><td>${escapeHTML(c.text)}</td><td class="num">${c.frequency}</td><td>${escapeHTML(c.remarks || "General Feedback")}</td></tr>`).join('') : '<tr><td colspan="3" class="num">No comments or suggestions recorded.</td></tr>'}
+                </tbody>
+            </table>
+            <div class="page-break"></div>
+            <h3>IV. Summary of Ratings Requiring Improvement</h3>
+            <table class="report-table">
+                <thead>
+                    <tr>
+                        <th style="width:7%">No.</th>
+                        <th>Code / Area Evaluated</th>
+                        <th style="width:17%">No. of Needs Improvement (Rating 2)</th>
+                        <th style="width:14%">No. of Poor (Rating 1)</th>
+                        <th style="width:16%">Corrective Action Required</th>
+                        <th style="width:15%">CAP Reference No.</th>
+                    </tr>
+                </thead>
+                <tbody>${improveHtml}</tbody>
+            </table>
+            ${negativeAlert}
+            <div class="report-signatures">
+                <div class="signature">Prepared by:<strong>${escapeHTML(settings.preparedBy || "NAME")}</strong><div>${escapeHTML(settings.preparedPosition || "Position")}</div></div>
+                <div class="signature">Reviewed by:<strong>${escapeHTML(settings.reviewedBy || "Head of Office")}</strong><div>${escapeHTML(settings.reviewedPosition || "Position")}</div></div>
+                <div class="signature approved">Verified and Approved by:<strong>${escapeHTML(settings.approvedBy)}</strong><div>${escapeHTML(settings.approvedPosition)}</div></div>
+            </div>
+        `;
+        
+        $('ieca-report-output').innerHTML = reportHTML;
+        $('ieca-report-output').classList.remove('hidden');
+        $('ieca-report-output').scrollIntoView({ behavior: 'smooth' });
+    } catch (error) {
+        console.error(error);
+        showToast('Error generating report: ' + error.message, 'error');
+    } finally {
+        setLoading(false);
+    }
 }
 
 function exportIECAReportToWord() {
@@ -4460,27 +4464,26 @@ function applyReportFilter(type) {
 }
 
 function showMOVReport() {
-  // 1. Handle all cards in the Reports section
-  const reportCards = document.querySelectorAll('#reports > .card');
-  reportCards.forEach(card => {
-    if (card.classList.contains('settings-box')) {
-      // Explicitly hide the IECA Settings box
-      card.classList.add('hidden');
-    } else {
-      // Show all other MOV report cards
-      card.classList.remove('hidden');
-    }
-  });
-
-  // 2. Hide the IECA Report Output
-  $('ieca-report-output').classList.add('hidden');
-
-  // 3. Hide the IECA Action Buttons (Generate/Print/Export Word)
-  const actionButtons = document.querySelector('.report-actions');
-  if (actionButtons) actionButtons.classList.add('hidden');
-
-  // 4. Generate the MOV Report data
-  generateReport();
+    // Show ALL MOV report elements explicitly
+    $('report-summary-area').classList.remove('hidden');
+    $('executive-summary-area').classList.remove('hidden');
+    $('cap-report-area').classList.remove('hidden');
+    
+    const reportTableCard = document.querySelector('#report-table')?.closest('.card');
+    if (reportTableCard) reportTableCard.classList.remove('hidden');
+    
+    const filterCard = document.querySelector('#filter-report-btn')?.closest('.card');
+    if (filterCard) filterCard.classList.remove('hidden');
+    
+    const presetCard = document.querySelector('#report-preset-bar')?.closest('.card');
+    if (presetCard) presetCard.classList.remove('hidden');
+    
+    // Hide IECA report elements
+    document.querySelector('.settings-box')?.classList.add('hidden');
+    document.querySelector('.report-actions')?.classList.add('hidden');
+    $('ieca-report-output').classList.add('hidden');
+    
+    generateReport();
 }
 	 
 	 function renderIECARecordsTable() {
