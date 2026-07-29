@@ -906,8 +906,16 @@ tbody tr:last-child td { border-bottom: none; }
     </div>
   </div>
 </section>
+      
       <section id="reports" class="section">
-       <!-- Header removed -->
+        <div class="print-report-header" style="display: flex; flex-direction: column; align-items: center;">
+    <!-- <img src="logo.png" ... />  <-- You can leave this commented out if you don't want the logo -->
+    <!-- <h2>PAUMOVision...</h2>   <-- You can leave this commented out too -->
+    
+    <!-- KEEP THESE TWO LINES so the JavaScript doesn't crash -->
+    <p id="print-report-period" style="font-weight: bold; margin-top: 10px;"></p>
+    <p id="print-generated-at"></p>
+  </div>
         <div class="mb-6">
           <h1>Reports</h1>
           <p class="text-muted">View real-time records and Facebook performance, generate filtered reports, export to Excel, or print an official copy. Records are automatically arranged from newest to oldest.</p>
@@ -3303,8 +3311,16 @@ function renderReportTable() {
 }
 
 function updatePrintMetadata() {
-  $('print-report-period').textContent = `Reporting Period: ${getReportPeriodLabel()}`;
-  $('print-generated-at').textContent = `Generated on ${new Intl.DateTimeFormat('en-PH', { dateStyle: 'long', timeStyle: 'short' }).format(new Date())}`;
+ const periodEl = $('print-report-period');
+  const generatedEl = $('print-generated-at');
+  
+  if (periodEl) {
+    periodEl.textContent = `Reporting Period: ${getReportPeriodLabel()}`;
+  }
+  
+  if (generatedEl) {
+    generatedEl.textContent = `Generated on ${new Intl.DateTimeFormat('en-PH', { dateStyle: 'long', timeStyle: 'short' }).format(new Date())}`;
+  }
 }
 
 $('filter-report-btn').addEventListener('click', () => {
