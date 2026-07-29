@@ -573,9 +573,10 @@ tbody tr:last-child td { border-bottom: none; }
       <i class="fas fa-chevron-down dropdown-icon" aria-hidden="true"></i>
     </button>
     <div id="records-dropdown" class="dropdown-menu hidden">
-      <button class="nav-item dropdown-item" data-section="movs" type="button">
-        <i class="fas fa-folder-open" aria-hidden="true"></i> MOVs Record
-      </button>
+      <!-- In Records dropdown (change data-section to "movs-records") -->
+		<button class="nav-item dropdown-item" data-section="movs-records" type="button">
+		  <i class="fas fa-folder-open" aria-hidden="true"></i> MOVs Record
+		</button>
       <button class="nav-item dropdown-item" data-section="feedback" type="button">
         <i class="fas fa-clipboard-list" aria-hidden="true"></i> IECA Records
       </button>
@@ -739,8 +740,8 @@ tbody tr:last-child td { border-bottom: none; }
 </div>
       </section>
 
-      <!-- ========================================== -->
-<!-- 1. MOV RECORDS SECTION (Complete & Closed) -->
+    <!-- ========================================== -->
+<!-- 1. MOV RECORDS SECTION (Complete)          -->
 <!-- ========================================== -->
 <section id="movs" class="section">
     <div class="section-header flex justify-between items-center mb-6">
@@ -753,19 +754,20 @@ tbody tr:last-child td { border-bottom: none; }
         </div>
     </div>
     
+    <!-- Filter Bar (Fixed Structure) -->
     <div class="card mb-4">
         <div class="filter-bar">
             <div>
                 <label for="movs-filter-type">Output type</label>
                 <select id="movs-filter-type"></select>
             </div>
-          <div id="record-scope-wrap">
-            <label for="record-scope">Record scope</label>
-            <select id="record-scope">
-              <option value="active">Active Records</option>
-              <option value="archived">Archived Records</option>
-            </select>
-          </div>
+            <div id="record-scope-wrap">
+                <label for="record-scope">Record scope</label>
+                <select id="record-scope">
+                    <option value="active">Active Records</option>
+                    <option value="archived">Archived Records</option>
+                </select>
+            </div>
             <div>
                 <label for="global-search">Search</label>
                 <input type="search" id="global-search" placeholder="Title, activity, output type, remarks..." />
@@ -773,6 +775,7 @@ tbody tr:last-child td { border-bottom: none; }
         </div>
     </div>
     
+    <!-- Records Table -->
     <div class="card" style="padding:0;">
         <div class="table-wrapper" style="border:none;">
             <table id="movs-table">
@@ -799,69 +802,57 @@ tbody tr:last-child td { border-bottom: none; }
             <i class="fas fa-box-archive" aria-hidden="true"></i> Archive Selected
         </button>
     </div>
-	<!-- Add/Edit MOV Record Form -->
-<div id="add-mov-section" class="card" style="margin-top: 2rem;">
-  <div class="flex justify-between items-center mb-4 flex-wrap gap-3">
-    <div>
-      <h3 id="form-title" class="text-sm font-semibold">Add New MOV Record</h3>
-      <p class="text-muted">All records refer to outputs already posted through the official Public Affairs Unit Facebook page. Enter the latest available post insights. Fields marked with an asterisk are required.</p>
-    </div>
-    <span id="edit-indicator" class="badge edit-badge hidden">Editing existing record</span>
-  </div>
-  
-  <div class="form-grid">
-    <div>
-      <label for="input-date">Date produced *</label>
-      <input type="date" id="input-date" />
-    </div>
-    <div>
-      <label for="input-type">Output type *</label>
-      <select id="input-type"></select>
-    </div>
-    <div class="form-wide">
-      <label for="input-activity">Activity / Program / KRA</label>
-      <input type="text" id="input-activity" maxlength="180" placeholder="Related activity, program, target, or performance indicator" />
-    </div>
-    <div class="form-wide">
-      <label for="input-title">Title / Details *</label>
-      <input type="text" id="input-title" maxlength="300" placeholder="Enter the title or description of the output" />
-    </div>
-    <div class="form-wide">
-      <label for="input-link">MOV link</label>
-      <input type="url" id="input-link" maxlength="1000" placeholder="https://..." />
-    </div>
-    <div>
-      <label for="input-reach">Reach</label>
-      <input type="number" id="input-reach" min="0" step="1" inputmode="numeric" value="0" placeholder="0" />
-    </div>
-    <div>
-      <label for="input-reactions">Reactions</label>
-      <input type="number" id="input-reactions" min="0" step="1" inputmode="numeric" value="0" placeholder="0" />
-    </div>
-    <div>
-      <label for="input-shares">Shares</label>
-      <input type="number" id="input-shares" min="0" step="1" inputmode="numeric" value="0" placeholder="0" />
-    </div>
-    <div class="form-wide">
-      <label for="input-remarks">Remarks</label>
-      <textarea id="input-remarks" maxlength="600" placeholder="Optional notes or additional information"></textarea>
-    </div>
-  </div>
-  
-  <div class="flex gap-2 mt-4 justify-end flex-wrap no-print">
-    <label id="import-label" for="upload-excel" class="btn btn-outline h-9" style="cursor:pointer;">
-      <i class="fas fa-file-excel" aria-hidden="true"></i> Import Excel
-    </label>
-    <input type="file" id="upload-excel" accept=".xlsx,.xls" class="hidden" />
-    <button id="cancel-edit" class="btn btn-outline h-9 hidden" type="button">Cancel Edit</button>
-    <button id="add-mov" class="btn btn-gold h-9" type="button">
-      <i class="fas fa-floppy-disk" aria-hidden="true"></i> Save Record
-    </button>
-  </div>
 </div>
-</section> <!-- END OF MOVS SECTION -->
+</section>
 
+<!-- ========================================== -->
+<!-- MOVs RECORDS - READ-ONLY VIEW              -->
+<!-- ========================================== -->
+<section id="movs-records" class="section">
+  <div class="section-header flex justify-between items-center mb-6">
+    <div>
+      <h1>MOVs Record</h1>
+      <p class="text-muted">Read-only archive of all MOV entries. Use Inputs &gt; MOVs to add or edit records.</p>
+    </div>
+    <div class="section-actions flex gap-2">
+      <span id="movs-record-count" class="record-count items-center flex"></span>
+    </div>
+  </div>
 
+  <div class="card mb-4">
+    <div class="filter-bar">
+      <div>
+        <label for="movs-record-filter-type">Output type</label>
+        <select id="movs-record-filter-type"></select>
+      </div>
+      <div>
+        <label for="movs-record-search">Search</label>
+        <input type="search" id="movs-record-search" placeholder="Title, activity, output type, remarks..." />
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="padding:0;">
+    <div class="table-wrapper" style="border:none;">
+      <table id="movs-records-table">
+        <thead>
+          <tr>
+            <th class="sortable" data-sort="date">Date <i class="fas fa-sort" aria-hidden="true"></i></th>
+            <th class="sortable" data-sort="type">Type <i class="fas fa-sort" aria-hidden="true"></i></th>
+            <th class="sortable" data-sort="title">Title / Details <i class="fas fa-sort" aria-hidden="true"></i></th>
+            <th class="sortable" data-sort="reach">Reach <i class="fas fa-sort" aria-hidden="true"></i></th>
+            <th class="sortable" data-sort="reactions">Reactions <i class="fas fa-sort" aria-hidden="true"></i></th>
+            <th class="sortable" data-sort="shares">Shares <i class="fas fa-sort" aria-hidden="true"></i></th>
+            <th>Link</th>
+            <th>Remarks</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+		
 <!-- ========================================== -->
 <!-- 2. CLIENT FEEDBACK SECTION (Now a Sibling) -->
 <!-- ========================================== -->
@@ -1742,6 +1733,7 @@ function initializeSelectOptions() {
   $('input-type').innerHTML = typeOptions;
   $('movs-filter-type').innerHTML = `<option value="all">All Types</option>${typeOptions}`;
   $('filter-report-type').innerHTML = `<option value="all">All Types</option>${typeOptions}`;
+  $('movs-record-filter-type').innerHTML = `<option value="all">All Types</option>${typeOptions}`; // NEW
 }
 
 // -----------------------------------------------------------------------------
@@ -1840,39 +1832,38 @@ auth.onAuthStateChanged(async (user) => {
 });
 
 function applyPermissionUI() {
-	const isAdmin = currentProfile.role === 'admin';
-	
-	// ✅ FIX: Use data-section selectors for the new dropdown navbar
-	const navMovsBtn = document.querySelector('.nav-item[data-section="movs"]');
-	const navLoginBtn = document.querySelector('.nav-item[data-section="login-activity"]');
-	
-	if (navMovsBtn) navMovsBtn.classList.toggle('hidden', !isAdmin);
-	if (navLoginBtn) navLoginBtn.classList.toggle('hidden', !isAdmin);
-	// ----------------------------------------------------------------
-
-	// Viewer accounts see only the live Dashboard and Reports.
-	$('add-mov-section').classList.toggle('hidden', !isAdmin);
-	$('import-label').classList.toggle('hidden', !isAdmin);
-	$('record-scope-wrap').classList.toggle('hidden', !isAdmin);
-	
-	// These actions are available to both approved roles.
-	$('print-dashboard-btn').classList.toggle('hidden', !can('print'));
-	$('print-report-btn').classList.toggle('hidden', !can('print'));
-	$('export-report-btn').classList.toggle('hidden', !can('export'));
-	
-	if (!isAdmin) {
-		resetForm();
-		// Safely check if restricted sections are active before switching
-		const movsSection = $('movs');
-		const loginSection = $('login-activity');
-		const isOnRestrictedSection = 
-			(movsSection && movsSection.classList.contains('active')) || 
-			(loginSection && loginSection.classList.contains('active'));
-			
-		if (isOnRestrictedSection) {
-			switchSection('dashboard');
-		}
-	}
+  const isAdmin = currentProfile.role === 'admin';
+  
+  // ✅ FIX: Use data-section selectors for the new dropdown navbar
+  // Hide "Inputs > MOVs" for viewers (admin only - has the form)
+  const navMovsInputBtn = document.querySelector('#inputs-dropdown .nav-item[data-section="movs"]');
+  const navLoginBtn = document.querySelector('.nav-item[data-section="login-activity"]');
+  
+  if (navMovsInputBtn) navMovsInputBtn.classList.toggle('hidden', !isAdmin);
+  if (navLoginBtn) navLoginBtn.classList.toggle('hidden', !isAdmin);
+  
+  // Viewer accounts see only the live Dashboard and Reports.
+  $('add-mov-section').classList.toggle('hidden', !isAdmin);
+  $('import-label').classList.toggle('hidden', !isAdmin);
+  $('record-scope-wrap').classList.toggle('hidden', !isAdmin);
+  
+  // These actions are available to both approved roles.
+  $('print-dashboard-btn').classList.toggle('hidden', !can('print'));
+  $('print-report-btn').classList.toggle('hidden', !can('print'));
+  $('export-report-btn').classList.toggle('hidden', !can('export'));
+  
+  if (!isAdmin) {
+    resetForm();
+    // Safely check if restricted sections are active before switching
+    const movsSection = $('movs');
+    const loginSection = $('login-activity');
+    const isOnRestrictedSection =
+      (movsSection && movsSection.classList.contains('active')) ||
+      (loginSection && loginSection.classList.contains('active'));
+    if (isOnRestrictedSection) {
+      switchSection('dashboard');
+    }
+  }
 }
 
 // -----------------------------------------------------------------------------
@@ -2169,6 +2160,92 @@ function populateYearDropdowns() {
       : String(currentYear);
   }
 }
+
+function renderMovsRecordsTable() {
+  const search = safeLower($('movs-record-search').value);
+  const type = $('movs-record-filter-type').value;
+  
+  // Only show active records (no archived)
+  const filtered = movsData.filter(record => {
+    const haystack = [record.title, record.activity, record.type, record.remarks]
+      .map(safeLower)
+      .join(' ');
+    return (!search || haystack.includes(search)) && (type === 'all' || record.type === type);
+  });
+  
+  const tbody = document.querySelector('#movs-records-table tbody');
+  tbody.replaceChildren();
+  
+  $('movs-record-count').textContent = `${filtered.length} visible record${filtered.length === 1 ? '' : 's'}`;
+  
+  if (!filtered.length) {
+    const row = document.createElement('tr');
+    const cell = document.createElement('td');
+    cell.colSpan = 8;
+    cell.className = 'empty-state';
+    cell.textContent = 'No active records matched the selected filters.';
+    row.appendChild(cell);
+    tbody.appendChild(row);
+    return;
+  }
+  
+  filtered.forEach(record => {
+    const row = document.createElement('tr');
+    const typeCell = document.createElement('td');
+    const typeBadge = createBadge(record.type || 'Uncategorized');
+    const config = CONFIG[record.type];
+    if (config) {
+      typeBadge.style.background = `${config.color}18`;
+      typeBadge.style.color = config.color;
+    }
+    typeCell.appendChild(typeBadge);
+    
+    const titleCell = document.createElement('td');
+    const title = document.createElement('div');
+    title.className = 'font-semibold';
+    title.textContent = record.title || '-';
+    titleCell.appendChild(title);
+    if (record.activity) {
+      const activity = document.createElement('div');
+      activity.className = 'text-muted';
+      activity.style.marginTop = '0.3rem';
+      activity.textContent = record.activity;
+      titleCell.appendChild(activity);
+    }
+    
+    const linkCell = document.createElement('td');
+    const safeUrl = getSafeUrl(record.link);
+    if (safeUrl) {
+      const link = document.createElement('a');
+      link.href = safeUrl;
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      link.className = 'btn btn-ghost h-8';
+      link.style.color = 'var(--primary)';
+      link.innerHTML = '<i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i> View';
+      linkCell.appendChild(link);
+    } else {
+      linkCell.textContent = '-';
+    }
+    
+    row.append(
+      createCell(formatDisplayDate(record.date || record.sortDate)),
+      typeCell,
+      titleCell,
+      createMetricCell(record.reach),
+      createMetricCell(record.reactions),
+      createMetricCell(record.shares),
+      linkCell,
+      createCell(record.remarks || '-')
+    );
+    tbody.appendChild(row);
+  });
+}
+
+// Event listeners for the new read-only table filters
+['movs-record-search', 'movs-record-filter-type'].forEach(id => {
+  $(id)?.addEventListener(id === 'movs-record-search' ? 'input' : 'change', renderMovsRecordsTable);
+});
 
 // -----------------------------------------------------------------------------
 // 6. DASHBOARD
@@ -4059,35 +4136,6 @@ document.querySelectorAll('.mqd-input').forEach((input, index, inputs) => {
 // NAVIGATION - FINAL VERSION
 // =============================================================================
 function switchSection(sectionId) {
-  try {
-    if (sectionId === 'login-activity' && !can('viewLoginActivity')) {
-      return showToast('Only the PAU Administrator may view login activity.', 'error');
-    }
-    
-    // Update active nav button
-    document.querySelectorAll('.nav-item').forEach(item => {
-      item.classList.toggle('active', item.dataset.section === sectionId);
-    });
-    
-    // Show/hide sections
-    document.querySelectorAll('.section').forEach(section => {
-      section.classList.toggle('active', section.id === sectionId);
-    });
-    
-    // Load section-specific data
-    if (sectionId === 'reports') generateReport();
-    if (sectionId === 'movs') renderMovsTable();
-    if (sectionId === 'login-activity') renderLoginActivityTable();
-    if (sectionId === 'feedback') renderFeedbackTable();
-    if (sectionId === 'metrics') renderMetricsTable(); // ✅ Added Metrics handler
-    
-    // Scroll to top
-    document.querySelector('.content')?.scrollTo({ top: 0, behavior: 'smooth' });
-  } catch (error) {
-    console.error('Error switching section:', error);
-    showToast('Error navigating to section: ' + error.message, 'error');
-  }
-}
 
 // Attach event listeners to nav buttons (IMMEDIATELY, not waiting for DOMContentLoaded)
 (function attachNavListeners() {
