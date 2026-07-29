@@ -1141,11 +1141,6 @@ tbody tr:last-child td { border-bottom: none; }
             </table>
           </div>
         </div>
-
-        <div class="signature-grid">
-          <div><div class="signature-line">Prepared by</div></div>
-          <div><div class="signature-line">Reviewed by</div></div>
-        </div>
 		  
 <!-- ========================================== -->
   <!-- FORMAL IECA M&E REPORT GENERATOR           -->
@@ -4084,35 +4079,41 @@ function switchSection(sectionId) {
     if (sectionId === 'login-activity' && !can('viewLoginActivity')) {
       return showToast('Only the PAU Administrator may view login activity.', 'error');
     }
-    // Update active nav button
+    
+    // ✅ FIX: Update active nav button logic
     document.querySelectorAll('.nav-item').forEach(item => {
+      const isDropdown = item.classList.contains('dropdown-item');
+      // Count how many buttons share this section ID
+      const itemsWithSameSection = document.querySelectorAll(`.nav-item[data-section="${sectionId}"]`);
+      
+      // If there are multiple buttons for this section (e.g., MOVs Report & IECA Report), 
+      // do NOT force 'active' on all of them here. The click handler manages it.
+      if (isDropdown && itemsWithSameSection.length > 1) {
+        return; 
+      }
+      
       item.classList.toggle('active', item.dataset.section === sectionId);
     });
+
     // Show/hide sections
     document.querySelectorAll('.section').forEach(section => {
       section.classList.toggle('active', section.id === sectionId);
     });
+    
     // Load section-specific data
     if (sectionId === 'reports') generateReport();
-        if (sectionId === 'movs') renderMovsTable(); // Admin Table
-        if (sectionId === 'mov-input') resetForm(); // Reset form when entering input section
-        if (sectionId === 'login-activity') renderLoginActivityTable();
-         if (sectionId === 'feedback-input') {
-            // Just show the form, maybe reset it if needed
-            resetFeedbackForm(); 
-        }
-        if (sectionId === 'ieca-records') {
-            renderFeedbackTable(); // Load the table data
-        }
-        if (sectionId === 'metrics') renderMetricsTable();
-        // Scroll to top
-        document.querySelector('.content')?.scrollTo({ top: 0, behavior: 'smooth' });
-    } catch (error) {
-        console.error('Error switching section:', error);
-        showToast('Error navigating to section: ' + error.message, 'error');
-    }
+    if (sectionId === 'movs') renderMovsTable();
+    if (sectionId === 'login-activity') renderLoginActivityTable();
+    if (sectionId === 'feedback') renderFeedbackTable();
+    if (sectionId === 'metrics') renderMetricsTable();
+    
+    // Scroll to top
+    document.querySelector('.content')?.scrollTo({ top: 0, behavior: 'smooth' });
+  } catch (error) {
+    console.error('Error switching section:', error);
+    showToast('Error navigating to section: ' + error.message, 'error');
+  }
 }
-
 // Attach event listeners to nav buttons (IMMEDIATELY, not waiting for DOMContentLoaded)
 (function attachNavListeners() {
   const navButtons = document.querySelectorAll('.nav-item');
