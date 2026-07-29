@@ -1264,7 +1264,6 @@ tbody tr:last-child td { border-bottom: none; }
 
  <script>
 'use strict';
-
 // Polyfill for older browsers (NOW safely inside the script tag)
 if (typeof Object.hasOwn !== 'function') {
   Object.hasOwn = function(obj, prop) {
@@ -4502,6 +4501,7 @@ function applyReportFilter(type) {
   $('ieca-report-output').classList.add('hidden');
   
   generateReport();
+	});
 }
 </script>
 </body>
