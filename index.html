@@ -875,55 +875,6 @@ tbody tr:last-child td { border-bottom: none; }
         </div>
     </div>
 </section>
-		
-<!-- ========================================== -->
-<!-- MOVs RECORDS - READ-ONLY VIEW              -->
-<!-- ========================================== -->
-<section id="movs-records" class="section">
-  <div class="section-header flex justify-between items-center mb-6">
-    <div>
-      <h1>MOVs Record</h1>
-      <p class="text-muted">Read-only archive of all MOV entries. Use Inputs &gt; MOVs to add or edit records.</p>
-    </div>
-    <div class="section-actions flex gap-2">
-      <span id="movs-record-count" class="record-count items-center flex"></span>
-    </div>
-  </div>
-
-  <div class="card mb-4">
-    <div class="filter-bar">
-      <div>
-        <label for="movs-record-filter-type">Output type</label>
-        <select id="movs-record-filter-type"></select>
-      </div>
-      <div>
-        <label for="movs-record-search">Search</label>
-        <input type="search" id="movs-record-search" placeholder="Title, activity, output type, remarks..." />
-      </div>
-    </div>
-  </div>
-
-  <div class="card" style="padding:0;">
-    <div class="table-wrapper" style="border:none;">
-      <table id="movs-records-table">
-        <thead>
-          <tr>
-            <th class="sortable" data-sort="date">Date <i class="fas fa-sort" aria-hidden="true"></i></th>
-            <th class="sortable" data-sort="type">Type <i class="fas fa-sort" aria-hidden="true"></i></th>
-            <th class="sortable" data-sort="title">Title / Details <i class="fas fa-sort" aria-hidden="true"></i></th>
-            <th class="sortable" data-sort="reach">Reach <i class="fas fa-sort" aria-hidden="true"></i></th>
-            <th class="sortable" data-sort="reactions">Reactions <i class="fas fa-sort" aria-hidden="true"></i></th>
-            <th class="sortable" data-sort="shares">Shares <i class="fas fa-sort" aria-hidden="true"></i></th>
-            <th>Link</th>
-            <th>Remarks</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
-  </div>
-</section>
-		
 <!-- ========================================== -->
 <!-- 2. CLIENT FEEDBACK INPUT (Form Only)       -->
 <!-- ========================================== -->
