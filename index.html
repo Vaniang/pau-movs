@@ -528,23 +528,24 @@ tbody tr:last-child td { border-bottom: none; }
   </button>
   
   <!-- INPUTS (Dropdown) -->
-  <div class="nav-dropdown">
+ <div class="nav-dropdown">
     <button class="nav-item dropdown-toggle" type="button" onclick="toggleDropdown('inputs-dropdown')">
-      <i class="fas fa-folder-plus" aria-hidden="true"></i> Inputs
-      <i class="fas fa-chevron-down dropdown-icon" aria-hidden="true"></i>
+        <i class="fas fa-folder-plus" aria-hidden="true"></i> Inputs
+        <i class="fas fa-chevron-down dropdown-icon" aria-hidden="true"></i>
     </button>
     <div id="inputs-dropdown" class="dropdown-menu hidden">
-      <button class="nav-item dropdown-item" data-section="movs" type="button">
-        <i class="fas fa-file-video" aria-hidden="true"></i> MOVs
-      </button>
-      <button class="nav-item dropdown-item" data-section="feedback" type="button">
-        <i class="fas fa-clipboard-check" aria-hidden="true"></i> Client Feedback
-      </button>
-      <button class="nav-item dropdown-item" data-section="omrm-inputs" type="button">
-        <i class="fas fa-tasks" aria-hidden="true"></i> OM/RM
-      </button>
+        <!-- Changed data-section to mov-input -->
+        <button class="nav-item dropdown-item" data-section="mov-input" type="button">
+            <i class="fas fa-file-video" aria-hidden="true"></i> MOVs
+        </button>
+        <button class="nav-item dropdown-item" data-section="feedback" type="button">
+            <i class="fas fa-clipboard-check" aria-hidden="true"></i> Client Feedback
+        </button>
+        <button class="nav-item dropdown-item" data-section="omrm-inputs" type="button">
+            <i class="fas fa-tasks" aria-hidden="true"></i> OM/RM
+        </button>
     </div>
-  </div>
+</div>
   
   <!-- REPORTS (Dropdown) -->
   <div class="nav-dropdown">
@@ -566,28 +567,32 @@ tbody tr:last-child td { border-bottom: none; }
     </div>
   </div>
   
-  <!-- RECORDS (Dropdown) -->
-  <div class="nav-dropdown">
+ <!-- RECORDS Dropdown -->
+<div class="nav-dropdown">
     <button class="nav-item dropdown-toggle" type="button" onclick="toggleDropdown('records-dropdown')">
-      <i class="fas fa-database" aria-hidden="true"></i> Records
-      <i class="fas fa-chevron-down dropdown-icon" aria-hidden="true"></i>
+        <i class="fas fa-database" aria-hidden="true"></i> Records
+        <i class="fas fa-chevron-down dropdown-icon" aria-hidden="true"></i>
     </button>
     <div id="records-dropdown" class="dropdown-menu hidden">
-      <!-- In Records dropdown (change data-section to "movs-records") -->
-		<button class="nav-item dropdown-item" data-section="movs-records" type="button">
-		  <i class="fas fa-folder-open" aria-hidden="true"></i> MOVs Record
+        <!-- New Item for Admin Table -->
+        <button class="nav-item dropdown-item" data-section="movs" type="button">
+            <i class="fas fa-folder-open" aria-hidden="true"></i> MOVs (Admin)
+        </button>
+        <!-- Existing Item for Read-Only -->
+        <button class="nav-item dropdown-item" data-section="movs-records" type="button">
+            <i class="fas fa-folder-open" aria-hidden="true"></i> MOVs Record
+        </button>
+        <button class="nav-item dropdown-item" data-section="ieca-records" type="button">
+		  <i class="fas fa-clipboard-list" aria-hidden="true"></i> IECA Records
 		</button>
-     <button class="nav-item dropdown-item" data-section="ieca-records" type="button">
-	  <i class="fas fa-clipboard-list" aria-hidden="true"></i> IECA Records
-	</button>
-      <button class="nav-item dropdown-item" data-section="omrm-records" type="button">
-        <i class="fas fa-folder" aria-hidden="true"></i> OM/RM Records
-      </button>
-      <button class="nav-item dropdown-item" data-section="metrics" type="button">
-        <i class="fas fa-chart-line" aria-hidden="true"></i> External Metrics Records
-      </button>
+        <button class="nav-item dropdown-item" data-section="omrm-records" type="button">
+            <i class="fas fa-folder" aria-hidden="true"></i> OM/RM Records
+        </button>
+        <button class="nav-item dropdown-item" data-section="metrics" type="button">
+            <i class="fas fa-chart-line" aria-hidden="true"></i> External Metrics Records
+        </button>
     </div>
-  </div>
+</div>
   
   <!-- LOGIN ACTIVITY -->
   <button class="nav-item" data-section="login-activity" type="button">
@@ -740,9 +745,7 @@ tbody tr:last-child td { border-bottom: none; }
 </div>
       </section>
 
-<!-- ========================================== -->
-<!-- 1. MOV RECORDS SECTION (Complete & Fixed)  -->
-<!-- ========================================== -->
+<!-- 1. MOV RECORDS SECTION (Admin Table Only) -->
 <section id="movs" class="section">
     <div class="section-header flex justify-between items-center mb-6">
         <div>
@@ -753,7 +756,6 @@ tbody tr:last-child td { border-bottom: none; }
             <span id="mov-record-count" class="record-count items-center flex"></span>
         </div>
     </div>
-    
     <!-- Filter Bar -->
     <div class="card mb-4">
         <div class="filter-bar">
@@ -774,7 +776,6 @@ tbody tr:last-child td { border-bottom: none; }
             </div>
         </div>
     </div>
-    
     <!-- Records Table -->
     <div class="card" style="padding:0;">
         <div class="table-wrapper" style="border:none;">
@@ -796,16 +797,27 @@ tbody tr:last-child td { border-bottom: none; }
             </table>
         </div>
     </div>
-    
     <div class="flex justify-end mt-4 no-print">
         <button id="bulk-action-btn" class="btn btn-destructive h-9" type="button">
             <i class="fas fa-box-archive" aria-hidden="true"></i> Archive Selected
         </button>
     </div>
+</section> <!-- END OF MOVS SECTION (Table Only) -->
 
-    <!-- ✅ ADD/EDIT FORM (Restored and properly placed inside the section) -->
-    <div id="add-mov-section" class="card" style="margin-top: 2rem;">
-        <div class="flex justify-between items-center mb-4 flex-wrap gap-3">
+<!-- NEW SECTION: MOV INPUT (Form Only) -->
+<section id="mov-input" class="section">
+    <div class="section-header flex justify-between items-center mb-6">
+        <div>
+            <h1>Add New MOV Record</h1>
+            <p class="text-muted">Enter details for outputs posted through the official Public Affairs Unit Facebook page.</p>
+        </div>
+    </div>
+    
+    <!-- Move the Form Here -->
+    <div id="add-mov-section" class="card">
+        <!-- (Paste the entire <div id="add-mov-section"> content from the original #movs section here) -->
+        <!-- Ensure the ID "add-mov-section" is kept so the JS works -->
+         <div class="flex justify-between items-center mb-4 flex-wrap gap-3">
             <div>
                 <h3 id="form-title" class="text-sm font-semibold">Add New MOV Record</h3>
                 <p class="text-muted">All records refer to outputs already posted through the official Public Affairs Unit Facebook page. Enter the latest available post insights. Fields marked with an asterisk are required.</p>
@@ -821,7 +833,8 @@ tbody tr:last-child td { border-bottom: none; }
                 <label for="input-type">Output type *</label>
                 <select id="input-type"></select>
             </div>
-            <div class="form-wide">
+            <!-- ... (Rest of the form fields) ... -->
+             <div class="form-wide">
                 <label for="input-activity">Activity / Program / KRA</label>
                 <input type="text" id="input-activity" maxlength="180" placeholder="Related activity, program, target, or performance indicator" />
             </div>
@@ -862,7 +875,7 @@ tbody tr:last-child td { border-bottom: none; }
         </div>
     </div>
 </section>
-
+		
 <!-- ========================================== -->
 <!-- MOVs RECORDS - READ-ONLY VIEW              -->
 <!-- ========================================== -->
@@ -912,9 +925,9 @@ tbody tr:last-child td { border-bottom: none; }
 </section>
 		
 <!-- ========================================== -->
-<!-- 2. CLIENT FEEDBACK SECTION (Now a Sibling) -->
+<!-- 2. CLIENT FEEDBACK INPUT (Form Only)       -->
 <!-- ========================================== -->
-<section id="feedback" class="section">
+<section id="feedback-input" class="section">
     <div class="section-header flex justify-between items-center mb-6">
         <div>
             <h1>Client Feedback (MQD)</h1>
@@ -922,8 +935,9 @@ tbody tr:last-child td { border-bottom: none; }
         </div>
     </div>
     
-   <div class="card mb-6">  <!-- Add 'hidden' class here -->
-  		<form id="feedback-form">
+    <!-- The Form Card (Removed 'hidden' class so it shows here) -->
+    <div class="card mb-6">
+        <form id="feedback-form">
             <input type="hidden" id="feedback-id" />
             <div class="form-grid">
                 <div>
@@ -1017,6 +1031,18 @@ tbody tr:last-child td { border-bottom: none; }
             </div>
         </form>
     </div>
+</section>
+
+<!-- ========================================== -->
+<!-- 3. IECA RECORDS (Table Only)               -->
+<!-- ========================================== -->
+<section id="ieca-records" class="section">
+    <div class="section-header flex justify-between items-center mb-6">
+        <div>
+            <h1>IECA Records</h1>
+            <p class="text-muted">Archive of all encoded Client Feedback (MQD) records.</p>
+        </div>
+    </div>
     
     <div class="card" style="padding: 0;">
         <div class="table-wrapper" style="border: none;">
@@ -1038,7 +1064,7 @@ tbody tr:last-child td { border-bottom: none; }
             </table>
         </div>
     </div>
-</section> <!-- END OF FEEDBACK SECTION -->
+</section>
 
 		<!-- ========================================== -->
 <!-- IECA RECORDS - READ-ONLY VIEW              -->
@@ -1924,12 +1950,15 @@ function applyPermissionUI() {
   
   // ✅ FIX: Use data-section selectors for the new dropdown navbar
   // Hide "Inputs > MOVs" for viewers (admin only - has the form)
-  const navMovsInputBtn = document.querySelector('#inputs-dropdown .nav-item[data-section="movs"]');
-  const navLoginBtn = document.querySelector('.nav-item[data-section="login-activity"]');
-  
-  if (navMovsInputBtn) navMovsInputBtn.classList.toggle('hidden', !isAdmin);
-  if (navLoginBtn) navLoginBtn.classList.toggle('hidden', !isAdmin);
-  
+const navMovsInputBtn = document.querySelector('#inputs-dropdown .nav-item[data-section="mov-input"]');
+if (navMovsInputBtn) navMovsInputBtn.classLis
+	
+const navLoginBtn = document.querySelector('.nav-item[data-section="login-activity"]');
+if (navLoginBtn) navLoginBtn.classList.toggle('hidden', !isAdmin);
+
+const navMovsAdminBtn = document.querySelector('#records-dropdown .nav-item[data-section="movs"]');
+if (navMovsAdminBtn) navMovsAdminBtn.classList.toggle('hidden', !isAdmin);
+
   // Viewer accounts see only the live Dashboard and Reports.
   $('add-mov-section').classList.toggle('hidden', !isAdmin);
   $('import-label').classList.toggle('hidden', !isAdmin);
@@ -4243,23 +4272,24 @@ function switchSection(sectionId) {
     });
     // Load section-specific data
     if (sectionId === 'reports') generateReport();
-	  if (sectionId === 'movs') renderMovsTable();
-	  if (sectionId === 'movs-records') renderMovsRecordsTable();
-	  if (sectionId === 'feedback') {
-	    renderFeedbackTable();
-	    // Ensure the form is visible when navigating via Inputs
-	    const formCard = $('feedback-form')?.closest('.card');
-	    if (formCard) formCard.classList.remove('hidden'); 
-	  }
-	  if (sectionId === 'ieca-records') renderIECARecordsTable(); // NEW
-	  if (sectionId === 'login-activity') renderLoginActivityTable();
-	  if (sectionId === 'metrics') renderMetricsTable();
-    // Scroll to top
-    document.querySelector('.content')?.scrollTo({ top: 0, behavior: 'smooth' });
-  } catch (error) {
-    console.error('Error switching section:', error);
-    showToast('Error navigating to section: ' + error.message, 'error');
-  }
+        if (sectionId === 'movs') renderMovsTable(); // Admin Table
+        if (sectionId === 'movs-records') renderMovsRecordsTable(); // Read-Only Table (Added this line)
+        if (sectionId === 'mov-input') resetForm(); // Reset form when entering input section
+        if (sectionId === 'login-activity') renderLoginActivityTable();
+         if (sectionId === 'feedback-input') {
+            // Just show the form, maybe reset it if needed
+            resetFeedbackForm(); 
+        }
+        if (sectionId === 'ieca-records') {
+            renderFeedbackTable(); // Load the table data
+        }
+        if (sectionId === 'metrics') renderMetricsTable();
+        // Scroll to top
+        document.querySelector('.content')?.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (error) {
+        console.error('Error switching section:', error);
+        showToast('Error navigating to section: ' + error.message, 'error');
+    }
 }
 
 // Attach event listeners to nav buttons (IMMEDIATELY, not waiting for DOMContentLoaded)
