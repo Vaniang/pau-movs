@@ -4135,6 +4135,32 @@ document.querySelectorAll('.mqd-input').forEach((input, index, inputs) => {
 // NAVIGATION - FINAL VERSION
 // =============================================================================
 function switchSection(sectionId) {
+  try {
+    if (sectionId === 'login-activity' && !can('viewLoginActivity')) {
+      return showToast('Only the PAU Administrator may view login activity.', 'error');
+    }
+    // Update active nav button
+    document.querySelectorAll('.nav-item').forEach(item => {
+      item.classList.toggle('active', item.dataset.section === sectionId);
+    });
+    // Show/hide sections
+    document.querySelectorAll('.section').forEach(section => {
+      section.classList.toggle('active', section.id === sectionId);
+    });
+    // Load section-specific data
+    if (sectionId === 'reports') generateReport();
+    if (sectionId === 'movs') renderMovsTable();
+    if (sectionId === 'movs-records') renderMovsRecordsTable();
+    if (sectionId === 'login-activity') renderLoginActivityTable();
+    if (sectionId === 'feedback') renderFeedbackTable();
+    if (sectionId === 'metrics') renderMetricsTable();
+    // Scroll to top
+    document.querySelector('.content')?.scrollTo({ top: 0, behavior: 'smooth' });
+  } catch (error) {
+    console.error('Error switching section:', error);
+    showToast('Error navigating to section: ' + error.message, 'error');
+  }
+}
 
 // Attach event listeners to nav buttons (IMMEDIATELY, not waiting for DOMContentLoaded)
 (function attachNavListeners() {
@@ -4501,7 +4527,7 @@ function applyReportFilter(type) {
   $('ieca-report-output').classList.add('hidden');
   
   generateReport();
-});
+}
 </script>
 </body>
 </html>
