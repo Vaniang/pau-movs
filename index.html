@@ -2010,6 +2010,7 @@ auth.onAuthStateChanged(async (user) => {
     startSessionTimers();
     if (currentProfile.role === 'admin') listenToLoginActivity();
     listenToMovs();
+	listenToOMRM();
   } catch (error) {
     console.error(error);
     const message = error.message || 'Your user profile could not be loaded.';
@@ -4286,29 +4287,30 @@ function switchSection(sectionId) {
 }
 // Attach event listeners to nav buttons (IMMEDIATELY, not waiting for DOMContentLoaded)
 (function attachNavListeners() {
-  const navButtons = document.querySelectorAll('.nav-item');
-  console.log(`Found ${navButtons.length} navigation buttons`);
+  // ✅ FIX: Only target top-level nav items that have a data-section attribute.
+  // We explicitly exclude .dropdown-toggle (no data-section) and .dropdown-item 
+  // (because they are already handled perfectly by the global document click listener below).
+  const navButtons = document.querySelectorAll('.nav-item[data-section]:not(.dropdown-toggle):not(.dropdown-item)');
+  console.log(`Found ${navButtons.length} top-level navigation buttons`);
   
-  navButtons.forEach((item, index) => {
-    if (item) {
-      item.addEventListener('click', (e) => {
-        e.preventDefault();
-        const sectionId = item.dataset.section;
+  navButtons.forEach((item) => {
+    item.addEventListener('click', (e) => {
+      e.preventDefault();
+      const sectionId = item.dataset.section;
+      
+      if (sectionId) {
         console.log('Navigating to:', sectionId);
-        if (sectionId) {
-          switchSection(sectionId);
-        }
-      });
-    } else {
-      console.warn(`Nav button at index ${index} is null`);
-    }
+        switchSection(sectionId);
+      }
+    });
   });
 })();
 
-// Debug: Log when nav buttons are clicked
+// ✅ FIX: Updated debug logger to only log when a valid section navigation occurs
 document.addEventListener('click', (e) => {
-  if (e.target.closest('.nav-item')) {
-    console.log('Nav button clicked:', e.target.closest('.nav-item').dataset.section);
+  const navItem = e.target.closest('.nav-item[data-section]');
+  if (navItem && navItem.dataset.section) {
+    console.log('Nav button clicked:', navItem.dataset.section);
   }
 });
    // =============================================================================
