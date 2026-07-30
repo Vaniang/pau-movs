@@ -852,9 +852,9 @@ tbody tr:last-child td { border-bottom: none; }
                 <input type="text" id="input-activity" maxlength="180" placeholder="Related activity, program, target, or performance indicator" />
             </div>
             <div class="form-wide">
-                <label for="input-title">Title / Details *</label>
-                <input type="text" id="input-title" maxlength="300" placeholder="Enter the title or description of the output" />
-            </div>
+			  <label for="input-title">Title / Details *</label>
+			  <textarea id="input-title" maxlength="300" placeholder="Enter the title or description of the output" style="min-height: 80px;"></textarea>
+			</div>
             <div class="form-wide">
                 <label for="input-link">MOV link</label>
                 <input type="url" id="input-link" maxlength="1000" placeholder="https://..." />
@@ -2909,7 +2909,7 @@ function editItem(id) {
   $('edit-indicator').classList.remove('hidden');
   $('cancel-edit').classList.remove('hidden');
   $('add-mov').innerHTML = '<i class="fas fa-pen-to-square" aria-hidden="true"></i> Update Record';
-  switchSection('movs'); // Changed from 'dashboard' to 'movs'
+  switchSection('mov-input');
   $('add-mov-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
