@@ -4735,7 +4735,7 @@ function listenToOMRM() {
   });
 }
 
-// 2. Save Record (Handles PDF Upload)
+// 2. Save Record (Handles PDF Upload via Cloudinary)
 $('omrm-form').addEventListener('submit', async (e) => {
   e.preventDefault();
   if (!can('create') && !can('edit')) return showToast('Not authorized.', 'error');
@@ -4763,27 +4763,39 @@ $('omrm-form').addEventListener('submit', async (e) => {
   try {
     setLoading(true, 'Saving record...');
 
+    // ✅ CLOUDINARY UPLOAD LOGIC
     if (pdfFile) {
-      setLoading(true, 'Uploading PDF to Firebase Storage...');
-      const fileExt = pdfFile.name.split('.').pop();
-      const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
-      const pdfRef = storage.ref(`omrm-pdfs/${data.category}/${fileName}`);
+      setLoading(true, 'Uploading PDF to Cloudinary...');
       
-      await pdfRef.put(pdfFile);
-      pdfUrl = await pdfRef.getDownloadURL();
-      pdfName = pdfFile.name;
+      // ⚠️ REPLACE 'YOUR_CLOUD_NAME' WITH YOUR ACTUAL CLOUDINARY CLOUD NAME
+      // (You can find this on your Cloudinary Dashboard homepage)
+      const cloudName = 'zhgwa2ng';
+	  const uploadPreset = 'pau_movs_pdf';
 
-      if (editingOMRMId && existingRecord?.pdfUrl) {
-        try {
-          const oldPdfRef = storage.refFromURL(existingRecord.pdfUrl);
-          await oldPdfRef.delete();
-        } catch (err) { console.warn('Could not delete old PDF:', err); }
+      const formData = new FormData();
+      formData.append('file', pdfFile);
+      formData.append('upload_preset', uploadPreset);
+
+      // Use /raw/upload for non-image files like PDFs
+      const response = await fetch(`https://api.cloudinary.com/v1_1/zhgwa2ng/raw/upload`, {
+        method: 'POST',
+        body: formData
+      });
+
+      const uploadData = await response.json();
+      
+      if (uploadData.secure_url) {
+        pdfUrl = uploadData.secure_url;
+        pdfName = pdfFile.name;
+      } else {
+        throw new Error('Cloudinary upload failed: ' + (uploadData.error?.message || 'Unknown error'));
       }
     }
 
     data.pdfUrl = pdfUrl;
     data.pdfName = pdfName;
 
+    // Save to Firestore
     if (editingOMRMId) {
       await omrmColl.doc(editingOMRMId).update(data);
       showToast('Record updated successfully.');
@@ -4794,6 +4806,7 @@ $('omrm-form').addEventListener('submit', async (e) => {
       showToast('Record saved successfully.');
     }
     
+    // Reset Form
     $('omrm-form').reset();
     editingOMRMId = null;
     $('omrm-cancel-btn').classList.add('hidden');
