@@ -4763,21 +4763,15 @@ $('omrm-form').addEventListener('submit', async (e) => {
   try {
     setLoading(true, 'Saving record...');
 
-    // ✅ CLOUDINARY UPLOAD LOGIC
+    // ✅ CLOUDINARY UPLOAD
     if (pdfFile) {
-      setLoading(true, 'Uploading PDF to Cloudinary...');
+      setLoading(true, 'Uploading PDF...');
       
-      // ⚠️ REPLACE 'YOUR_CLOUD_NAME' WITH YOUR ACTUAL CLOUDINARY CLOUD NAME
-      // (You can find this on your Cloudinary Dashboard homepage)
-      const cloudName = 'zhgwa2ng';
-	  const uploadPreset = 'pau_movs_pdf';
-
       const formData = new FormData();
       formData.append('file', pdfFile);
-      formData.append('upload_preset', uploadPreset);
+      formData.append('upload_preset', 'pau_movs_pdf'); // Your preset name
 
-      // Use /raw/upload for non-image files like PDFs
-      const response = await fetch(`https://api.cloudinary.com/v1_1/zhgwa2ng/raw/upload`, {
+      const response = await fetch(`https://api.cloudinary.com/v1_1/YOUR_CLOUD_NAME/raw/upload`, {
         method: 'POST',
         body: formData
       });
@@ -4788,14 +4782,13 @@ $('omrm-form').addEventListener('submit', async (e) => {
         pdfUrl = uploadData.secure_url;
         pdfName = pdfFile.name;
       } else {
-        throw new Error('Cloudinary upload failed: ' + (uploadData.error?.message || 'Unknown error'));
+        throw new Error('Upload failed');
       }
     }
 
     data.pdfUrl = pdfUrl;
     data.pdfName = pdfName;
 
-    // Save to Firestore
     if (editingOMRMId) {
       await omrmColl.doc(editingOMRMId).update(data);
       showToast('Record updated successfully.');
@@ -4806,7 +4799,6 @@ $('omrm-form').addEventListener('submit', async (e) => {
       showToast('Record saved successfully.');
     }
     
-    // Reset Form
     $('omrm-form').reset();
     editingOMRMId = null;
     $('omrm-cancel-btn').classList.add('hidden');
@@ -4821,16 +4813,6 @@ $('omrm-form').addEventListener('submit', async (e) => {
     setLoading(false);
   }
 });
-
-$('omrm-cancel-btn').addEventListener('click', () => {
-  $('omrm-form').reset();
-  editingOMRMId = null;
-  $('omrm-cancel-btn').classList.add('hidden');
-  $('omrm-pdf-status').textContent = '';
-  const submitBtn = $('omrm-form').querySelector('button[type="submit"]');
-  if (submitBtn) submitBtn.innerHTML = '<i class="fas fa-floppy-disk" aria-hidden="true"></i> Save Record';
-});
-
 // 3. Render Report Table (7 Columns)
 function renderOMRMReport() {
   const semester = $('omrm-report-semester').value;
