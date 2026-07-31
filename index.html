@@ -1200,41 +1200,45 @@ tbody tr:last-child td { border-bottom: none; }
 
   <div class="card mb-6">
     <h3 class="text-sm font-semibold mb-4">Add New Memorandum</h3>
-    <form id="omrm-form">
-      <input type="hidden" id="omrm-id" />
-      <div class="form-grid">
-        <div>
-          <label for="omrm-date">Date Created *</label>
-          <input type="date" id="omrm-date" required />
-        </div>
-        <div>
-          <label for="omrm-category">Category *</label>
-          <select id="omrm-category" required>
-            <option value="OM">Office Memorandum (OM)</option>
-            <option value="RM">Regional Memorandum (RM)</option>
-          </select>
-        </div>
-        <div class="form-wide">
-          <label for="omrm-title">Title / Details *</label>
-          <input type="text" id="omrm-title" required placeholder="Subject or title of the memorandum" />
-        </div>
-        <div>
-          <label for="omrm-responsible">Responsible *</label>
-          <input type="text" id="omrm-responsible" required placeholder="Name or Office" />
-        </div>
-        <div>
-          <label for="omrm-remarks">Remarks</label>
-          <input type="text" id="omrm-remarks" placeholder="Optional notes" />
-        </div>
-      </div>
-      <div class="flex gap-2 mt-4 justify-end">
-        <button type="button" id="omrm-cancel-btn" class="btn btn-outline h-9 hidden">Cancel Edit</button>
-        <button type="submit" class="btn btn-gold h-9">
-          <i class="fas fa-floppy-disk" aria-hidden="true"></i> Save Record
-        </button>
-      </div>
-    </form>
+   <form id="omrm-form">
+  <input type="hidden" id="omrm-id" />
+  <div class="form-grid">
+    <div>
+      <label for="omrm-date">Date Created *</label>
+      <input type="date" id="omrm-date" required />
+    </div>
+    <div>
+      <label for="omrm-category">Category *</label>
+      <select id="omrm-category" required>
+        <option value="OM">Office Memorandum (OM)</option>
+        <option value="RM">Regional Memorandum (RM)</option>
+      </select>
+    </div>
+    <!-- ✅ NEW OPTIONAL FIELD -->
+    <div>
+      <label for="omrm-memo-no">OM/RM Number</label>
+      <input type="text" id="omrm-memo-no" placeholder="e.g., OM-2026-001 (Optional)" />
+    </div>
+    <div class="form-wide">
+      <label for="omrm-title">Title / Details *</label>
+      <input type="text" id="omrm-title" required placeholder="Subject or title of the memorandum" />
+    </div>
+    <div>
+      <label for="omrm-responsible">Responsible *</label>
+      <input type="text" id="omrm-responsible" required placeholder="Name or Office" />
+    </div>
+    <div>
+      <label for="omrm-remarks">Remarks</label>
+      <input type="text" id="omrm-remarks" placeholder="Optional notes" />
+    </div>
   </div>
+  <div class="flex gap-2 mt-4 justify-end">
+    <button type="button" id="omrm-cancel-btn" class="btn btn-outline h-9 hidden">Cancel Edit</button>
+    <button type="submit" class="btn btn-gold h-9">
+      <i class="fas fa-floppy-disk" aria-hidden="true"></i> Save Record
+    </button>
+  </div>
+</form>
 </section>
 
 <!-- ========================================== -->
@@ -1325,6 +1329,7 @@ tbody tr:last-child td { border-bottom: none; }
           <tr>
             <th>Date Created</th>
             <th>Category</th>
+			<th>OM/RM No.</th>
             <th>Title / Details</th>
             <th>Responsible</th>
             <th>Remarks</th>
@@ -4709,6 +4714,9 @@ function showMOVReport() {
 	 // =============================================================================
 // OM/RM MODULE LOGIC
 // =============================================================================
+// =============================================================================
+// OM/RM MODULE LOGIC
+// =============================================================================
 const omrmColl = db.collection('omrm');
 let omrmData = [];
 let editingOMRMId = null;
@@ -4717,183 +4725,123 @@ let editingOMRMId = null;
 function listenToOMRM() {
   omrmColl.orderBy('date', 'desc').onSnapshot(snapshot => {
     omrmData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    renderOMRMReport(); // Update report if visible
-    renderOMRMRecords(); // Update records if visible
+    renderOMRMReport(); 
+    renderOMRMRecords(); 
   });
 }
 
 // 2. Save Record
 $('omrm-form').addEventListener('submit', async (e) => {
-e.preventDefault();
-if (!can('create') && !can('edit')) return showToast('Not authorized.', 'error');
+  e.preventDefault();
+  if (!can('create') && !can('edit')) return showToast('Not authorized.', 'error');
 
-const data = {
-date: $('omrm-date').value,
-category: $('omrm-category').value,
-title: $('omrm-title').value.trim(),
-responsible: $('omrm-responsible').value.trim(),
-remarks: $('omrm-remarks').value.trim(),
-updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-updatedBy: currentUser.uid
-};
+  const data = {
+    date: $('omrm-date').value,
+    category: $('omrm-category').value,
+    memoNo: $('omrm-memo-no').value.trim(), // ✅ NEW FIELD
+    title: $('omrm-title').value.trim(),
+    responsible: $('omrm-responsible').value.trim(),
+    remarks: $('omrm-remarks').value.trim(),
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    updatedBy: currentUser.uid
+  };
 
-try {
-setLoading(true, 'Saving...');
-if (editingOMRMId) {
-await omrmColl.doc(editingOMRMId).update(data);
-showToast('Record updated successfully.');
-} else {
-data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
-data.createdBy = currentUser.uid;
-await omrmColl.add(data);
-showToast('Record saved successfully.');
-}
-
-// Reset form
-$('omrm-form').reset();
-editingOMRMId = null;
-$('omrm-cancel-btn').classList.add('hidden');
-
-// Reset submit button
-const submitBtn = $('omrm-form').querySelector('button[type="submit"]');
-submitBtn.innerHTML = '<i class="fas fa-floppy-disk"></i> Save Record';
-
-// Refresh tables
-renderOMRMReport();
-renderOMRMRecords();
-} catch (err) {
-showToast('Error: ' + err.message, 'error');
-} finally {
-setLoading(false);
-}
+  try {
+    setLoading(true, 'Saving...');
+    if (editingOMRMId) {
+      await omrmColl.doc(editingOMRMId).update(data);
+      showToast('Record updated.');
+    } else {
+      data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+      data.createdBy = currentUser.uid;
+      await omrmColl.add(data);
+      showToast('Record saved.');
+    }
+    
+    $('omrm-form').reset();
+    editingOMRMId = null;
+    $('omrm-cancel-btn').classList.add('hidden');
+    
+    // ✅ Reset button text
+    const submitBtn = $('omrm-form').querySelector('button[type="submit"]');
+    submitBtn.innerHTML = '<i class="fas fa-floppy-disk" aria-hidden="true"></i> Save Record';
+  } catch (err) {
+    showToast('Error: ' + err.message, 'error');
+  } finally {
+    setLoading(false);
+  }
 });
 
 $('omrm-cancel-btn').addEventListener('click', () => {
-$('omrm-form').reset();
-editingOMRMId = null;
-$('omrm-cancel-btn').classList.add('hidden');
-
-// Reset submit button text
-const submitBtn = $('omrm-form').querySelector('button[type="submit"]');
-submitBtn.innerHTML = '<i class="fas fa-floppy-disk"></i> Save Record';
+  $('omrm-form').reset();
+  editingOMRMId = null;
+  $('omrm-cancel-btn').classList.add('hidden');
+  
+  // ✅ Reset button text
+  const submitBtn = $('omrm-form').querySelector('button[type="submit"]');
+  submitBtn.innerHTML = '<i class="fas fa-floppy-disk" aria-hidden="true"></i> Save Record';
 });
 
 // 3. Render Report (With Semester Filter & Counts)
 function renderOMRMReport() {
-const semester = $('omrm-report-semester').value;
-const search = safeLower($('omrm-report-search').value);
-const tbody = document.querySelector('#omrm-report-table tbody');
-tbody.replaceChildren();
+  const semester = $('omrm-report-semester').value;
+  const search = safeLower($('omrm-report-search').value);
+  const tbody = document.querySelector('#omrm-report-table tbody');
+  tbody.replaceChildren();
 
-let countOM = 0;
-let countRM = 0;
+  let countOM = 0;
+  let countRM = 0;
 
-const filtered = omrmData.filter(r => {
-// Semester Filter (1st Sem: Jan-Jun [0-5], 2nd Sem: Jul-Dec [6-11])
-const d = parseDate(r.date);
-if (semester !== 'all' && d) {
-const month = d.getMonth();
-if (semester === '1' && month > 5) return false;
-if (semester === '2' && month < 6) return false;
+  const filtered = omrmData.filter(r => {
+    const d = parseDate(r.date);
+    if (semester !== 'all' && d) {
+      const month = d.getMonth();
+      if (semester === '1' && month > 5) return false;
+      if (semester === '2' && month < 6) return false;
+    }
+    const hay = [r.memoNo, r.title, r.responsible, r.remarks].map(safeLower).join(' ');
+    if (search && !hay.includes(search)) return false;
+    return true;
+  });
+
+  filtered.forEach(r => {
+    if (r.category === 'OM') countOM++;
+    else if (r.category === 'RM') countRM++;
+  });
+
+  $('omrm-count-om').textContent = countOM;
+  $('omrm-count-rm').textContent = countRM;
+  $('omrm-count-total').textContent = filtered.length;
+
+  if (!filtered.length) {
+    // ✅ Updated colspan to 7
+    tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No records found.</td></tr>';
+    return;
+  }
+
+  filtered.forEach(r => {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${formatDisplayDate(r.date)}</td>
+      <td><span class="badge" style="background:${r.category === 'OM' ? '#eef2ff' : '#f0fdf4'}; color:${r.category === 'OM' ? '#4f46e5' : '#16a34a'}">${r.category}</span></td>
+      <td>${escapeHTML(r.memoNo || '-')}</td> <!-- ✅ NEW COLUMN -->
+      <td class="font-semibold">${escapeHTML(r.title)}</td>
+      <td>${escapeHTML(r.responsible)}</td>
+      <td class="text-muted">${escapeHTML(r.remarks || '-')}</td>
+      <td>
+        <div class="flex gap-2">
+          <button class="btn btn-ghost h-icon" title="Edit" onclick="editOMRMRecord('${r.id}')" style="color: var(--primary);">
+            <i class="fas fa-pen"></i>
+          </button>
+          <button class="btn btn-ghost h-icon" title="Delete" onclick="deleteOMRMRecord('${r.id}')" style="color: var(--destructive);">
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>
+      </td>
+    `;
+    tbody.appendChild(row);
+  });
 }
-// Search Filter
-const hay = [r.title, r.responsible, r.remarks].map(safeLower).join(' ');
-if (search && !hay.includes(search)) return false;
-return true;
-});
-
-// Update Counts
-filtered.forEach(r => {
-if (r.category === 'OM') countOM++;
-else if (r.category === 'RM') countRM++;
-});
-
-$('omrm-count-om').textContent = countOM;
-$('omrm-count-rm').textContent = countRM;
-$('omrm-count-total').textContent = filtered.length;
-
-if (!filtered.length) {
-tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No records found.</td></tr>'; // Changed colspan to 6
-return;
-}
-
-filtered.forEach(r => {
-const row = document.createElement('tr');
-row.innerHTML = `
-<td>${formatDisplayDate(r.date)}</td>
-<td><span class="badge" style="background:${r.category === 'OM' ? '#eef2ff' : '#f0fdf4'}; color:${r.category === 'OM' ? '#4f46e5' : '#16a34a'}">${r.category}</span></td>
-<td class="font-semibold">${escapeHTML(r.title)}</td>
-<td>${escapeHTML(r.responsible)}</td>
-<td class="text-muted">${escapeHTML(r.remarks || '-')}</td>
-<td>
-<div class="flex gap-2">
-<button class="btn btn-ghost h-icon" title="Edit" onclick="editOMRMRecord('${r.id}')" style="color: var(--primary);">
-<i class="fas fa-pen"></i>
-</button>
-<button class="btn btn-ghost h-icon" title="Delete" onclick="deleteOMRMRecord('${r.id}')" style="color: var(--destructive);">
-<i class="fas fa-trash"></i>
-</button>
-</div>
-</td>
-`;
-tbody.appendChild(row);
-});
-}
-
-	 // Edit OM/RM Record
-window.editOMRMRecord = async function(id) {
-if (!can('edit')) return showToast('You are not authorized to edit records.', 'error');
-
-try {
-const doc = await omrmColl.doc(id).get();
-if (!doc.exists) return;
-
-const data = doc.data();
-
-// Fill the form
-$('omrm-date').value = data.date;
-$('omrm-category').value = data.category;
-$('omrm-title').value = data.title;
-$('omrm-responsible').value = data.responsible;
-$('omrm-remarks').value = data.remarks || '';
-
-// Set editing state
-editingOMRMId = id;
-$('omrm-cancel-btn').classList.remove('hidden');
-
-// Change submit button text
-const submitBtn = $('omrm-form').querySelector('button[type="submit"]');
-submitBtn.innerHTML = '<i class="fas fa-pen-to-square"></i> Update Record';
-
-// Scroll to form
-$('omrm-form').scrollIntoView({ behavior: 'smooth', block: 'start' });
-showToast('Record loaded for editing.');
-} catch (error) {
-console.error(error);
-showToast('Error loading record: ' + error.message, 'error');
-}
-};
-
-// Delete OM/RM Record
-window.deleteOMRMRecord = async function(id) {
-if (!can('delete')) return showToast('You are not authorized to delete records.', 'error');
-
-const record = omrmData.find(r => r.id === id);
-if (!record) return;
-
-if (!confirm(`Permanently delete "${record.title}"? This action cannot be undone.`)) return;
-
-try {
-setLoading(true, 'Deleting record...');
-await omrmColl.doc(id).delete();
-showToast('Record deleted successfully.');
-} catch (error) {
-console.error(error);
-showToast('Error deleting record: ' + error.message, 'error');
-} finally {
-setLoading(false);
-}
-};
 
 // 4. Render Records (Grouped by Category)
 function renderOMRMRecords() {
@@ -4901,33 +4849,32 @@ function renderOMRMRecords() {
   tbody.replaceChildren();
 
   if (!omrmData.length) {
-    tbody.innerHTML = '<tr><td colspan="5" class="empty-state">No records yet.</td></tr>';
+    // ✅ Updated colspan to 6
+    tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No records yet.</td></tr>';
     return;
   }
 
-  // Sort: OM first, then RM. Within group, sort by date desc.
   const sorted = [...omrmData].sort((a, b) => {
     if (a.category !== b.category) return a.category === 'OM' ? -1 : 1;
     return (parseDate(b.date)?.getTime() || 0) - (parseDate(a.date)?.getTime() || 0);
   });
 
   let lastCategory = null;
-
   sorted.forEach(r => {
-    // Add Group Header if category changes
     if (r.category !== lastCategory) {
       const headerRow = document.createElement('tr');
       headerRow.className = 'omrm-group-header';
       const fullTitle = r.category === 'OM' ? 'Office Memorandums (OM)' : 'Regional Memorandums (RM)';
-      headerRow.innerHTML = `<td colspan="5">${fullTitle}</td>`;
+      // ✅ Updated colspan to 6
+      headerRow.innerHTML = `<td colspan="6">${fullTitle}</td>`;
       tbody.appendChild(headerRow);
       lastCategory = r.category;
     }
-
     const row = document.createElement('tr');
     row.innerHTML = `
       <td>${formatDisplayDate(r.date)}</td>
       <td><span class="badge">${r.category}</span></td>
+      <td>${escapeHTML(r.memoNo || '-')}</td> <!-- ✅ NEW COLUMN -->
       <td>${escapeHTML(r.title)}</td>
       <td>${escapeHTML(r.responsible)}</td>
       <td class="text-muted">${escapeHTML(r.remarks || '-')}</td>
@@ -4936,25 +4883,65 @@ function renderOMRMRecords() {
   });
 }
 
-// 5. Print Handler
+// 5. Edit Record (Redirects to Input Form)
+window.editOMRMRecord = function(id) {
+  if (!can('edit')) return showToast('You are not authorized to edit records.', 'error');
+  
+  const record = omrmData.find(r => r.id === id);
+  if (!record) return;
+
+  // Fill form
+  $('omrm-date').value = record.date;
+  $('omrm-category').value = record.category;
+  $('omrm-memo-no').value = record.memoNo || '';
+  $('omrm-title').value = record.title;
+  $('omrm-responsible').value = record.responsible;
+  $('omrm-remarks').value = record.remarks || '';
+
+  // Set editing state
+  editingOMRMId = id;
+  $('omrm-cancel-btn').classList.remove('hidden');
+  
+  // Change button text
+  const submitBtn = $('omrm-form').querySelector('button[type="submit"]');
+  submitBtn.innerHTML = '<i class="fas fa-pen-to-square"></i> Update Record';
+
+  // ✅ Redirect to Input section
+  switchSection('omrm-inputs');
+  $('omrm-form').scrollIntoView({ behavior: 'smooth', block: 'start' });
+};
+
+// 6. Delete Record
+window.deleteOMRMRecord = async function(id) {
+  if (!can('delete')) return showToast('You are not authorized to delete records.', 'error');
+  
+  const record = omrmData.find(r => r.id === id);
+  if (!record) return;
+  
+  if (!confirm(`Permanently delete "${record.title}"? This action cannot be undone.`)) return;
+
+  try {
+    setLoading(true, 'Deleting record...');
+    await omrmColl.doc(id).delete();
+    showToast('Record deleted successfully.');
+  } catch (error) {
+    console.error(error);
+    showToast('Error deleting record: ' + error.message, 'error');
+  } finally {
+    setLoading(false);
+  }
+};
+
+// 7. Print Handler
 $('omrm-print-btn').addEventListener('click', () => {
   if (!can('print')) return showToast('Not authorized.', 'error');
   window.print();
 });
 
-// 6. Event Listeners for Filters
+// 8. Event Listeners for Filters
 ['omrm-report-semester', 'omrm-report-search'].forEach(id => {
   $(id)?.addEventListener(id === 'omrm-report-search' ? 'input' : 'change', renderOMRMReport);
 });
-
-// 7. Initialize on Login
-// Add listenToOMRM() inside your auth.onAuthStateChanged success block
-// Example:
-/*
-  if (currentProfile.role === 'admin') listenToLoginActivity();
-  listenToMovs();
-  listenToOMRM(); // <-- ADD THIS
-*/
 </script>
 </body>
 </html>
