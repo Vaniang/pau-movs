@@ -4720,7 +4720,7 @@ function showMOVReport() {
   });
 }
 // =============================================================================
-// OM/RM MODULE LOGIC (FINAL: Memo No, Edit/Delete, Redirect to Input)
+// OM/RM MODULE LOGIC (FINAL: Memo No, PDF, Edit, Delete, Redirect)
 // =============================================================================
 const omrmColl = db.collection('omrm');
 let omrmData = [];
@@ -4735,15 +4735,24 @@ function listenToOMRM() {
   });
 }
 
-// 2. Save Record
+// 2. Save Record (Handles PDF Upload)
 $('omrm-form').addEventListener('submit', async (e) => {
   e.preventDefault();
   if (!can('create') && !can('edit')) return showToast('Not authorized.', 'error');
 
+  const pdfFile = $('omrm-pdf').files[0];
+  const existingRecord = editingOMRMId ? omrmData.find(r => r.id === editingOMRMId) : null;
+  let pdfUrl = existingRecord?.pdfUrl || '';
+  let pdfName = existingRecord?.pdfName || '';
+
+  if (pdfFile && pdfFile.size > 10 * 1024 * 1024) {
+    return showToast('PDF file must be smaller than 10MB.', 'error');
+  }
+
   const data = {
     date: $('omrm-date').value,
     category: $('omrm-category').value,
-    memoNo: $('omrm-memo-no')?.value.trim() || '', // ✅ Safe optional chaining
+    memoNo: $('omrm-memo-no')?.value.trim() || '',
     title: $('omrm-title').value.trim(),
     responsible: $('omrm-responsible').value.trim(),
     remarks: $('omrm-remarks')?.value.trim() || '',
@@ -4752,7 +4761,29 @@ $('omrm-form').addEventListener('submit', async (e) => {
   };
 
   try {
-    setLoading(true, 'Saving...');
+    setLoading(true, 'Saving record...');
+
+    if (pdfFile) {
+      setLoading(true, 'Uploading PDF to Firebase Storage...');
+      const fileExt = pdfFile.name.split('.').pop();
+      const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+      const pdfRef = storage.ref(`omrm-pdfs/${data.category}/${fileName}`);
+      
+      await pdfRef.put(pdfFile);
+      pdfUrl = await pdfRef.getDownloadURL();
+      pdfName = pdfFile.name;
+
+      if (editingOMRMId && existingRecord?.pdfUrl) {
+        try {
+          const oldPdfRef = storage.refFromURL(existingRecord.pdfUrl);
+          await oldPdfRef.delete();
+        } catch (err) { console.warn('Could not delete old PDF:', err); }
+      }
+    }
+
+    data.pdfUrl = pdfUrl;
+    data.pdfName = pdfName;
+
     if (editingOMRMId) {
       await omrmColl.doc(editingOMRMId).update(data);
       showToast('Record updated successfully.');
@@ -4763,15 +4794,13 @@ $('omrm-form').addEventListener('submit', async (e) => {
       showToast('Record saved successfully.');
     }
     
-    // Reset Form
     $('omrm-form').reset();
     editingOMRMId = null;
     $('omrm-cancel-btn').classList.add('hidden');
-    
-    // Reset button text
+    $('omrm-pdf-status').textContent = '';
     const submitBtn = $('omrm-form').querySelector('button[type="submit"]');
     if (submitBtn) submitBtn.innerHTML = '<i class="fas fa-floppy-disk" aria-hidden="true"></i> Save Record';
-    
+
   } catch (err) {
     console.error(err);
     showToast('Error: ' + err.message, 'error');
@@ -4784,12 +4813,12 @@ $('omrm-cancel-btn').addEventListener('click', () => {
   $('omrm-form').reset();
   editingOMRMId = null;
   $('omrm-cancel-btn').classList.add('hidden');
-  
+  $('omrm-pdf-status').textContent = '';
   const submitBtn = $('omrm-form').querySelector('button[type="submit"]');
   if (submitBtn) submitBtn.innerHTML = '<i class="fas fa-floppy-disk" aria-hidden="true"></i> Save Record';
 });
 
-// 3. Render Report Table (7 Columns: Date, Category, Memo No, Title, Responsible, Remarks, Actions)
+// 3. Render Report Table (7 Columns)
 function renderOMRMReport() {
   const semester = $('omrm-report-semester').value;
   const search = safeLower($('omrm-report-search').value);
@@ -4804,7 +4833,8 @@ function renderOMRMReport() {
       if (semester === '1' && d.getMonth() > 5) return false;
       if (semester === '2' && d.getMonth() < 6) return false;
     }
-    const hay = [r.memoNo, r.title, r.responsible, r.remarks].map(safeLower).join(' ');
+    // ✅ Safely handles undefined memoNo for old records
+    const hay = [(r.memoNo || ''), r.title, (r.responsible || ''), (r.remarks || '')].map(safeLower).join(' ');
     if (search && !hay.includes(search)) return false;
     return true;
   });
@@ -4819,7 +4849,7 @@ function renderOMRMReport() {
   if ($('omrm-count-total')) $('omrm-count-total').textContent = filtered.length;
 
   if (!filtered.length) {
-    tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No records found.</td></tr>'; // ✅ 7 columns
+    tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No records found.</td></tr>';
     return;
   }
 
@@ -4847,14 +4877,14 @@ function renderOMRMReport() {
   });
 }
 
-// 4. Render Records Table (6 Columns: Date, Category, Memo No, Title, Responsible, Remarks)
+// 4. Render Records Table (7 Columns)
 function renderOMRMRecords() {
   const tbody = document.querySelector('#omrm-records-table tbody');
   if (!tbody) return;
   tbody.replaceChildren();
 
   if (!omrmData.length) {
-    tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No records yet.</td></tr>'; // ✅ 6 columns
+    tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No records yet.</td></tr>';
     return;
   }
 
@@ -4869,7 +4899,7 @@ function renderOMRMRecords() {
       const headerRow = document.createElement('tr');
       headerRow.className = 'omrm-group-header';
       const fullTitle = r.category === 'OM' ? 'Office Memorandums (OM)' : 'Regional Memorandums (RM)';
-      headerRow.innerHTML = `<td colspan="6">${fullTitle}</td>`; // ✅ 6 columns
+      headerRow.innerHTML = `<td colspan="7">${fullTitle}</td>`;
       tbody.appendChild(headerRow);
       lastCategory = r.category;
     }
@@ -4881,6 +4911,9 @@ function renderOMRMRecords() {
       <td>${escapeHTML(r.title)}</td>
       <td>${escapeHTML(r.responsible)}</td>
       <td class="text-muted">${escapeHTML(r.remarks || '-')}</td>
+      <td>
+        ${r.pdfUrl ? `<a href="${r.pdfUrl}" target="_blank" class="btn btn-ghost h-8" style="color: var(--primary);"><i class="fas fa-file-pdf"></i> View</a>` : '-'}
+      </td>
     `;
     tbody.appendChild(row);
   });
@@ -4889,23 +4922,21 @@ function renderOMRMRecords() {
 // 5. Edit Record (Redirects to Input Form)
 window.editOMRMRecord = function(id) {
   if (!can('edit')) return showToast('You are not authorized to edit records.', 'error');
-  
   const record = omrmData.find(r => r.id === id);
   if (!record) return;
 
-  // Fill form safely
   if ($('omrm-date')) $('omrm-date').value = record.date;
   if ($('omrm-category')) $('omrm-category').value = record.category;
   if ($('omrm-memo-no')) $('omrm-memo-no').value = record.memoNo || '';
   if ($('omrm-title')) $('omrm-title').value = record.title;
   if ($('omrm-responsible')) $('omrm-responsible').value = record.responsible;
   if ($('omrm-remarks')) $('omrm-remarks').value = record.remarks || '';
+  
+  $('omrm-pdf-status').textContent = record.pdfName ? `Current file: ${record.pdfName} (Upload a new one to replace)` : '';
 
-  // Set editing state
   editingOMRMId = id;
   if ($('omrm-cancel-btn')) $('omrm-cancel-btn').classList.remove('hidden');
   
-  // Change button text
   const submitBtn = $('omrm-form')?.querySelector('button[type="submit"]');
   if (submitBtn) submitBtn.innerHTML = '<i class="fas fa-pen-to-square"></i> Update Record';
 
@@ -4918,14 +4949,18 @@ window.editOMRMRecord = function(id) {
 // 6. Delete Record
 window.deleteOMRMRecord = async function(id) {
   if (!can('delete')) return showToast('You are not authorized to delete records.', 'error');
-  
   const record = omrmData.find(r => r.id === id);
   if (!record) return;
-  
   if (!confirm(`Permanently delete "${record.title}"? This action cannot be undone.`)) return;
 
   try {
     setLoading(true, 'Deleting record...');
+    if (record.pdfUrl) {
+      try {
+        const pdfRef = storage.refFromURL(record.pdfUrl);
+        await pdfRef.delete();
+      } catch (err) { console.warn('Could not delete PDF file:', err); }
+    }
     await omrmColl.doc(id).delete();
     showToast('Record deleted successfully.');
   } catch (error) {
