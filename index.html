@@ -496,6 +496,7 @@ tbody tr:last-child td { border-bottom: none; }
   background: #fff; border: 1px solid var(--border); border-radius: var(--radius);
   padding: 1rem; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
+#media-report-table, #media-records-table { min-width: 760px; }
 .summary-card-omrm .count { font-size: 1.5rem; font-weight: 700; color: var(--primary); }
 .summary-card-omrm .label { font-size: 0.75rem; color: var(--muted-foreground); text-transform: uppercase; }
 </style>
@@ -563,6 +564,9 @@ tbody tr:last-child td { border-bottom: none; }
        <button class="nav-item dropdown-item" data-section="omrm-inputs" type="button">
 		  <i class="fas fa-file-alt" aria-hidden="true"></i> Office/Regional Memorandum
 		</button>
+		<button class="nav-item dropdown-item" data-section="media-input" type="button">
+    		<i class="fas fa-microphone-lines" aria-hidden="true"></i> Media Interviews
+		</button>
     </div>
 </div>
   
@@ -582,6 +586,9 @@ tbody tr:last-child td { border-bottom: none; }
 		</button>
      <button class="nav-item dropdown-item" data-section="omrm-report" type="button">
 	  <i class="fas fa-chart-bar" aria-hidden="true"></i> Office/Regional Memorandum Report
+	</button>
+	<button class="nav-item dropdown-item" data-section="media-report" type="button">
+	  <i class="fas fa-newspaper" aria-hidden="true"></i> Media Interviews Report
 	</button>
     </div>
   </div>
@@ -606,6 +613,9 @@ tbody tr:last-child td { border-bottom: none; }
         <button class="nav-item dropdown-item" data-section="metrics" type="button">
             <i class="fas fa-chart-line" aria-hidden="true"></i> External Metrics Records
         </button>
+		<button class="nav-item dropdown-item" data-section="media-records" type="button">
+  <i class="fas fa-images" aria-hidden="true"></i> Media Interviews Records
+</button>
     </div>
 </div>
   
@@ -1347,6 +1357,146 @@ tbody tr:last-child td { border-bottom: none; }
     </div>
   </div>
 </section>
+
+		<!-- ========================================== -->
+<!-- MEDIA INTERVIEWS: INPUT                    -->
+<!-- ========================================== -->
+<section id="media-input" class="section">
+  <div class="section-header flex justify-between items-center mb-6">
+    <div>
+      <h1>Media Interviews</h1>
+      <p class="text-muted">Record radio, TV, and online media interviews featuring the unit.</p>
+    </div>
+  </div>
+  <div class="card mb-6">
+    <h3 class="text-sm font-semibold mb-4">Add New Media Interview</h3>
+    <form id="media-form">
+      <input type="hidden" id="media-id" />
+      <div class="form-grid">
+        <div>
+          <label for="media-date">Date of Interview *</label>
+          <input type="date" id="media-date" required />
+        </div>
+        <div>
+          <label for="media-agency">News Agency *</label>
+          <input type="text" id="media-agency" required placeholder="e.g., Bombo Radyo, PIA, RPN..." />
+        </div>
+        <div class="form-wide">
+          <label for="media-link">Link</label>
+          <input type="url" id="media-link" maxlength="1000" placeholder="https://..." />
+        </div>
+        <div class="form-wide">
+          <label for="media-photo">Photo (optional, max 5MB)</label>
+          <input type="file" id="media-photo" accept="image/*" />
+          <div id="media-photo-status" class="text-muted text-sm" style="margin-top:.4rem;"></div>
+        </div>
+      </div>
+      <div class="flex gap-2 mt-4 justify-end">
+        <button type="button" id="media-cancel-btn" class="btn btn-outline h-9 hidden">Cancel Edit</button>
+        <button type="submit" class="btn btn-gold h-9">
+          <i class="fas fa-floppy-disk" aria-hidden="true"></i> Save Record
+        </button>
+      </div>
+    </form>
+  </div>
+</section>
+
+<!-- ========================================== -->
+<!-- MEDIA INTERVIEWS: REPORT                   -->
+<!-- ========================================== -->
+<section id="media-report" class="section">
+  <div class="print-report-header">
+    <img src="logo.png" alt="PAUMOVision logo" />
+    <h2>Media Interviews Report</h2>
+    <p id="media-print-period"></p>
+    <p id="media-print-generated"></p>
+  </div>
+  <div class="section-header flex justify-between items-center mb-6">
+    <div>
+      <h1>Media Interviews Report</h1>
+      <p class="text-muted">Summary of media interviews conducted, filterable by semester.</p>
+    </div>
+    <div class="section-actions flex gap-2">
+      <button id="media-print-btn" class="btn btn-outline h-9" type="button">
+        <i class="fas fa-print" aria-hidden="true"></i> Print
+      </button>
+    </div>
+  </div>
+  <div class="card mb-6 no-print">
+    <div class="filter-bar">
+      <div>
+        <label for="media-report-semester">Semester</label>
+        <select id="media-report-semester">
+          <option value="all">All Semesters</option>
+          <option value="1">1st Semester (Jan - Jun)</option>
+          <option value="2">2nd Semester (Jul - Dec)</option>
+        </select>
+      </div>
+      <div class="form-wide">
+        <label for="media-report-search">Search</label>
+        <input type="search" id="media-report-search" placeholder="Search news agency or link..." />
+      </div>
+    </div>
+  </div>
+  <!-- Counters (responsive to the Semester filter) -->
+  <div class="grid mb-6" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+    <div class="summary-card-omrm">
+      <div class="count" id="media-count-total">0</div>
+      <div class="label" id="media-count-label">Total Media Interviews</div>
+    </div>
+    <div class="summary-card-omrm">
+      <div class="count" id="media-count-sem1">0</div>
+      <div class="label">1st Semester (Jan–Jun)</div>
+    </div>
+    <div class="summary-card-omrm">
+      <div class="count" id="media-count-sem2">0</div>
+      <div class="label">2nd Semester (Jul–Dec)</div>
+    </div>
+  </div>
+  <div class="card" style="padding:0;">
+    <div class="table-wrapper" style="border:none;">
+      <table id="media-report-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>News Agency</th>
+            <th>Link</th>
+            <th>Photo</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ========================================== -->
+<!-- MEDIA INTERVIEWS: RECORDS                  -->
+<!-- ========================================== -->
+<section id="media-records" class="section">
+  <div class="section-header flex justify-between items-center mb-6">
+    <div>
+      <h1>Media Interviews Records</h1>
+      <p class="text-muted">Complete archive of all recorded media interviews.</p>
+    </div>
+  </div>
+  <div class="card" style="padding:0;">
+    <div class="table-wrapper" style="border:none;">
+      <table id="media-records-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>News Agency</th>
+            <th>Link</th>
+            <th>Photo</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</section>
 		
       <section id="login-activity" class="section">
         <div class="section-header flex justify-between items-center mb-6">
@@ -1457,6 +1607,25 @@ tbody tr:last-child td { border-bottom: none; }
     </div>
   </div>
 
+<div id="photo-viewer-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="photo-viewer-title">
+  <div class="modal-card" style="max-width: 760px;">
+    <div class="flex justify-between items-center gap-3 mb-4">
+      <h2 id="photo-viewer-title">Media Interview Photo</h2>
+      <button id="close-photo-viewer-btn" class="btn btn-ghost h-icon" type="button" aria-label="Close photo viewer">
+        <i class="fas fa-xmark" aria-hidden="true"></i>
+      </button>
+    </div>
+    <img id="photo-viewer-img" src="" alt="Media interview photo"
+         style="width:100%; max-height:65vh; object-fit:contain; background:#f8fafc; border:1px solid var(--border); border-radius:.75rem;" />
+    <div class="modal-actions">
+      <a id="photo-viewer-open" href="#" target="_blank" rel="noopener noreferrer" class="btn btn-outline h-9">
+        <i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i> Open Full Size
+      </a>
+      <button id="photo-viewer-close-btn" class="btn btn-default h-9" type="button">Close</button>
+    </div>
+  </div>
+</div>
+	
   <div id="loading-overlay" class="loading-overlay hidden" aria-live="assertive">
     <div class="loading-box">
       <div class="spinner" aria-hidden="true"></div>
@@ -2025,6 +2194,7 @@ auth.onAuthStateChanged(async (user) => {
     if (currentProfile.role === 'admin') listenToLoginActivity();
     listenToMovs();
 	listenToOMRM();
+	listenToMedia();
   } catch (error) {
     console.error(error);
     const message = error.message || 'Your user profile could not be loaded.';
@@ -2041,6 +2211,8 @@ function applyPermissionUI() {
   const navLoginBtn = document.querySelector('.nav-item[data-section="login-activity"]');
   const navOMRMInputBtn = document.querySelector('.nav-item[data-section="omrm-inputs"]');
   if (navOMRMInputBtn) navOMRMInputBtn.classList.toggle('hidden', !isAdmin);
+const navMediaInputBtn = document.querySelector('.nav-item[data-section="media-input"]');
+if (navMediaInputBtn) navMediaInputBtn.classList.toggle('hidden', !isAdmin);
   
   if (navMovsAdminBtn) navMovsAdminBtn.classList.toggle('hidden', !isAdmin);
   if (navLoginBtn) navLoginBtn.classList.toggle('hidden', !isAdmin);
@@ -4291,6 +4463,9 @@ function switchSection(sectionId) {
 	if (sectionId === 'omrm-inputs') { /* Form is static, no render needed */ }
     if (sectionId === 'omrm-report') renderOMRMReport();
     if (sectionId === 'omrm-records') renderOMRMRecords();
+
+	if (sectionId === 'media-report') renderMediaReport();
+	if (sectionId === 'media-records') renderMediaRecords();
     
     // Scroll to top
     document.querySelector('.content')?.scrollTo({ top: 0, behavior: 'smooth' });
@@ -4983,6 +5158,255 @@ if (printBtn) {
     el.addEventListener(id === 'omrm-report-search' ? 'input' : 'change', renderOMRMReport);
   }
 });
+	 // =============================================================================
+// MEDIA INTERVIEWS MODULE
+// =============================================================================
+const mediaColl = db.collection('media_interviews');
+let mediaData = [];
+let editingMediaId = null;
+
+// Cloudinary — same account used for OM/RM PDFs.
+// NOTE: If your existing preset only allows raw files, create a new UNSIGNED
+// preset for images in Cloudinary (Settings > Upload > Upload presets)
+// and change MEDIA_CLOUDINARY_PRESET below.
+const MEDIA_CLOUDINARY_CLOUD = 'zhgwa2ng';
+const MEDIA_CLOUDINARY_PRESET = 'pau_movs_pdf';
+
+function listenToMedia() {
+  mediaColl.orderBy('date', 'desc').onSnapshot(snapshot => {
+    mediaData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    renderMediaReport();
+    renderMediaRecords();
+  }, error => {
+    console.error(error);
+    showToast(`Unable to load media interviews: ${error.message}`, 'error', 7000);
+  });
+}
+
+// ---------- Save / Update ----------
+$('media-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  if (!can('create') && !can('edit')) return showToast('You are not authorized to save media interviews.', 'error');
+
+  const dateValue = $('media-date').value;
+  const agency = normalizeText($('media-agency').value);
+  const linkValue = normalizeText($('media-link').value);
+  const safeLink = linkValue ? getSafeUrl(linkValue) : '';
+
+  if (!dateValue || !parseDate(dateValue)) return showToast('Please enter a valid interview date.', 'error');
+  if (!agency) return showToast('News Agency is required.', 'error');
+  if (linkValue && !safeLink) return showToast('Link must begin with http:// or https://.', 'error');
+
+  const photoFile = $('media-photo').files[0];
+  const existing = editingMediaId ? mediaData.find(r => r.id === editingMediaId) : null;
+  let photoUrl = existing?.photoUrl || '';
+  let photoName = existing?.photoName || '';
+
+  try {
+    if (photoFile) {
+      if (!photoFile.type.startsWith('image/')) return showToast('The photo must be an image file (JPG, PNG, WEBP...).', 'error');
+      if (photoFile.size > 5 * 1024 * 1024) return showToast('Photo must be 5MB or smaller.', 'error');
+      setLoading(true, 'Uploading photo...');
+      const formData = new FormData();
+      formData.append('file', photoFile);
+      formData.append('upload_preset', MEDIA_CLOUDINARY_PRESET);
+      const response = await fetch(`https://api.cloudinary.com/v1_1/${MEDIA_CLOUDINARY_CLOUD}/image/upload`, { method: 'POST', body: formData });
+      const uploaded = await response.json();
+      if (!uploaded.secure_url) throw new Error('Photo upload failed. Check your Cloudinary upload preset.');
+      photoUrl = uploaded.secure_url;
+      photoName = photoFile.name;
+    }
+
+    const data = {
+      date: dateValue,
+      agency,
+      link: safeLink,
+      photoUrl,
+      photoName,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      updatedBy: currentUser.uid,
+      updatedByName: currentDisplayName()
+    };
+
+    setLoading(true, editingMediaId ? 'Updating media interview...' : 'Saving media interview...');
+    if (editingMediaId) {
+      await mediaColl.doc(editingMediaId).update(data);
+      showToast('Media interview updated successfully.');
+    } else {
+      data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+      data.createdBy = currentUser.uid;
+      data.createdByName = currentDisplayName();
+      await mediaColl.add(data);
+      showToast('Media interview saved successfully.');
+    }
+    resetMediaForm();
+    renderMediaReport();
+    renderMediaRecords();
+  } catch (error) {
+    console.error(error);
+    showToast('Error: ' + error.message, 'error');
+  } finally {
+    setLoading(false);
+  }
+});
+
+function resetMediaForm() {
+  $('media-form').reset();
+  $('media-date').value = dateToISO(new Date());
+  $('media-id').value = '';
+  editingMediaId = null;
+  $('media-cancel-btn').classList.add('hidden');
+  $('media-photo-status').textContent = '';
+  const submitBtn = $('media-form').querySelector('button[type="submit"]');
+  if (submitBtn) submitBtn.innerHTML = '<i class="fas fa-floppy-disk" aria-hidden="true"></i> Save Record';
+}
+$('media-cancel-btn').addEventListener('click', resetMediaForm);
+
+// ---------- Edit / Delete ----------
+window.editMediaRecord = function (id) {
+  if (!can('edit')) return showToast('You are not authorized to edit records.', 'error');
+  const record = mediaData.find(r => r.id === id);
+  if (!record) return;
+  $('media-id').value = id;
+  $('media-date').value = record.date || '';
+  $('media-agency').value = record.agency || '';
+  $('media-link').value = record.link || '';
+  $('media-photo-status').textContent = record.photoName ? `Current photo: ${record.photoName} (upload a new one to replace)` : '';
+  editingMediaId = id;
+  $('media-cancel-btn').classList.remove('hidden');
+  const submitBtn = $('media-form').querySelector('button[type="submit"]');
+  if (submitBtn) submitBtn.innerHTML = '<i class="fas fa-pen-to-square"></i> Update Record';
+  switchSection('media-input');
+  $('media-form').scrollIntoView({ behavior: 'smooth', block: 'start' });
+};
+
+window.deleteMediaRecord = async function (id) {
+  if (!can('delete')) return showToast('You are not authorized to delete records.', 'error');
+  const record = mediaData.find(r => r.id === id);
+  if (!record) return;
+  if (!confirm(`Permanently delete the interview with "${record.agency}"? This cannot be undone.`)) return;
+  try {
+    setLoading(true, 'Deleting record...');
+    await mediaColl.doc(id).delete();
+    showToast('Media interview deleted successfully.');
+    renderMediaReport();
+    renderMediaRecords();
+  } catch (error) {
+    showToast('Error: ' + error.message, 'error');
+  } finally {
+    setLoading(false);
+  }
+};
+
+// ---------- Report (Semester filter + Search + Counts) ----------
+function renderMediaReport() {
+  const tbody = document.querySelector('#media-report-table tbody');
+  if (!tbody) return;
+  const semester = $('media-report-semester').value;
+  const search = safeLower($('media-report-search').value);
+
+  // Search-filtered (ignores semester) for the per-semester cards
+  const searchFiltered = mediaData.filter(r => {
+    const hay = [r.agency, r.link].map(safeLower).join(' ');
+    return !search || hay.includes(search);
+  });
+  const sem1 = searchFiltered.filter(r => { const d = parseDate(r.date); return d && d.getMonth() <= 5; }).length;
+  const sem2 = searchFiltered.filter(r => { const d = parseDate(r.date); return d && d.getMonth() >= 6; }).length;
+
+  // Fully filtered list (semester + search)
+  const filtered = searchFiltered.filter(r => {
+    if (semester === 'all') return true;
+    const d = parseDate(r.date);
+    if (!d) return false;
+    return semester === '1' ? d.getMonth() <= 5 : d.getMonth() >= 6;
+  });
+
+  // Counters respond to the semester filter
+  $('media-count-total').textContent = filtered.length;
+  $('media-count-sem1').textContent = sem1;
+  $('media-count-sem2').textContent = sem2;
+  $('media-count-label').textContent =
+    semester === 'all' ? 'Total Media Interviews'
+    : semester === '1' ? 'Media Interviews — 1st Semester'
+    : 'Media Interviews — 2nd Semester';
+
+  // Print header metadata
+  const semesterLabel = semester === 'all' ? 'All Semesters' : (semester === '1' ? '1st Semester (Jan–Jun)' : '2nd Semester (Jul–Dec)');
+  if ($('media-print-period')) $('media-print-period').textContent = `Period: ${semesterLabel} | ${filtered.length} media interview(s)`;
+  if ($('media-print-generated')) $('media-print-generated').textContent = `Generated on ${new Intl.DateTimeFormat('en-PH', { dateStyle: 'long', timeStyle: 'short' }).format(new Date())}`;
+
+  tbody.replaceChildren();
+  if (!filtered.length) {
+    tbody.innerHTML = '<tr><td colspan="5" class="empty-state">No media interviews found.</td></tr>';
+    return;
+  }
+  filtered.forEach(r => {
+    const safeUrl = getSafeUrl(r.link);
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${formatDisplayDate(r.date)}</td>
+      <td class="font-semibold">${escapeHTML(r.agency)}</td>
+      <td>${safeUrl ? `<a href="${safeUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-ghost h-8" style="color: var(--primary);"><i class="fas fa-arrow-up-right-from-square"></i> View</a>` : '-'}</td>
+      <td>${r.photoUrl ? `<img src="${r.photoUrl}" alt="" loading="lazy" onclick="openPhotoViewerById('${r.id}')" style="width:44px;height:44px;object-fit:cover;border-radius:.5rem;border:1px solid var(--border);cursor:pointer;" />` : '-'}</td>
+      <td>
+        <div class="flex gap-2">
+          ${can('edit') ? `<button class="btn btn-ghost h-icon" title="Edit" onclick="editMediaRecord('${r.id}')" style="color: var(--primary);"><i class="fas fa-pen"></i></button>` : ''}
+          ${can('delete') ? `<button class="btn btn-ghost h-icon" title="Delete" onclick="deleteMediaRecord('${r.id}')" style="color: var(--destructive);"><i class="fas fa-trash"></i></button>` : ''}
+        </div>
+      </td>
+    `;
+    tbody.appendChild(row);
+  });
+}
+
+// ---------- Records (View-only archive) ----------
+function renderMediaRecords() {
+  const tbody = document.querySelector('#media-records-table tbody');
+  if (!tbody) return;
+  tbody.replaceChildren();
+  if (!mediaData.length) {
+    tbody.innerHTML = '<tr><td colspan="4" class="empty-state">No media interviews recorded yet.</td></tr>';
+    return;
+  }
+  const sorted = [...mediaData].sort((a, b) => (parseDate(b.date)?.getTime() || 0) - (parseDate(a.date)?.getTime() || 0));
+  sorted.forEach(r => {
+    const safeUrl = getSafeUrl(r.link);
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${formatDisplayDate(r.date)}</td>
+      <td class="font-semibold">${escapeHTML(r.agency)}</td>
+      <td>${safeUrl ? `<a href="${safeUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-ghost h-8" style="color: var(--primary);"><i class="fas fa-arrow-up-right-from-square"></i> View</a>` : '-'}</td>
+      <td>${r.photoUrl ? `<button class="btn btn-outline h-8" type="button" onclick="openPhotoViewerById('${r.id}')"><i class="fas fa-eye"></i> View</button>` : '-'}</td>
+    `;
+    tbody.appendChild(row);
+  });
+}
+
+// ---------- Photo Viewer Modal ----------
+window.openPhotoViewerById = function (id) {
+  const record = mediaData.find(r => r.id === id);
+  if (!record || !record.photoUrl) return;
+  $('photo-viewer-title').textContent = record.agency ? `Media Interview — ${record.agency}` : 'Media Interview Photo';
+  $('photo-viewer-img').src = record.photoUrl;
+  $('photo-viewer-open').href = record.photoUrl;
+  $('photo-viewer-modal').classList.remove('hidden');
+};
+function closePhotoViewer() { $('photo-viewer-modal').classList.add('hidden'); }
+$('close-photo-viewer-btn').addEventListener('click', closePhotoViewer);
+$('photo-viewer-close-btn').addEventListener('click', closePhotoViewer);
+$('photo-viewer-modal').addEventListener('click', e => { if (e.target === $('photo-viewer-modal')) closePhotoViewer(); });
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && !$('photo-viewer-modal').classList.contains('hidden')) closePhotoViewer();
+});
+
+// ---------- Print + Filter Listeners ----------
+$('media-print-btn').addEventListener('click', () => {
+  if (!can('print')) return showToast('Not authorized.', 'error');
+  renderMediaReport();
+  window.print();
+});
+$('media-report-semester').addEventListener('change', renderMediaReport);
+$('media-report-search').addEventListener('input', renderMediaReport);
 </script>
 </body>
 </html>
