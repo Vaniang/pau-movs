@@ -4938,29 +4938,26 @@ $('omrm-form').addEventListener('submit', async (e) => {
   try {
     setLoading(true, 'Saving record...');
 
-    // ✅ CLOUDINARY UPLOAD
 // ✅ CLOUDINARY UPLOAD
 if (pdfFile) {
     setLoading(true, 'Uploading PDF...');
     const formData = new FormData();
     formData.append('file', pdfFile);
-    formData.append('upload_preset', 'pau_movs_pdf'); 
-    formData.append('access_mode', 'public');
-    
+    formData.append('upload_preset', 'pau_movs_pdf');
+    // ❌ REMOVED: formData.append('access_mode', 'public');
+
     const response = await fetch(`https://api.cloudinary.com/v1_1/zhgwa2ng/raw/upload`, {
         method: 'POST',
         body: formData
     });
-    
+
     const uploadData = await response.json();
-    
-    // ✅ IMPROVED ERROR HANDLING
+
     if (!response.ok || !uploadData.secure_url) {
         console.error('Cloudinary Rejection:', uploadData);
-        // This will now show the EXACT reason Cloudinary blocked the upload
         throw new Error(uploadData?.error?.message || `Cloudinary error: ${response.status}`);
     }
-    
+
     pdfUrl = uploadData.secure_url;
     pdfName = pdfFile.name;
 }
