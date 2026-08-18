@@ -9,7 +9,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="PAUMOVision" />
   <meta name="description" content=" PAUMOVision — Public Affairs Unit Means of Verification and Facebook Engagement Tracker" />
-  <title>PAUMOVision | PAU Means of Verification Tracker</title>
+  <title>PAUMOVision v2.1 | PAU Means of Verification Tracker</title>
 
   <link rel="icon" type="image/png" href="logo.png" />
   <link rel="apple-touch-icon" href="logo.png" />
@@ -341,22 +341,9 @@ tbody tr:last-child td { border-bottom: none; }
     .app-shell, .content { display: block !important; width: 100% !important; height: auto !important; overflow: visible !important; padding: 0 !important; max-width: none !important; }
     .section { display: none !important; }
     .section.active { display: block !important; animation: none !important; }
-   .card,
-.table-wrapper,
-.stats-grid,
-.charts-row {
-  width: 100%;
-  max-width: 100%;
-  .report-paper { 
-    box-shadow: none !important; 
-    border: 0 !important; 
-    max-width: none !important; 
-    margin: 0 !important; 
-    padding: 0 !important; 
-    display: block !important; 
-  }
-  .hidden { display: none !important; }
-}
+    .card, .table-wrapper, .stats-grid, .charts-row { width: 100%; max-width: 100%; }
+    .report-paper { box-shadow: none !important; border: 0 !important; max-width: none !important; margin: 0 !important; padding: 0 !important; display: block !important; }
+    .hidden { display: none !important; }
     .print-report-header { display: block !important; }
     .signature-grid { display: grid !important; }
     #dashboard.active #add-mov-section { display: none !important; }
@@ -499,12 +486,23 @@ tbody tr:last-child td { border-bottom: none; }
 #media-report-table, #media-records-table { min-width: 760px; }
 .summary-card-omrm .count { font-size: 1.5rem; font-weight: 700; color: var(--primary); }
 .summary-card-omrm .label { font-size: 0.75rem; color: var(--muted-foreground); text-transform: uppercase; }
+
+/* --- PAUMOVision v2: Zero-budget Backup & Storage Workspace --- */
+.system-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:1rem; margin-bottom:1.5rem; }
+.system-stat { padding:1.1rem; border:1px solid var(--border); border-radius:var(--radius); background:#fff; min-width:0; }
+.system-stat .label { color:var(--muted-foreground); font-size:.78rem; text-transform:uppercase; letter-spacing:.04em; font-weight:600; }
+.system-stat .value { margin-top:.35rem; font-size:1.25rem; font-weight:700; overflow-wrap:anywhere; }
+.system-actions { display:flex; flex-wrap:wrap; gap:.75rem; margin-top:1rem; }
+.system-note { padding:1rem 1.1rem; border-radius:var(--radius); background:var(--primary-soft); border:1px solid var(--primary-border); color:var(--primary); line-height:1.55; font-size:.86rem; }
+.backup-warning { background:var(--warning-soft); border-color:#fde68a; color:#92400e; }
+.storage-path-row { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:.75rem; align-items:end; }
+@media (max-width:1120px) { .system-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media (max-width:780px) { .system-grid { grid-template-columns:1fr; } .storage-path-row { grid-template-columns:1fr; } }
+
 </style>
   <script src="https://www.gstatic.com/firebasejs/11.0.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/11.0.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore-compat.js"></script>
-	<script src="https://www.gstatic.com/firebasejs/11.0.0/firebase-storage-compat.js"></script>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></s
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
@@ -622,6 +620,9 @@ tbody tr:last-child td { border-bottom: none; }
   <!-- LOGIN ACTIVITY -->
   <button class="nav-item" data-section="login-activity" type="button">
     <i class="fas fa-clock-rotate-left" aria-hidden="true"></i> Login Activity
+  </button>
+  <button class="nav-item" data-section="system-tools" type="button">
+    <i class="fas fa-shield-halved" aria-hidden="true"></i> Backup & Storage
   </button>
 </nav>
       
@@ -1533,6 +1534,64 @@ tbody tr:last-child td { border-bottom: none; }
           </div>
         </div>
       </section>
+
+      <section id="system-tools" class="section">
+        <div class="section-header flex justify-between items-center mb-6">
+          <div>
+            <h1>Backup & Storage</h1>
+            <p class="text-muted">Zero-budget protection tools for PAUMOVision records and external MOV links.</p>
+          </div>
+          <button id="refresh-system-status-btn" class="btn btn-outline h-9" type="button">
+            <i class="fas fa-arrows-rotate" aria-hidden="true"></i> Refresh Status
+          </button>
+        </div>
+
+        <div class="system-grid">
+          <div class="system-stat"><div class="label">MOV Records</div><div id="system-mov-count" class="value">—</div></div>
+          <div class="system-stat"><div class="label">MOV Link Coverage</div><div id="system-link-coverage" class="value">—</div></div>
+          <div class="system-stat"><div class="label">Last Backup</div><div id="system-last-backup" class="value">Never on this device</div></div>
+          <div class="system-stat"><div class="label">Offline Cache</div><div id="system-cache-usage" class="value">Checking…</div></div>
+        </div>
+
+        <div id="backup-reminder-box" class="system-note backup-warning mb-4 hidden"></div>
+
+        <div class="card mb-6">
+          <h3><i class="fas fa-database" aria-hidden="true"></i> Database Backup</h3>
+          <p class="text-muted" style="margin-top:.5rem;">Downloads Firestore records to your computer. JSON preserves document IDs and Firestore timestamps for restoration. Excel is for human-readable archival copies.</p>
+          <div class="system-actions">
+            <button id="download-json-backup-btn" class="btn btn-default h-9" type="button"><i class="fas fa-file-code"></i> Download JSON Backup</button>
+            <button id="download-excel-backup-btn" class="btn btn-outline h-9" type="button"><i class="fas fa-file-excel"></i> Download Excel Backup</button>
+            <label for="restore-backup-file" class="btn btn-outline h-9" style="cursor:pointer;"><i class="fas fa-rotate-left"></i> Restore JSON Backup</label>
+            <input id="restore-backup-file" type="file" accept="application/json,.json" class="hidden" />
+          </div>
+          <div class="system-note" style="margin-top:1rem;">
+            Restore is intentionally <strong>non-destructive</strong>: it merges operational records by their original document IDs and does not erase newer records. User accounts, audit logs, and login activity are backed up but are not restored automatically.
+          </div>
+        </div>
+
+        <div class="card mb-6">
+          <h3><i class="fab fa-google-drive" aria-hidden="true"></i> External MOV Archive</h3>
+          <p class="text-muted" style="margin-top:.5rem;">Keep large MOV files in an existing DepEd/Google Drive or office storage location. PAUMOVision stores the link and metadata instead of consuming database storage.</p>
+          <div class="storage-path-row" style="margin-top:1rem;">
+            <div>
+              <label for="mov-archive-url">PAU MOV archive folder link</label>
+              <input id="mov-archive-url" type="url" placeholder="https://drive.google.com/drive/folders/..." />
+            </div>
+            <div class="flex gap-2 flex-wrap">
+              <button id="save-mov-archive-url-btn" class="btn btn-default h-10" type="button">Save Link</button>
+              <button id="open-mov-archive-url-btn" class="btn btn-outline h-10" type="button">Open Archive</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3><i class="fas fa-circle-info" aria-hidden="true"></i> Zero-budget storage policy</h3>
+          <div class="system-note" style="margin-top:1rem;">
+            Firestore is used for lightweight records and metadata. Large videos and other MOV evidence should remain in your existing Drive/office archive. Cloudinary remains supported for the current small PDF/photo modules. This build does not depend on Firebase Storage.
+          </div>
+        </div>
+      </section>
+
     </main>
   </div>
 
@@ -1685,7 +1744,6 @@ else if (firebase.apps.length === 0) {
 // 3. NOW it is safe to declare these
 const auth = firebase.auth();
 const db = firebase.firestore();
-const storage = firebase.storage();
 const movsColl = db.collection('movs');
 const usersColl = db.collection('users');
 const auditColl = db.collection('auditLogs');
@@ -2191,7 +2249,10 @@ auth.onAuthStateChanged(async (user) => {
     $('app-shell').classList.remove('hidden');
     await startLoginActivitySession();
     startSessionTimers();
-    if (currentProfile.role === 'admin') listenToLoginActivity();
+    if (currentProfile.role === 'admin') {
+      listenToLoginActivity();
+      window.setTimeout(checkBackupReminder, 1200);
+    }
     listenToMovs();
 	listenToOMRM();
 	listenToMedia();
@@ -2209,6 +2270,7 @@ function applyPermissionUI() {
   // ✅ Hide "Records > MOVs (Admin)" for viewers
   const navMovsAdminBtn = document.querySelector('#records-dropdown .nav-item[data-section="movs"]');
   const navLoginBtn = document.querySelector('.nav-item[data-section="login-activity"]');
+  const navSystemToolsBtn = document.querySelector('.nav-item[data-section="system-tools"]');
   const navOMRMInputBtn = document.querySelector('.nav-item[data-section="omrm-inputs"]');
   if (navOMRMInputBtn) navOMRMInputBtn.classList.toggle('hidden', !isAdmin);
 const navMediaInputBtn = document.querySelector('.nav-item[data-section="media-input"]');
@@ -2216,6 +2278,7 @@ if (navMediaInputBtn) navMediaInputBtn.classList.toggle('hidden', !isAdmin);
   
   if (navMovsAdminBtn) navMovsAdminBtn.classList.toggle('hidden', !isAdmin);
   if (navLoginBtn) navLoginBtn.classList.toggle('hidden', !isAdmin);
+  if (navSystemToolsBtn) navSystemToolsBtn.classList.toggle('hidden', !isAdmin);
   
   // Viewer accounts see only the live Dashboard and Reports.
   $('add-mov-section').classList.toggle('hidden', !isAdmin);
@@ -2232,7 +2295,8 @@ if (navMediaInputBtn) navMediaInputBtn.classList.toggle('hidden', !isAdmin);
     const loginSection = $('login-activity');
     const isOnRestrictedSection =
       (movsSection && movsSection.classList.contains('active')) ||
-      (loginSection && loginSection.classList.contains('active'));
+      (loginSection && loginSection.classList.contains('active')) ||
+      ($('system-tools') && $('system-tools').classList.contains('active'));
     if (isOnRestrictedSection) {
       switchSection('dashboard');
     }
@@ -4429,8 +4493,8 @@ document.querySelectorAll('.mqd-input').forEach((input, index, inputs) => {
 // =============================================================================
 function switchSection(sectionId) {
   try {
-    if (sectionId === 'login-activity' && !can('viewLoginActivity')) {
-      return showToast('Only the PAU Administrator may view login activity.', 'error');
+    if ((sectionId === 'login-activity' || sectionId === 'system-tools') && currentProfile.role !== 'admin') {
+      return showToast('Only the PAU Administrator may access this section.', 'error');
     }
     
     // ✅ FIX: Update active nav button logic
@@ -4459,6 +4523,7 @@ function switchSection(sectionId) {
     if (sectionId === 'login-activity') renderLoginActivityTable();
     if (sectionId === 'feedback') renderFeedbackTable();
     if (sectionId === 'metrics') renderMetricsTable();
+    if (sectionId === 'system-tools') refreshSystemStatus();
 
 	if (sectionId === 'omrm-inputs') { /* Form is static, no render needed */ }
     if (sectionId === 'omrm-report') renderOMRMReport();
@@ -5126,14 +5191,15 @@ window.deleteOMRMRecord = async function(id) {
 
   try {
     setLoading(true, 'Deleting record...');
-    if (record.pdfUrl) {
-      try {
-        const pdfRef = storage.refFromURL(record.pdfUrl);
-        await pdfRef.delete();
-      } catch (err) { console.warn('Could not delete PDF file:', err); }
-    }
+    // The zero-budget build stores OM/RM PDFs in Cloudinary. Cloudinary assets
+    // cannot be safely destroyed from browser code without exposing a server secret.
+    // Therefore PAUMOVision deletes only the Firestore index record here. The file
+    // remains in Cloudinary and can be removed manually from its Media Library if needed.
     await omrmColl.doc(id).delete();
-    showToast('Record deleted successfully.');
+    await logAudit('DELETE_OMRM_RECORD', id, { title: record.title || '', retainedExternalFile: Boolean(record.pdfUrl) });
+    showToast(record.pdfUrl
+      ? 'Record deleted. The external PDF was retained in Cloudinary for archival safety.'
+      : 'Record deleted successfully.', 'success', 6000);
   } catch (error) {
     console.error(error);
     showToast('Error deleting record: ' + error.message, 'error');
@@ -5407,6 +5473,301 @@ $('media-print-btn').addEventListener('click', () => {
 });
 $('media-report-semester').addEventListener('change', renderMediaReport);
 $('media-report-search').addEventListener('input', renderMediaReport);
+
+
+// =============================================================================
+// PAUMOVISION V2 — ZERO-BUDGET BACKUP, RESTORE & STORAGE STATUS
+// =============================================================================
+const PAUMOVISION_VERSION = '2.1-zero-budget';
+const BACKUP_COLLECTIONS = [
+  'movs', 'ieca_feedback', 'ieca_settings', 'omrm', 'media_interviews',
+  'users', 'auditLogs', 'loginActivities'
+];
+const RESTORABLE_COLLECTIONS = new Set(['movs', 'ieca_feedback', 'ieca_settings', 'omrm', 'media_interviews']);
+const LAST_BACKUP_KEY = 'paumovision_last_backup_at';
+const MOV_ARCHIVE_URL_KEY = 'paumovision_mov_archive_url';
+let backupReminderShown = false;
+
+function encodeBackupValue(value) {
+  if (value === null || value === undefined) return value;
+  if (value && typeof value.toDate === 'function') {
+    return { __paumovisionType: 'timestamp', value: value.toDate().toISOString() };
+  }
+  if (value instanceof Date) return { __paumovisionType: 'date', value: value.toISOString() };
+  if (Array.isArray(value)) return value.map(encodeBackupValue);
+  if (typeof value === 'object') {
+    const encoded = {};
+    Object.entries(value).forEach(([key, child]) => { encoded[key] = encodeBackupValue(child); });
+    return encoded;
+  }
+  return value;
+}
+
+function decodeBackupValue(value) {
+  if (value === null || value === undefined) return value;
+  if (Array.isArray(value)) return value.map(decodeBackupValue);
+  if (typeof value === 'object') {
+    if (value.__paumovisionType === 'timestamp' && value.value) {
+      const date = new Date(value.value);
+      if (!Number.isNaN(date.getTime())) return firebase.firestore.Timestamp.fromDate(date);
+    }
+    if (value.__paumovisionType === 'date' && value.value) {
+      const date = new Date(value.value);
+      if (!Number.isNaN(date.getTime())) return date;
+    }
+    const decoded = {};
+    Object.entries(value).forEach(([key, child]) => { decoded[key] = decodeBackupValue(child); });
+    return decoded;
+  }
+  return value;
+}
+
+async function collectFirestoreBackup() {
+  if (!currentUser || currentProfile.role !== 'admin') throw new Error('Administrator access is required.');
+  const collections = {};
+  for (const collectionName of BACKUP_COLLECTIONS) {
+    setLoading(true, `Backing up ${collectionName}...`);
+    const snapshot = await db.collection(collectionName).get();
+    collections[collectionName] = snapshot.docs.map(doc => ({
+      id: doc.id,
+      data: encodeBackupValue(doc.data())
+    }));
+  }
+  return {
+    format: 'PAUMOVisionBackup',
+    version: 2,
+    appVersion: PAUMOVISION_VERSION,
+    firebaseProjectId: firebaseConfig.projectId,
+    generatedAt: new Date().toISOString(),
+    generatedBy: {
+      uid: currentUser.uid,
+      email: currentUser.email || '',
+      displayName: currentDisplayName()
+    },
+    collections
+  };
+}
+
+function downloadBlob(content, mimeType, fileName) {
+  const blob = content instanceof Blob ? content : new Blob([content], { type: mimeType });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement('a');
+  anchor.href = url;
+  anchor.download = fileName;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function backupDateStamp(date = new Date()) {
+  return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}_${String(date.getHours()).padStart(2,'0')}${String(date.getMinutes()).padStart(2,'0')}`;
+}
+
+function recordSuccessfulBackup(kind) {
+  const now = new Date();
+  localStorage.setItem(LAST_BACKUP_KEY, now.toISOString());
+  refreshSystemStatus();
+  logAudit('BACKUP_EXPORT', '', { kind, exportedAt: now.toISOString() });
+}
+
+async function downloadJSONBackup() {
+  try {
+    const backup = await collectFirestoreBackup();
+    const fileName = `PAUMOVision_Backup_${backupDateStamp()}.json`;
+    downloadBlob(JSON.stringify(backup, null, 2), 'application/json;charset=utf-8', fileName);
+    recordSuccessfulBackup('json');
+    showToast('Full JSON backup downloaded. Copy it to the PAU Drive and office backup location.', 'success', 7000);
+  } catch (error) {
+    console.error('Backup failed:', error);
+    showToast(`Backup failed: ${error.message}`, 'error', 7000);
+  } finally {
+    setLoading(false);
+  }
+}
+
+function backupCellValue(value) {
+  const encoded = encodeBackupValue(value);
+  if (encoded && typeof encoded === 'object' && encoded.__paumovisionType && encoded.value) return encoded.value;
+  if (encoded === null || encoded === undefined) return '';
+  if (typeof encoded === 'object') return JSON.stringify(encoded);
+  return encoded;
+}
+
+async function downloadExcelBackup() {
+  if (typeof XLSX === 'undefined') return showToast('Excel library is unavailable. Check the internet connection and reload.', 'error');
+  try {
+    const backup = await collectFirestoreBackup();
+    const workbook = XLSX.utils.book_new();
+    Object.entries(backup.collections).forEach(([collectionName, docs]) => {
+      const rows = docs.map(entry => {
+        const flat = { documentId: entry.id };
+        Object.entries(entry.data || {}).forEach(([key, value]) => { flat[key] = backupCellValue(value); });
+        return flat;
+      });
+      const worksheet = XLSX.utils.json_to_sheet(rows.length ? rows : [{ note: 'No records' }]);
+      const safeSheetName = collectionName.substring(0, 31);
+      XLSX.utils.book_append_sheet(workbook, worksheet, safeSheetName);
+    });
+    const metaSheet = XLSX.utils.json_to_sheet([{
+      format: backup.format,
+      version: backup.version,
+      appVersion: backup.appVersion,
+      generatedAt: backup.generatedAt,
+      projectId: backup.firebaseProjectId,
+      generatedBy: backup.generatedBy.displayName || backup.generatedBy.email
+    }]);
+    XLSX.utils.book_append_sheet(workbook, metaSheet, 'Backup Info');
+    XLSX.writeFile(workbook, `PAUMOVision_Backup_${backupDateStamp()}.xlsx`);
+    recordSuccessfulBackup('excel');
+    showToast('Excel archival backup downloaded.', 'success', 6000);
+  } catch (error) {
+    console.error('Excel backup failed:', error);
+    showToast(`Excel backup failed: ${error.message}`, 'error', 7000);
+  } finally {
+    setLoading(false);
+  }
+}
+
+async function restoreOperationalBackup(file) {
+  if (!file || currentProfile.role !== 'admin') return;
+  try {
+    setLoading(true, 'Reading backup file...');
+    const payload = JSON.parse(await file.text());
+    if (!payload || payload.format !== 'PAUMOVisionBackup' || !payload.collections) {
+      throw new Error('This is not a valid PAUMOVision JSON backup.');
+    }
+    if (payload.firebaseProjectId && payload.firebaseProjectId !== firebaseConfig.projectId) {
+      throw new Error(`Backup belongs to Firebase project "${payload.firebaseProjectId}", not "${firebaseConfig.projectId}".`);
+    }
+    const counts = Object.entries(payload.collections)
+      .filter(([name]) => RESTORABLE_COLLECTIONS.has(name))
+      .reduce((sum, [, docs]) => sum + (Array.isArray(docs) ? docs.length : 0), 0);
+    setLoading(false);
+    const ok = confirm(
+      `Restore ${counts} operational record(s) from this backup?\n\n` +
+      'This is a non-destructive merge. Existing documents with the same IDs will be updated; records not in the backup will NOT be deleted.\n\n' +
+      'Administrative users, audit logs, and login activity will not be restored.'
+    );
+    if (!ok) return;
+
+    let restored = 0;
+    for (const [collectionName, docs] of Object.entries(payload.collections)) {
+      if (!RESTORABLE_COLLECTIONS.has(collectionName) || !Array.isArray(docs)) continue;
+      for (let i = 0; i < docs.length; i += 400) {
+        setLoading(true, `Restoring ${collectionName}... ${Math.min(i + 400, docs.length)}/${docs.length}`);
+        const batch = db.batch();
+        docs.slice(i, i + 400).forEach(entry => {
+          if (!entry || !entry.id || !entry.data) return;
+          const ref = db.collection(collectionName).doc(String(entry.id));
+          batch.set(ref, decodeBackupValue(entry.data), { merge: true });
+          restored += 1;
+        });
+        await batch.commit();
+      }
+    }
+    await logAudit('BACKUP_RESTORE', '', { sourceFile: file.name, restored });
+    showToast(`Restore completed: ${restored} operational record(s) merged.`, 'success', 8000);
+  } catch (error) {
+    console.error('Restore failed:', error);
+    showToast(`Restore failed: ${error.message}`, 'error', 8000);
+  } finally {
+    setLoading(false);
+    const input = $('restore-backup-file');
+    if (input) input.value = '';
+  }
+}
+
+function getLastBackupDate() {
+  const raw = localStorage.getItem(LAST_BACKUP_KEY);
+  if (!raw) return null;
+  const date = new Date(raw);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function formatBytes(bytes) {
+  if (!Number.isFinite(bytes) || bytes < 0) return 'Unavailable';
+  const units = ['B','KB','MB','GB'];
+  let value = bytes, unit = 0;
+  while (value >= 1024 && unit < units.length - 1) { value /= 1024; unit += 1; }
+  return `${value.toFixed(unit === 0 ? 0 : 1)} ${units[unit]}`;
+}
+
+async function refreshSystemStatus() {
+  const movs = Array.isArray(allRecords) ? allRecords : [];
+  const activeMovs = movs.filter(record => record.archived !== true);
+  const withLinks = activeMovs.filter(record => Boolean(getSafeUrl(record.link || ''))).length;
+  const coverage = activeMovs.length ? Math.round((withLinks / activeMovs.length) * 100) : 100;
+  if ($('system-mov-count')) $('system-mov-count').textContent = `${activeMovs.length.toLocaleString()} active`;
+  if ($('system-link-coverage')) $('system-link-coverage').textContent = `${coverage}% (${withLinks}/${activeMovs.length})`;
+
+  const lastBackup = getLastBackupDate();
+  if ($('system-last-backup')) $('system-last-backup').textContent = lastBackup ? formatDateTime(lastBackup) : 'Never on this device';
+
+  const archiveInput = $('mov-archive-url');
+  if (archiveInput && document.activeElement !== archiveInput) archiveInput.value = localStorage.getItem(MOV_ARCHIVE_URL_KEY) || '';
+
+  if ($('system-cache-usage')) {
+    try {
+      if (navigator.storage && navigator.storage.estimate) {
+        const estimate = await navigator.storage.estimate();
+        $('system-cache-usage').textContent = `${formatBytes(estimate.usage || 0)} local`;
+      } else {
+        $('system-cache-usage').textContent = 'Unavailable';
+      }
+    } catch (_) {
+      $('system-cache-usage').textContent = 'Unavailable';
+    }
+  }
+
+  const reminder = $('backup-reminder-box');
+  if (reminder) {
+    const ageDays = lastBackup ? Math.floor((Date.now() - lastBackup.getTime()) / 86400000) : null;
+    if (!lastBackup || ageDays >= 7) {
+      reminder.classList.remove('hidden');
+      reminder.innerHTML = `<strong><i class="fas fa-triangle-exclamation"></i> Backup reminder:</strong> ${lastBackup ? `The last backup on this device was ${ageDays} day(s) ago.` : 'No backup has been recorded on this device.'} Download a JSON backup and copy it to your PAU Drive plus an office PC/external drive.`;
+    } else {
+      reminder.classList.add('hidden');
+      reminder.textContent = '';
+    }
+  }
+}
+
+function checkBackupReminder() {
+  if (backupReminderShown || currentProfile.role !== 'admin') return;
+  const lastBackup = getLastBackupDate();
+  const old = !lastBackup || (Date.now() - lastBackup.getTime()) >= 7 * 86400000;
+  if (!old) return;
+  backupReminderShown = true;
+  showToast(lastBackup
+    ? 'Backup reminder: your last recorded backup on this device is more than 7 days old.'
+    : 'Backup reminder: no PAUMOVision backup has been recorded on this device yet.', 'warning', 8000);
+}
+
+function saveMovArchiveUrl() {
+  const input = $('mov-archive-url');
+  if (!input) return;
+  const value = normalizeText(input.value);
+  if (value && !getSafeUrl(value)) return showToast('Archive link must begin with http:// or https://.', 'error');
+  localStorage.setItem(MOV_ARCHIVE_URL_KEY, value);
+  showToast(value ? 'PAU MOV archive link saved on this device.' : 'PAU MOV archive link cleared.');
+}
+
+function openMovArchiveUrl() {
+  const value = localStorage.getItem(MOV_ARCHIVE_URL_KEY) || normalizeText($('mov-archive-url')?.value || '');
+  const safe = getSafeUrl(value);
+  if (!safe) return showToast('Save a valid PAU MOV archive folder link first.', 'warning');
+  window.open(safe, '_blank', 'noopener,noreferrer');
+}
+
+$('download-json-backup-btn')?.addEventListener('click', downloadJSONBackup);
+$('download-excel-backup-btn')?.addEventListener('click', downloadExcelBackup);
+$('restore-backup-file')?.addEventListener('change', event => restoreOperationalBackup(event.target.files?.[0]));
+$('refresh-system-status-btn')?.addEventListener('click', () => { refreshSystemStatus(); showToast('System status refreshed.'); });
+$('save-mov-archive-url-btn')?.addEventListener('click', saveMovArchiveUrl);
+$('open-mov-archive-url-btn')?.addEventListener('click', openMovArchiveUrl);
+refreshSystemStatus();
+
 </script>
 </body>
 </html>
