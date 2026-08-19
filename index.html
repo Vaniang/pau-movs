@@ -9,7 +9,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="PAUMOVision" />
   <meta name="description" content=" PAUMOVision — Public Affairs Unit Means of Verification and Facebook Engagement Tracker" />
-  <title>PAUMOVision v2.2 | PAU Means of Verification Tracker</title>
+  <title>PAUMOVision v2.3 | PAU Means of Verification Tracker</title>
 
   <link rel="icon" type="image/png" href="logo.png" />
   <link rel="apple-touch-icon" href="logo.png" />
@@ -210,6 +210,33 @@ table {
    
 #movs-table { min-width: 1220px; }
 .activity-table { min-width: 920px; }
+
+/* MOV Records: always-accessible horizontal scrollbar.
+   JavaScript positions this fixed bar directly under the visible table area
+   and keeps its scrollLeft synchronized with the real table wrapper. */
+.movs-sticky-scroll {
+  position: fixed;
+  bottom: 10px;
+  height: 22px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  z-index: 9000;
+  background: rgba(248, 250, 252, 0.98);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.18);
+  scrollbar-gutter: stable;
+  overscroll-behavior-x: contain;
+}
+.movs-sticky-scroll-inner { height: 1px; }
+.movs-sticky-scroll::-webkit-scrollbar { height: 14px; }
+.movs-sticky-scroll::-webkit-scrollbar-track { background: #e2e8f0; border-radius: 999px; }
+.movs-sticky-scroll::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 999px; border: 2px solid #e2e8f0; }
+.movs-sticky-scroll::-webkit-scrollbar-thumb:hover { background: #64748b; }
+
+@media (max-width: 780px) {
+  .movs-sticky-scroll { display: none !important; }
+}
 
 thead { background: #f8fafc; border-bottom: 2px solid var(--border); }
 th { text-align: left; padding: 0.85rem 1rem; font-weight: 600; color: var(--muted-foreground); white-space: nowrap; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.03em; }
@@ -918,6 +945,13 @@ tbody tr:last-child td { border-bottom: none; }
             </table>
         </div>
     </div>
+
+    <!-- Floating horizontal scrollbar for wide MOV Records table.
+         It is synchronized with the real table scrollbar by app.js. -->
+    <div id="movs-sticky-scroll" class="movs-sticky-scroll hidden no-print" aria-label="MOV Records horizontal scrollbar">
+        <div id="movs-sticky-scroll-inner" class="movs-sticky-scroll-inner"></div>
+    </div>
+
     <div class="flex justify-end mt-4 no-print">
         <button id="bulk-action-btn" class="btn btn-destructive h-9" type="button">
             <i class="fas fa-box-archive" aria-hidden="true"></i> Archive Selected
@@ -5676,7 +5710,7 @@ $('media-report-search').addEventListener('input', renderMediaReport);
 // =============================================================================
 // PAUMOVISION V2 — ZERO-BUDGET BACKUP, RESTORE & STORAGE STATUS
 // =============================================================================
-const PAUMOVISION_VERSION = '2.2-zero-budget';
+const PAUMOVISION_VERSION = '2.3-zero-budget';
 const BACKUP_COLLECTIONS = [
   'movs', 'ieca_feedback', 'ieca_settings', 'omrm', 'media_interviews',
   'users', 'auditLogs', 'loginActivities'
@@ -6045,6 +6079,117 @@ function openMovArchiveUrl() {
   window.open(safe, '_blank', 'noopener,noreferrer');
 }
 
+
+
+// =============================================================================
+// MOV RECORDS — ALWAYS-ACCESSIBLE HORIZONTAL SCROLLBAR
+// =============================================================================
+function initMovsStickyScrollbar() {
+  const section = $('movs');
+  const table = $('movs-table');
+  const sticky = $('movs-sticky-scroll');
+  const stickyInner = $('movs-sticky-scroll-inner');
+  const content = document.querySelector('.content');
+  const wrapper = table?.closest('.table-wrapper');
+
+  if (!section || !table || !wrapper || !sticky || !stickyInner) return;
+
+  let syncingFromTable = false;
+  let syncingFromSticky = false;
+  let rafId = 0;
+
+  function hideSticky() {
+    sticky.classList.add('hidden');
+  }
+
+  function updateSticky() {
+    rafId = 0;
+
+    // The fixed scrollbar is intended for desktop/laptop layouts.
+    if (window.innerWidth <= 780 || !section.classList.contains('active')) {
+      hideSticky();
+      return;
+    }
+
+    const rect = wrapper.getBoundingClientRect();
+    const contentRect = content?.getBoundingClientRect();
+    const viewportTop = contentRect ? Math.max(0, contentRect.top) : 0;
+    const viewportBottom = contentRect ? Math.min(window.innerHeight, contentRect.bottom) : window.innerHeight;
+    const tableIsVisible = rect.bottom > viewportTop && rect.top < viewportBottom;
+    const needsHorizontalScroll = wrapper.scrollWidth > wrapper.clientWidth + 2;
+
+    if (!tableIsVisible || !needsHorizontalScroll || rect.width <= 0) {
+      hideSticky();
+      return;
+    }
+
+    // Match the floating scrollbar to the visible MOV table wrapper, not the full window.
+    const left = Math.max(0, rect.left);
+    const rightLimit = Math.min(window.innerWidth, rect.right);
+    const width = Math.max(0, rightLimit - left);
+    if (width < 80) {
+      hideSticky();
+      return;
+    }
+
+    sticky.style.left = `${Math.round(left)}px`;
+    sticky.style.width = `${Math.round(width)}px`;
+    sticky.style.bottom = `${Math.max(8, Math.round(window.innerHeight - viewportBottom + 8))}px`;
+    stickyInner.style.width = `${Math.max(wrapper.scrollWidth, width)}px`;
+    sticky.classList.remove('hidden');
+
+    if (!syncingFromSticky && Math.abs(sticky.scrollLeft - wrapper.scrollLeft) > 1) {
+      syncingFromTable = true;
+      sticky.scrollLeft = wrapper.scrollLeft;
+      syncingFromTable = false;
+    }
+  }
+
+  function scheduleUpdate() {
+    if (rafId) return;
+    rafId = requestAnimationFrame(updateSticky);
+  }
+
+  wrapper.addEventListener('scroll', () => {
+    if (syncingFromSticky) return;
+    syncingFromTable = true;
+    sticky.scrollLeft = wrapper.scrollLeft;
+    syncingFromTable = false;
+  }, { passive: true });
+
+  sticky.addEventListener('scroll', () => {
+    if (syncingFromTable) return;
+    syncingFromSticky = true;
+    wrapper.scrollLeft = sticky.scrollLeft;
+    syncingFromSticky = false;
+  }, { passive: true });
+
+  content?.addEventListener('scroll', scheduleUpdate, { passive: true });
+  window.addEventListener('resize', scheduleUpdate, { passive: true });
+  window.addEventListener('orientationchange', scheduleUpdate, { passive: true });
+
+  // Section changes do not necessarily trigger a page scroll, so refresh after navigation.
+  document.querySelectorAll('[data-section]').forEach(control => {
+    control.addEventListener('click', () => {
+      setTimeout(scheduleUpdate, 0);
+      setTimeout(scheduleUpdate, 120);
+    });
+  });
+
+  // Firestore can populate/re-render rows after initial load; recalculate width automatically.
+  if ('ResizeObserver' in window) {
+    const ro = new ResizeObserver(scheduleUpdate);
+    ro.observe(wrapper);
+    ro.observe(table);
+  }
+  if ('MutationObserver' in window && table.tBodies?.[0]) {
+    const mo = new MutationObserver(scheduleUpdate);
+    mo.observe(table.tBodies[0], { childList: true, subtree: true });
+  }
+
+  scheduleUpdate();
+}
+
 $('download-json-backup-btn')?.addEventListener('click', downloadJSONBackup);
 $('save-json-to-folder-btn')?.addEventListener('click', saveJSONBackupToSyncedFolder);
 $('download-excel-backup-btn')?.addEventListener('click', downloadExcelBackup);
@@ -6053,6 +6198,7 @@ $('refresh-system-status-btn')?.addEventListener('click', () => { refreshSystemS
 $('save-mov-archive-url-btn')?.addEventListener('click', saveMovArchiveUrl);
 $('open-mov-archive-url-btn')?.addEventListener('click', openMovArchiveUrl);
 refreshSystemStatus();
+initMovsStickyScrollbar();
 
 </script>
 </body>
