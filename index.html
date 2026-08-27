@@ -1748,7 +1748,17 @@ tbody tr:last-child td { border-bottom: none; }
         </div>
         <div class="form-wide">
           <label for="ta-service-type">Type of Service *</label>
-          <input type="text" id="ta-service-type" required placeholder="Describe the technical assistance/service requested" />
+          <select id="ta-service-type" required>
+            <option value="" selected disabled>Select type of service</option>
+            <option value="Graphic Design (Poster, Tarpaulin, Infographic, Social Media Cards)">Graphic Design (Poster, Tarpaulin, Infographic, Social Media Cards)</option>
+            <option value="Video Editing/Production">Video Editing/Production</option>
+            <option value="Photo Documentation">Photo Documentation</option>
+            <option value="Caption/Social Media Writing">Caption/Social Media Writing</option>
+            <option value="Technical Assistance">Technical Assistance</option>
+            <option value="Others">Others</option>
+          </select>
+          <input type="hidden" id="ta-service-other" value="" />
+          <p id="ta-service-other-preview" class="text-muted hidden" style="margin-top:.45rem;font-size:.82rem;"></p>
         </div>
       </div>
       <div class="flex gap-2 mt-4 justify-end">
@@ -6192,6 +6202,49 @@ const technicalAssistanceColl = db.collection('technical_assistance_requests');
 let technicalAssistanceData = [];
 let editingTechnicalAssistanceId = null;
 
+const TECHNICAL_ASSISTANCE_SERVICE_OPTIONS = [
+  'Graphic Design (Poster, Tarpaulin, Infographic, Social Media Cards)',
+  'Video Editing/Production',
+  'Photo Documentation',
+  'Caption/Social Media Writing',
+  'Technical Assistance'
+];
+
+function updateTechnicalAssistanceOtherPreview() {
+  const preview = $('ta-service-other-preview');
+  if (!preview) return;
+  const specific = normalizeText($('ta-service-other')?.value || '');
+  if (specific) {
+    preview.textContent = `Specific service: ${specific}`;
+    preview.classList.remove('hidden');
+  } else {
+    preview.textContent = '';
+    preview.classList.add('hidden');
+  }
+}
+
+function askTechnicalAssistanceOtherService(existingValue = '') {
+  const specific = prompt('Please enter the specific Type of Service under Others:', existingValue || '');
+  if (specific === null) return null;
+  const cleaned = normalizeText(specific);
+  if (!cleaned) {
+    showToast('Please enter the specific service for Others.', 'error');
+    return '';
+  }
+  if ($('ta-service-other')) $('ta-service-other').value = cleaned;
+  updateTechnicalAssistanceOtherPreview();
+  return cleaned;
+}
+
+function technicalAssistanceServiceLabel(record) {
+  if (!record) return '-';
+  if (record.serviceCategory === 'Others') {
+    const specific = normalizeText(record.otherService || record.serviceType || '');
+    return specific ? `Others – ${specific.replace(/^Others\s*[–—-]\s*/i, '')}` : 'Others';
+  }
+  return normalizeText(record.serviceType || '-') || '-';
+}
+
 function technicalAssistanceSemester(record) {
   const date = parseDate(record.requestDate);
   if (!date) return '';
@@ -6205,6 +6258,8 @@ function resetTechnicalAssistanceForm() {
   editingTechnicalAssistanceId = null;
   if ($('ta-id')) $('ta-id').value = '';
   if ($('ta-request-date')) $('ta-request-date').value = dateToISO(new Date());
+  if ($('ta-service-other')) $('ta-service-other').value = '';
+  updateTechnicalAssistanceOtherPreview();
   if ($('ta-cancel-btn')) $('ta-cancel-btn').classList.add('hidden');
   if ($('ta-form-title')) $('ta-form-title').textContent = 'Add New Technical Assistance Request';
   const submitBtn = form.querySelector('button[type="submit"]');
@@ -6223,6 +6278,22 @@ function listenToTechnicalAssistance() {
   if ($('ta-request-date') && !$('ta-request-date').value) $('ta-request-date').value = dateToISO(new Date());
 }
 
+$('ta-service-type')?.addEventListener('change', event => {
+  const selected = event.target.value;
+  if (selected === 'Others') {
+    const current = normalizeText($('ta-service-other')?.value || '');
+    const specific = askTechnicalAssistanceOtherService(current);
+    if (specific === null || !specific) {
+      event.target.value = '';
+      if ($('ta-service-other')) $('ta-service-other').value = '';
+      updateTechnicalAssistanceOtherPreview();
+    }
+  } else {
+    if ($('ta-service-other')) $('ta-service-other').value = '';
+    updateTechnicalAssistanceOtherPreview();
+  }
+});
+
 $('ta-form')?.addEventListener('submit', async event => {
   event.preventDefault();
   const isEditing = Boolean(editingTechnicalAssistanceId);
@@ -6232,18 +6303,27 @@ $('ta-form')?.addEventListener('submit', async event => {
   const requestDate = normalizeText($('ta-request-date').value);
   const controlNo = normalizeText($('ta-control-no').value);
   const officeUnit = normalizeText($('ta-office-unit').value);
-  const serviceType = normalizeText($('ta-service-type').value);
+  const serviceCategory = normalizeText($('ta-service-type').value);
+  let otherService = normalizeText($('ta-service-other')?.value || '');
 
   if (!requestDate || !parseDate(requestDate)) return showToast('Please enter a valid Request Date.', 'error');
   if (!controlNo) return showToast('Control No. is required.', 'error');
   if (!officeUnit) return showToast('Office/Unit is required.', 'error');
-  if (!serviceType) return showToast('Type of Service is required.', 'error');
+  if (!serviceCategory) return showToast('Type of Service is required.', 'error');
+  if (serviceCategory === 'Others' && !otherService) {
+    const prompted = askTechnicalAssistanceOtherService('');
+    if (!prompted) return;
+    otherService = prompted;
+  }
 
+  const serviceType = serviceCategory === 'Others' ? otherService : serviceCategory;
   const data = {
     requestDate,
     controlNo,
     officeUnit,
     serviceType,
+    serviceCategory,
+    otherService: serviceCategory === 'Others' ? otherService : '',
     updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
     updatedBy: currentUser.uid,
     updatedByName: currentDisplayName()
@@ -6298,7 +6378,7 @@ function renderTechnicalAssistanceReport() {
   const filtered = semesterRecords
     .filter(record => {
       if (!search) return true;
-      const haystack = [record.controlNo, record.officeUnit, record.serviceType, record.requestDate].map(safeLower).join(' ');
+      const haystack = [record.controlNo, record.officeUnit, technicalAssistanceServiceLabel(record), record.serviceCategory, record.otherService, record.requestDate].map(safeLower).join(' ');
       return haystack.includes(search);
     })
     .sort((a, b) => (parseDate(b.requestDate)?.getTime() || 0) - (parseDate(a.requestDate)?.getTime() || 0));
@@ -6318,7 +6398,7 @@ function renderTechnicalAssistanceReport() {
       <td>${formatDisplayDate(record.requestDate)}</td>
       <td class="font-semibold">${escapeHTML(record.controlNo || '-')}</td>
       <td>${escapeHTML(record.officeUnit || '-')}</td>
-      <td>${escapeHTML(record.serviceType || '-')}</td>
+      <td>${escapeHTML(technicalAssistanceServiceLabel(record))}</td>
       <td><div class="flex gap-2 justify-center">${actions.length ? actions.join('') : '-'}</div></td>
     `;
     tbody.appendChild(row);
@@ -6342,7 +6422,7 @@ function renderTechnicalAssistanceRecords() {
       <td>${formatDisplayDate(record.requestDate)}</td>
       <td class="font-semibold">${escapeHTML(record.controlNo || '-')}</td>
       <td>${escapeHTML(record.officeUnit || '-')}</td>
-      <td>${escapeHTML(record.serviceType || '-')}</td>
+      <td>${escapeHTML(technicalAssistanceServiceLabel(record))}</td>
     `;
     tbody.appendChild(row);
   });
@@ -6358,7 +6438,19 @@ window.editTechnicalAssistanceRequest = function(id) {
   $('ta-request-date').value = record.requestDate || '';
   $('ta-control-no').value = record.controlNo || '';
   $('ta-office-unit').value = record.officeUnit || '';
-  $('ta-service-type').value = record.serviceType || '';
+
+  const storedCategory = normalizeText(record.serviceCategory || '');
+  const storedService = normalizeText(record.serviceType || '');
+  const isPreset = TECHNICAL_ASSISTANCE_SERVICE_OPTIONS.includes(storedCategory || storedService);
+  if (storedCategory === 'Others' || (!isPreset && storedService)) {
+    $('ta-service-type').value = 'Others';
+    const specific = normalizeText(record.otherService || storedService).replace(/^Others\s*[–—-]\s*/i, '');
+    if ($('ta-service-other')) $('ta-service-other').value = specific;
+  } else {
+    $('ta-service-type').value = storedCategory || storedService || '';
+    if ($('ta-service-other')) $('ta-service-other').value = '';
+  }
+  updateTechnicalAssistanceOtherPreview();
   $('ta-cancel-btn')?.classList.remove('hidden');
   if ($('ta-form-title')) $('ta-form-title').textContent = 'Edit Technical Assistance Request';
   const submitBtn = $('ta-form')?.querySelector('button[type="submit"]');
@@ -6644,7 +6736,7 @@ $('media-report-search').addEventListener('input', renderMediaReport);
 // =============================================================================
 // PAUMOVISION V2 — ZERO-BUDGET BACKUP, RESTORE & STORAGE STATUS
 // =============================================================================
-const PAUMOVISION_VERSION = '2.6.2-no-install-button';
+const PAUMOVISION_VERSION = '2.6.3-ta-service-dropdown';
 const BACKUP_COLLECTIONS = [
   'movs', 'ieca_feedback', 'ieca_settings', 'omrm', 'media_interviews', 'technical_assistance_requests',
   'users', 'auditLogs', 'loginActivities'
