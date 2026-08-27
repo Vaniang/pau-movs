@@ -9,7 +9,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="PAUMOVision" />
   <meta name="description" content=" PAUMOVision — Public Affairs Unit Means of Verification and Facebook Engagement Tracker" />
-  <title>PAUMOVision v2.5.1 | PAU Means of Verification Tracker</title>
+  <title>PAUMOVision v2.6.0 | PAU Means of Verification Tracker</title>
 
   <link rel="icon" type="image/png" href="logo.png" />
   <link rel="apple-touch-icon" href="logo.png" />
@@ -522,6 +522,18 @@ tbody tr:last-child td { border-bottom: none; }
   padding: 1rem; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
 #media-report-table, #media-records-table { min-width: 760px; }
+#ta-report-table, #ta-records-table { min-width: 820px; }
+#ta-report-table td:nth-child(3), #ta-report-table td:nth-child(4),
+#ta-records-table td:nth-child(3), #ta-records-table td:nth-child(4) {
+  white-space: normal; overflow-wrap: anywhere; word-break: normal;
+}
+.ta-count-dashboard {
+  background: linear-gradient(135deg, #ffffff 0%, var(--primary-soft) 100%);
+  border: 1px solid var(--primary-border); border-radius: var(--radius);
+  padding: 1.25rem; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+.ta-count-dashboard .count { font-size: 2rem; line-height: 1; font-weight: 800; color: var(--primary); }
+.ta-count-dashboard .label { margin-top: .45rem; font-size: .78rem; color: var(--muted-foreground); text-transform: uppercase; letter-spacing: .04em; font-weight: 700; }
 .summary-card-omrm .count { font-size: 1.5rem; font-weight: 700; color: var(--primary); }
 .summary-card-omrm .label { font-size: 0.75rem; color: var(--muted-foreground); text-transform: uppercase; }
 
@@ -862,6 +874,9 @@ tbody tr:last-child td { border-bottom: none; }
 		<button class="nav-item dropdown-item" data-section="media-input" type="button">
     		<i class="fas fa-microphone-lines" aria-hidden="true"></i> Media Interviews
 		</button>
+		<button class="nav-item dropdown-item" data-section="ta-input" type="button">
+          <i class="fas fa-headset" aria-hidden="true"></i> Technical Assistance Request
+        </button>
     </div>
 </div>
   
@@ -885,6 +900,9 @@ tbody tr:last-child td { border-bottom: none; }
 	<button class="nav-item dropdown-item" data-section="media-report" type="button">
 	  <i class="fas fa-newspaper" aria-hidden="true"></i> Media Interviews Report
 	</button>
+	<button class="nav-item dropdown-item" data-section="ta-report" type="button">
+      <i class="fas fa-headset" aria-hidden="true"></i> Technical Assistance Request Report
+    </button>
     </div>
   </div>
   
@@ -911,6 +929,9 @@ tbody tr:last-child td { border-bottom: none; }
 		<button class="nav-item dropdown-item" data-section="media-records" type="button">
   <i class="fas fa-images" aria-hidden="true"></i> Media Interviews Records
 </button>
+        <button class="nav-item dropdown-item" data-section="ta-records" type="button">
+          <i class="fas fa-headset" aria-hidden="true"></i> Technical Assistance Request Records
+        </button>
     </div>
 </div>
   
@@ -1659,6 +1680,133 @@ tbody tr:last-child td { border-bottom: none; }
 	  </thead>
 	  <tbody></tbody>
 	</table>
+    </div>
+  </div>
+</section>
+
+
+<!-- ========================================== -->
+<!-- TECHNICAL ASSISTANCE REQUEST: INPUT        -->
+<!-- ========================================== -->
+<section id="ta-input" class="section">
+  <div class="section-header flex justify-between items-center mb-6">
+    <div>
+      <h1>Technical Assistance Request</h1>
+      <p class="text-muted">Encode technical assistance requests received by the Public Affairs Unit.</p>
+    </div>
+  </div>
+  <div class="card mb-6">
+    <h3 class="text-sm font-semibold mb-4" id="ta-form-title">Add New Technical Assistance Request</h3>
+    <form id="ta-form">
+      <input type="hidden" id="ta-id" />
+      <div class="form-grid">
+        <div>
+          <label for="ta-request-date">Request Date *</label>
+          <input type="date" id="ta-request-date" required />
+        </div>
+        <div>
+          <label for="ta-control-no">Control No. *</label>
+          <input type="text" id="ta-control-no" required placeholder="Enter control number" />
+        </div>
+        <div class="form-wide">
+          <label for="ta-office-unit">Office/Unit *</label>
+          <input type="text" id="ta-office-unit" required placeholder="Requesting office or unit" />
+        </div>
+        <div class="form-wide">
+          <label for="ta-service-type">Type of Service *</label>
+          <input type="text" id="ta-service-type" required placeholder="Describe the technical assistance/service requested" />
+        </div>
+      </div>
+      <div class="flex gap-2 mt-4 justify-end">
+        <button type="button" id="ta-cancel-btn" class="btn btn-outline h-9 hidden">Cancel Edit</button>
+        <button type="submit" class="btn btn-gold h-9">
+          <i class="fas fa-floppy-disk" aria-hidden="true"></i> Save Request
+        </button>
+      </div>
+    </form>
+  </div>
+</section>
+
+<!-- ========================================== -->
+<!-- TECHNICAL ASSISTANCE REQUEST: REPORT       -->
+<!-- ========================================== -->
+<section id="ta-report" class="section">
+  <div class="section-header flex justify-between items-center mb-6">
+    <div>
+      <h1>Technical Assistance Request Report</h1>
+      <p class="text-muted">Filter requests by semester, search records, and manage encoded requests.</p>
+    </div>
+  </div>
+
+  <div class="card mb-6 no-print">
+    <div class="filter-bar">
+      <div>
+        <label for="ta-report-semester">Semester</label>
+        <select id="ta-report-semester">
+          <option value="all">All Semesters</option>
+          <option value="1">1st Semester (Jan - Jun)</option>
+          <option value="2">2nd Semester (Jul - Dec)</option>
+        </select>
+      </div>
+      <div class="form-wide">
+        <label for="ta-report-search">Search</label>
+        <input type="search" id="ta-report-search" placeholder="Search control no., office/unit, or type of service..." />
+      </div>
+    </div>
+  </div>
+
+  <div class="grid mb-6" style="grid-template-columns: minmax(220px, 360px); gap: 1rem;">
+    <div class="ta-count-dashboard">
+      <div class="count" id="ta-report-count">0</div>
+      <div class="label" id="ta-report-count-label">Total Technical Assistance Requests</div>
+    </div>
+  </div>
+
+  <div class="card" style="padding:0;">
+    <div class="table-wrapper" style="border:none;">
+      <table id="ta-report-table">
+        <thead>
+          <tr>
+            <th>Request Date</th>
+            <th>Control No.</th>
+            <th>Office/Unit</th>
+            <th>Type of Service</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td colspan="5" class="empty-state">No technical assistance requests yet.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ========================================== -->
+<!-- TECHNICAL ASSISTANCE REQUEST: RECORDS      -->
+<!-- ========================================== -->
+<section id="ta-records" class="section">
+  <div class="section-header flex justify-between items-center mb-6">
+    <div>
+      <h1>Technical Assistance Request Records</h1>
+      <p class="text-muted">Complete record of all encoded technical assistance requests.</p>
+    </div>
+  </div>
+  <div class="card" style="padding:0;">
+    <div class="table-wrapper" style="border:none;">
+      <table id="ta-records-table">
+        <thead>
+          <tr>
+            <th>Request Date</th>
+            <th>Control No.</th>
+            <th>Office/Unit</th>
+            <th>Type of Service</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td colspan="4" class="empty-state">No technical assistance requests yet.</td></tr>
+        </tbody>
+      </table>
     </div>
   </div>
 </section>
@@ -2678,6 +2826,7 @@ auth.onAuthStateChanged(async (user) => {
     listenToMovs();
 	listenToOMRM();
 	listenToMedia();
+    listenToTechnicalAssistance();
   } catch (error) {
     console.error(error);
     const message = error.message || 'Your user profile could not be loaded.';
@@ -2697,6 +2846,8 @@ function applyPermissionUI() {
   if (navOMRMInputBtn) navOMRMInputBtn.classList.toggle('hidden', !isAdmin);
 const navMediaInputBtn = document.querySelector('.nav-item[data-section="media-input"]');
 if (navMediaInputBtn) navMediaInputBtn.classList.toggle('hidden', !isAdmin);
+  const navTAInputBtn = document.querySelector('.nav-item[data-section="ta-input"]');
+  if (navTAInputBtn) navTAInputBtn.classList.toggle('hidden', !isAdmin);
   
   if (navMovsAdminBtn) navMovsAdminBtn.classList.toggle('hidden', !isAdmin);
   if (navLoginBtn) navLoginBtn.classList.toggle('hidden', !isAdmin);
@@ -4953,6 +5104,9 @@ function switchSection(sectionId) {
 
 	if (sectionId === 'media-report') renderMediaReport();
 	if (sectionId === 'media-records') renderMediaRecords();
+
+    if (sectionId === 'ta-report') renderTechnicalAssistanceReport();
+    if (sectionId === 'ta-records') renderTechnicalAssistanceRecords();
     
     // Scroll to top
     document.querySelector('.content')?.scrollTo({ top: 0, behavior: 'smooth' });
@@ -6034,6 +6188,208 @@ if (printBtn) {
     el.addEventListener(id === 'omrm-report-search' ? 'input' : 'change', renderOMRMReport);
   }
 });
+
+// =============================================================================
+// TECHNICAL ASSISTANCE REQUEST MODULE
+// =============================================================================
+const technicalAssistanceColl = db.collection('technical_assistance_requests');
+let technicalAssistanceData = [];
+let editingTechnicalAssistanceId = null;
+
+function technicalAssistanceSemester(record) {
+  const date = parseDate(record.requestDate);
+  if (!date) return '';
+  return date.getMonth() <= 5 ? '1' : '2';
+}
+
+function resetTechnicalAssistanceForm() {
+  const form = $('ta-form');
+  if (!form) return;
+  form.reset();
+  editingTechnicalAssistanceId = null;
+  if ($('ta-id')) $('ta-id').value = '';
+  if ($('ta-request-date')) $('ta-request-date').value = dateToISO(new Date());
+  if ($('ta-cancel-btn')) $('ta-cancel-btn').classList.add('hidden');
+  if ($('ta-form-title')) $('ta-form-title').textContent = 'Add New Technical Assistance Request';
+  const submitBtn = form.querySelector('button[type="submit"]');
+  if (submitBtn) submitBtn.innerHTML = '<i class="fas fa-floppy-disk" aria-hidden="true"></i> Save Request';
+}
+
+function listenToTechnicalAssistance() {
+  technicalAssistanceColl.orderBy('requestDate', 'desc').onSnapshot(snapshot => {
+    technicalAssistanceData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    renderTechnicalAssistanceReport();
+    renderTechnicalAssistanceRecords();
+  }, error => {
+    console.error('Technical Assistance listener error:', error);
+    showToast('Unable to load Technical Assistance Request records: ' + error.message, 'error');
+  });
+  if ($('ta-request-date') && !$('ta-request-date').value) $('ta-request-date').value = dateToISO(new Date());
+}
+
+$('ta-form')?.addEventListener('submit', async event => {
+  event.preventDefault();
+  const isEditing = Boolean(editingTechnicalAssistanceId);
+  if (isEditing && !can('edit')) return showToast('You are not authorized to edit requests.', 'error');
+  if (!isEditing && !can('create')) return showToast('You are not authorized to create requests.', 'error');
+
+  const requestDate = normalizeText($('ta-request-date').value);
+  const controlNo = normalizeText($('ta-control-no').value);
+  const officeUnit = normalizeText($('ta-office-unit').value);
+  const serviceType = normalizeText($('ta-service-type').value);
+
+  if (!requestDate || !parseDate(requestDate)) return showToast('Please enter a valid Request Date.', 'error');
+  if (!controlNo) return showToast('Control No. is required.', 'error');
+  if (!officeUnit) return showToast('Office/Unit is required.', 'error');
+  if (!serviceType) return showToast('Type of Service is required.', 'error');
+
+  const data = {
+    requestDate,
+    controlNo,
+    officeUnit,
+    serviceType,
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    updatedBy: currentUser.uid,
+    updatedByName: currentDisplayName()
+  };
+
+  try {
+    setLoading(true, isEditing ? 'Updating technical assistance request...' : 'Saving technical assistance request...');
+    if (isEditing) {
+      await technicalAssistanceColl.doc(editingTechnicalAssistanceId).update(data);
+      await logAudit('UPDATE_TECHNICAL_ASSISTANCE_REQUEST', editingTechnicalAssistanceId, { controlNo, officeUnit, serviceType });
+      showToast('Technical assistance request updated successfully.');
+    } else {
+      data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+      data.createdBy = currentUser.uid;
+      data.createdByName = currentDisplayName();
+      const ref = await technicalAssistanceColl.add(data);
+      await logAudit('CREATE_TECHNICAL_ASSISTANCE_REQUEST', ref.id, { controlNo, officeUnit, serviceType });
+      showToast('Technical assistance request saved successfully.');
+    }
+    resetTechnicalAssistanceForm();
+  } catch (error) {
+    console.error(error);
+    showToast('Unable to save request: ' + error.message, 'error');
+  } finally {
+    setLoading(false);
+  }
+});
+
+$('ta-cancel-btn')?.addEventListener('click', resetTechnicalAssistanceForm);
+
+function renderTechnicalAssistanceReport() {
+  const tbody = document.querySelector('#ta-report-table tbody');
+  if (!tbody) return;
+
+  const semester = $('ta-report-semester')?.value || 'all';
+  const search = safeLower($('ta-report-search')?.value || '');
+  const semesterRecords = technicalAssistanceData.filter(record => semester === 'all' || technicalAssistanceSemester(record) === semester);
+
+  if ($('ta-report-count')) $('ta-report-count').textContent = semesterRecords.length.toLocaleString('en-PH');
+  if ($('ta-report-count-label')) {
+    $('ta-report-count-label').textContent = semester === '1'
+      ? '1st Semester Technical Assistance Requests'
+      : semester === '2'
+        ? '2nd Semester Technical Assistance Requests'
+        : 'Total Technical Assistance Requests';
+  }
+
+  const filtered = semesterRecords
+    .filter(record => {
+      if (!search) return true;
+      const haystack = [record.controlNo, record.officeUnit, record.serviceType, record.requestDate].map(safeLower).join(' ');
+      return haystack.includes(search);
+    })
+    .sort((a, b) => (parseDate(b.requestDate)?.getTime() || 0) - (parseDate(a.requestDate)?.getTime() || 0));
+
+  tbody.replaceChildren();
+  if (!filtered.length) {
+    tbody.innerHTML = '<tr><td colspan="5" class="empty-state">No technical assistance requests found.</td></tr>';
+    return;
+  }
+
+  filtered.forEach(record => {
+    const row = document.createElement('tr');
+    const actions = [];
+    if (can('edit')) actions.push(`<button class="btn btn-ghost h-icon" type="button" title="Edit" aria-label="Edit ${escapeHTML(record.controlNo || 'request')}" onclick="editTechnicalAssistanceRequest('${record.id}')" style="color:var(--primary);"><i class="fas fa-pen" aria-hidden="true"></i></button>`);
+    if (can('delete')) actions.push(`<button class="btn btn-ghost h-icon" type="button" title="Delete" aria-label="Delete ${escapeHTML(record.controlNo || 'request')}" onclick="deleteTechnicalAssistanceRequest('${record.id}')" style="color:var(--destructive);"><i class="fas fa-trash" aria-hidden="true"></i></button>`);
+    row.innerHTML = `
+      <td>${formatDisplayDate(record.requestDate)}</td>
+      <td class="font-semibold">${escapeHTML(record.controlNo || '-')}</td>
+      <td>${escapeHTML(record.officeUnit || '-')}</td>
+      <td>${escapeHTML(record.serviceType || '-')}</td>
+      <td><div class="flex gap-2 justify-center">${actions.length ? actions.join('') : '-'}</div></td>
+    `;
+    tbody.appendChild(row);
+  });
+}
+
+function renderTechnicalAssistanceRecords() {
+  const tbody = document.querySelector('#ta-records-table tbody');
+  if (!tbody) return;
+  tbody.replaceChildren();
+
+  const sorted = [...technicalAssistanceData].sort((a, b) => (parseDate(b.requestDate)?.getTime() || 0) - (parseDate(a.requestDate)?.getTime() || 0));
+  if (!sorted.length) {
+    tbody.innerHTML = '<tr><td colspan="4" class="empty-state">No technical assistance requests yet.</td></tr>';
+    return;
+  }
+
+  sorted.forEach(record => {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${formatDisplayDate(record.requestDate)}</td>
+      <td class="font-semibold">${escapeHTML(record.controlNo || '-')}</td>
+      <td>${escapeHTML(record.officeUnit || '-')}</td>
+      <td>${escapeHTML(record.serviceType || '-')}</td>
+    `;
+    tbody.appendChild(row);
+  });
+}
+
+window.editTechnicalAssistanceRequest = function(id) {
+  if (!can('edit')) return showToast('You are not authorized to edit requests.', 'error');
+  const record = technicalAssistanceData.find(item => item.id === id);
+  if (!record) return showToast('Request record not found.', 'error');
+
+  editingTechnicalAssistanceId = id;
+  if ($('ta-id')) $('ta-id').value = id;
+  $('ta-request-date').value = record.requestDate || '';
+  $('ta-control-no').value = record.controlNo || '';
+  $('ta-office-unit').value = record.officeUnit || '';
+  $('ta-service-type').value = record.serviceType || '';
+  $('ta-cancel-btn')?.classList.remove('hidden');
+  if ($('ta-form-title')) $('ta-form-title').textContent = 'Edit Technical Assistance Request';
+  const submitBtn = $('ta-form')?.querySelector('button[type="submit"]');
+  if (submitBtn) submitBtn.innerHTML = '<i class="fas fa-pen-to-square" aria-hidden="true"></i> Update Request';
+
+  switchSection('ta-input');
+  $('ta-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+};
+
+window.deleteTechnicalAssistanceRequest = async function(id) {
+  if (!can('delete')) return showToast('You are not authorized to delete requests.', 'error');
+  const record = technicalAssistanceData.find(item => item.id === id);
+  if (!record) return showToast('Request record not found.', 'error');
+  if (!confirm(`Permanently delete Technical Assistance Request “${record.controlNo || 'Untitled'}”? This cannot be undone.`)) return;
+
+  try {
+    setLoading(true, 'Deleting technical assistance request...');
+    await logAudit('DELETE_TECHNICAL_ASSISTANCE_REQUEST', id, { controlNo: record.controlNo || '', officeUnit: record.officeUnit || '', serviceType: record.serviceType || '' });
+    await technicalAssistanceColl.doc(id).delete();
+    showToast('Technical assistance request deleted successfully.');
+  } catch (error) {
+    console.error(error);
+    showToast('Unable to delete request: ' + error.message, 'error');
+  } finally {
+    setLoading(false);
+  }
+};
+
+$('ta-report-semester')?.addEventListener('change', renderTechnicalAssistanceReport);
+$('ta-report-search')?.addEventListener('input', renderTechnicalAssistanceReport);
+
 	 // =============================================================================
 // MEDIA INTERVIEWS MODULE
 // =============================================================================
@@ -6288,12 +6644,12 @@ $('media-report-search').addEventListener('input', renderMediaReport);
 // =============================================================================
 // PAUMOVISION V2 — ZERO-BUDGET BACKUP, RESTORE & STORAGE STATUS
 // =============================================================================
-const PAUMOVISION_VERSION = '2.5.1-zero-budget';
+const PAUMOVISION_VERSION = '2.6.0-technical-assistance';
 const BACKUP_COLLECTIONS = [
-  'movs', 'ieca_feedback', 'ieca_settings', 'omrm', 'media_interviews',
+  'movs', 'ieca_feedback', 'ieca_settings', 'omrm', 'media_interviews', 'technical_assistance_requests',
   'users', 'auditLogs', 'loginActivities'
 ];
-const RESTORABLE_COLLECTIONS = new Set(['movs', 'ieca_feedback', 'ieca_settings', 'omrm', 'media_interviews']);
+const RESTORABLE_COLLECTIONS = new Set(['movs', 'ieca_feedback', 'ieca_settings', 'omrm', 'media_interviews', 'technical_assistance_requests']);
 const LAST_BACKUP_KEY = 'paumovision_last_backup_at';
 const MOV_ARCHIVE_URL_KEY = 'paumovision_mov_archive_url';
 let backupReminderShown = false;
