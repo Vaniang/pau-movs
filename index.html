@@ -527,13 +527,50 @@ tbody tr:last-child td { border-bottom: none; }
 #ta-records-table td:nth-child(3), #ta-records-table td:nth-child(4) {
   white-space: normal; overflow-wrap: anywhere; word-break: normal;
 }
-.ta-count-dashboard {
-  background: linear-gradient(135deg, #ffffff 0%, var(--primary-soft) 100%);
-  border: 1px solid var(--primary-border); border-radius: var(--radius);
-  padding: 1.25rem; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+.ta-report-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
 }
-.ta-count-dashboard .count { font-size: 2rem; line-height: 1; font-weight: 800; color: var(--primary); }
-.ta-count-dashboard .label { margin-top: .45rem; font-size: .78rem; color: var(--muted-foreground); text-transform: uppercase; letter-spacing: .04em; font-weight: 700; }
+.ta-count-dashboard,
+.ta-semester-card {
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 1.5rem 1rem;
+  text-align: center;
+  box-shadow: 0 2px 5px rgba(15, 23, 42, 0.06);
+  min-width: 0;
+}
+.ta-count-dashboard {
+  border-color: var(--primary-border);
+  background: linear-gradient(135deg, #ffffff 0%, var(--primary-soft) 100%);
+}
+.ta-count-dashboard .count,
+.ta-semester-card .count {
+  font-size: 2.25rem;
+  line-height: 1;
+  font-weight: 800;
+  color: var(--primary);
+}
+.ta-count-dashboard .label,
+.ta-semester-card .label {
+  margin-top: .55rem;
+  font-size: .88rem;
+  color: var(--muted-foreground);
+  text-transform: uppercase;
+  letter-spacing: .02em;
+  font-weight: 600;
+  line-height: 1.35;
+}
+@media (max-width: 900px) {
+  .ta-report-summary-grid { grid-template-columns: 1fr 1fr; }
+  .ta-count-dashboard { grid-column: 1 / -1; }
+}
+@media (max-width: 560px) {
+  .ta-report-summary-grid { grid-template-columns: 1fr; }
+  .ta-count-dashboard { grid-column: auto; }
+}
 .summary-card-omrm .count { font-size: 1.5rem; font-weight: 700; color: var(--primary); }
 .summary-card-omrm .label { font-size: 0.75rem; color: var(--muted-foreground); text-transform: uppercase; }
 
@@ -950,9 +987,6 @@ tbody tr:last-child td { border-bottom: none; }
           <div id="user-role" class="role">Viewer</div>
         </div>
         <div class="flex gap-2 flex-wrap">
-          <button id="install-app-btn" class="btn btn-outline h-8" type="button" title="Install PAUMOVision">
-            <i class="fas fa-download" aria-hidden="true"></i> Install
-          </button>
           <button id="logout-btn" class="btn btn-outline h-8" type="button" title="Sign out">
             <i class="fas fa-arrow-right-from-bracket" aria-hidden="true"></i> Sign out
           </button>
@@ -1755,10 +1789,18 @@ tbody tr:last-child td { border-bottom: none; }
     </div>
   </div>
 
-  <div class="grid mb-6" style="grid-template-columns: minmax(220px, 360px); gap: 1rem;">
+  <div class="ta-report-summary-grid mb-6">
     <div class="ta-count-dashboard">
       <div class="count" id="ta-report-count">0</div>
       <div class="label" id="ta-report-count-label">Total Technical Assistance Requests</div>
+    </div>
+    <div class="ta-semester-card">
+      <div class="count" id="ta-first-semester-count">0</div>
+      <div class="label">1st Semester (Jan–Jun)</div>
+    </div>
+    <div class="ta-semester-card">
+      <div class="count" id="ta-second-semester-count">0</div>
+      <div class="label">2nd Semester (Jul–Dec)</div>
     </div>
   </div>
 
@@ -2416,7 +2458,6 @@ let loginActivityRecords = [];
 let unsubscribeLoginActivity = null;
 let currentLoginActivityRef = null;
 let currentLoginActivityId = '';
-let deferredInstallPrompt = null;
 let inactivityWarningTimer = null;
 let inactivityLogoutTimer = null;
 let inactivityCountdownTimer = null;
@@ -4707,50 +4748,6 @@ function exportImportIssues(issues) {
   XLSX.writeFile(workbook, `PAUMOVision_Import_Issues_${Date.now()}.xlsx`);
 }
 
-function isStandaloneMode() {
-  return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-}
-
-function updateInstallButton() {
-  $('install-app-btn').classList.toggle('hidden', isStandaloneMode());
-}
-
-window.addEventListener('beforeinstallprompt', event => {
-  event.preventDefault();
-  deferredInstallPrompt = event;
-  updateInstallButton();
-});
-
-window.addEventListener('appinstalled', () => {
-  deferredInstallPrompt = null;
-  updateInstallButton();
-  showToast('PAUMOVision was installed successfully.');
-});
-
-$('install-app-btn').addEventListener('click', async () => {
-  if (isStandaloneMode()) {
-    return showToast('PAUMOVision is already installed.');
-  }
-
-  if (deferredInstallPrompt) {
-    deferredInstallPrompt.prompt();
-    const choice = await deferredInstallPrompt.userChoice;
-    if (choice.outcome === 'accepted') {
-      showToast('Installing PAUMOVision...');
-    }
-    deferredInstallPrompt = null;
-    updateInstallButton();
-    return;
-  }
-
-  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
-  if (isIOS) {
-    alert('To install PAUMOVision on iPhone or iPad: tap the Share button in Safari, then choose “Add to Home Screen.”');
-  } else {
-    alert('Open your browser menu and choose “Install PAUMOVision” or “Add to Home screen.” Installation requires HTTPS.');
-  }
-});
-
 function updateOnlineStatus() {
   const offline = !navigator.onLine;
   $('offline-banner').classList.toggle('hidden', !offline);
@@ -4773,7 +4770,6 @@ document.addEventListener('keydown', event => {
 
 initializeSelectOptions();
 resetForm();
-updateInstallButton();
 updateOnlineStatus();
 
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
@@ -6284,8 +6280,12 @@ function renderTechnicalAssistanceReport() {
 
   const semester = $('ta-report-semester')?.value || 'all';
   const search = safeLower($('ta-report-search')?.value || '');
+  const firstSemesterCount = technicalAssistanceData.filter(record => technicalAssistanceSemester(record) === '1').length;
+  const secondSemesterCount = technicalAssistanceData.filter(record => technicalAssistanceSemester(record) === '2').length;
   const semesterRecords = technicalAssistanceData.filter(record => semester === 'all' || technicalAssistanceSemester(record) === semester);
 
+  if ($('ta-first-semester-count')) $('ta-first-semester-count').textContent = firstSemesterCount.toLocaleString('en-PH');
+  if ($('ta-second-semester-count')) $('ta-second-semester-count').textContent = secondSemesterCount.toLocaleString('en-PH');
   if ($('ta-report-count')) $('ta-report-count').textContent = semesterRecords.length.toLocaleString('en-PH');
   if ($('ta-report-count-label')) {
     $('ta-report-count-label').textContent = semester === '1'
@@ -6644,7 +6644,7 @@ $('media-report-search').addEventListener('input', renderMediaReport);
 // =============================================================================
 // PAUMOVISION V2 — ZERO-BUDGET BACKUP, RESTORE & STORAGE STATUS
 // =============================================================================
-const PAUMOVISION_VERSION = '2.6.0-technical-assistance';
+const PAUMOVISION_VERSION = '2.6.2-no-install-button';
 const BACKUP_COLLECTIONS = [
   'movs', 'ieca_feedback', 'ieca_settings', 'omrm', 'media_interviews', 'technical_assistance_requests',
   'users', 'auditLogs', 'loginActivities'
