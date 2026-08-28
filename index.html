@@ -9,7 +9,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="PAUMOVision" />
   <meta name="description" content=" PAUMOVision — Public Affairs Unit Means of Verification and Facebook Engagement Tracker" />
-  <title>PAUMOVision v2.6.0 | PAU Means of Verification Tracker</title>
+  <title>PAUMOVision v2.6.4 | PAU Means of Verification Tracker</title>
 
   <link rel="icon" type="image/png" href="logo.png" />
   <link rel="apple-touch-icon" href="logo.png" />
@@ -574,6 +574,41 @@ tbody tr:last-child td { border-bottom: none; }
 .summary-card-omrm .count { font-size: 1.5rem; font-weight: 700; color: var(--primary); }
 .summary-card-omrm .label { font-size: 0.75rem; color: var(--muted-foreground); text-transform: uppercase; }
 
+/* --- Consolidated Quarterly Report --- */
+.consolidated-filter-grid { display:grid; grid-template-columns:minmax(150px,.55fr) minmax(210px,.75fr) minmax(360px,1.6fr); gap:1rem; align-items:end; }
+.consolidated-filter-actions { display:flex; gap:.6rem; justify-content:flex-end; flex-wrap:wrap; }
+.consolidated-report-preview { width:100%; }
+.consolidated-sheet { background:#fff; border:1px solid var(--border); border-radius:18px; padding:2rem; box-shadow:0 3px 14px rgba(15,23,42,.06); }
+.consolidated-report-header { text-align:center; padding-bottom:1.25rem; margin-bottom:1.25rem; border-bottom:2px solid var(--primary); }
+.consolidated-report-header .eyebrow { color:var(--muted-foreground); font-size:.76rem; font-weight:700; text-transform:uppercase; letter-spacing:.11em; }
+.consolidated-report-header h2 { margin:.35rem 0 .25rem; color:var(--primary); font-size:1.55rem; }
+.consolidated-report-header .period { color:var(--muted-foreground); font-size:.9rem; }
+.consolidated-meta { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:.75rem; margin-bottom:1.25rem; font-size:.82rem; }
+.consolidated-meta > div { background:var(--muted); border-radius:10px; padding:.75rem .9rem; }
+.consolidated-summary-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:.85rem; margin-bottom:1.5rem; }
+.consolidated-summary-card { border:1px solid var(--border); border-radius:14px; padding:1rem; background:#fff; min-width:0; }
+.consolidated-summary-card .value { color:var(--primary); font-size:1.6rem; font-weight:800; line-height:1.05; overflow-wrap:anywhere; }
+.consolidated-summary-card .label { color:var(--muted-foreground); font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.035em; margin-top:.35rem; line-height:1.3; }
+.consolidated-report-section { margin-top:1.5rem; break-inside:avoid; }
+.consolidated-report-section h3 { color:var(--primary); font-size:1rem; margin:0 0 .75rem; padding-bottom:.45rem; border-bottom:1px solid var(--border); }
+.consolidated-report-section .section-note { color:var(--muted-foreground); font-size:.78rem; margin:-.35rem 0 .8rem; }
+.consolidated-mini-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:.75rem; margin-bottom:1rem; }
+.consolidated-mini-card { border:1px solid var(--border); border-radius:12px; padding:.8rem .9rem; text-align:center; }
+.consolidated-mini-card .value { font-weight:800; color:var(--primary); font-size:1.25rem; }
+.consolidated-mini-card .label { color:var(--muted-foreground); font-size:.68rem; text-transform:uppercase; font-weight:700; margin-top:.25rem; }
+.consolidated-table-wrap { overflow-x:auto; }
+.consolidated-table { width:100%; border-collapse:collapse; font-size:.78rem; }
+.consolidated-table th,.consolidated-table td { border:1px solid var(--border); padding:.55rem .6rem; vertical-align:top; overflow-wrap:anywhere; }
+.consolidated-table th { background:var(--primary-soft); color:var(--primary); font-weight:700; text-align:center; }
+.consolidated-table .num { text-align:right; font-variant-numeric:tabular-nums; }
+.consolidated-table .center { text-align:center; }
+.consolidated-bar { height:7px; border-radius:999px; background:#e2e8f0; overflow:hidden; margin-top:.3rem; }
+.consolidated-bar > span { display:block; height:100%; border-radius:999px; background:var(--primary); }
+.consolidated-footer { margin-top:1.5rem; padding-top:.8rem; border-top:1px solid var(--border); display:flex; justify-content:space-between; gap:1rem; color:var(--muted-foreground); font-size:.72rem; }
+@media (max-width:1050px) { .consolidated-filter-grid{grid-template-columns:1fr 1fr}.consolidated-filter-actions{grid-column:1/-1;justify-content:flex-start}.consolidated-summary-grid{grid-template-columns:repeat(2,1fr)} }
+@media (max-width:650px) { .consolidated-filter-grid,.consolidated-meta,.consolidated-summary-grid,.consolidated-mini-grid{grid-template-columns:1fr}.consolidated-filter-actions{grid-column:auto}.consolidated-sheet{padding:1rem}.consolidated-footer{flex-direction:column} }
+
+
 /* --- PAUMOVision v2: Zero-budget Backup & Storage Workspace --- */
 .system-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:1rem; margin-bottom:1.5rem; }
 .system-stat { padding:1.1rem; border:1px solid var(--border); border-radius:var(--radius); background:#fff; min-width:0; }
@@ -924,6 +959,9 @@ tbody tr:last-child td { border-bottom: none; }
       <i class="fas fa-chevron-down dropdown-icon" aria-hidden="true"></i>
     </button>
     <div id="reports-dropdown" class="dropdown-menu hidden">
+      <button class="nav-item dropdown-item" data-section="consolidated-report" type="button">
+        <i class="fas fa-chart-column" aria-hidden="true"></i> Consolidated Quarterly Report
+      </button>
       <!-- Inside your Reports Dropdown -->
 		<button class="nav-item dropdown-item" data-section="reports" data-report-type="movs" type="button">
 		  <i class="fas fa-file-lines" aria-hidden="true"></i> MOVs Report
@@ -1780,6 +1818,11 @@ tbody tr:last-child td { border-bottom: none; }
       <h1>Technical Assistance Request Report</h1>
       <p class="text-muted">Filter requests by semester, search records, and manage encoded requests.</p>
     </div>
+    <div class="section-actions no-print">
+      <button id="ta-generate-report-btn" class="btn btn-gold h-9" type="button">
+        <i class="fas fa-file-contract" aria-hidden="true"></i> Generate Consolidated Report
+      </button>
+    </div>
   </div>
 
   <div class="card mb-6 no-print">
@@ -1831,6 +1874,52 @@ tbody tr:last-child td { border-bottom: none; }
         </tbody>
       </table>
     </div>
+  </div>
+</section>
+
+<!-- ========================================== -->
+<!-- CONSOLIDATED PAU QUARTERLY REPORT          -->
+<!-- ========================================== -->
+<section id="consolidated-report" class="section">
+  <div class="section-header flex justify-between items-center mb-6">
+    <div>
+      <h1>Consolidated PAU Quarterly Report</h1>
+      <p class="text-muted">Generate one management report covering MOV performance, IECA evaluation, Office/Regional Memoranda, Media Interviews, and Technical Assistance Requests.</p>
+    </div>
+  </div>
+
+  <div class="card mb-6 no-print">
+    <div class="consolidated-filter-grid">
+      <div>
+        <label for="consolidated-report-year">Reporting Year</label>
+        <select id="consolidated-report-year"></select>
+      </div>
+      <div>
+        <label for="consolidated-report-quarter">Quarter</label>
+        <select id="consolidated-report-quarter">
+          <option value="all">All Quarters</option>
+          <option value="1">1st Quarter (Jan–Mar)</option>
+          <option value="2">2nd Quarter (Apr–Jun)</option>
+          <option value="3">3rd Quarter (Jul–Sep)</option>
+          <option value="4">4th Quarter (Oct–Dec)</option>
+        </select>
+      </div>
+      <div class="consolidated-filter-actions">
+        <button id="consolidated-generate-btn" class="btn btn-gold h-9" type="button">
+          <i class="fas fa-wand-magic-sparkles" aria-hidden="true"></i> Generate Report
+        </button>
+        <button id="consolidated-print-btn" class="btn btn-outline h-9" type="button" disabled>
+          <i class="fas fa-print" aria-hidden="true"></i> Print
+        </button>
+        <button id="consolidated-word-btn" class="btn btn-outline h-9" type="button" disabled>
+          <i class="fas fa-file-word" aria-hidden="true"></i> Download MS Word
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="consolidated-report-output" class="consolidated-report-preview">
+    <div class="card empty-state">Choose a reporting year and quarter, then click <strong>Generate Report</strong>.</div>
   </div>
 </section>
 
@@ -5113,6 +5202,7 @@ function switchSection(sectionId) {
 
     if (sectionId === 'ta-report') renderTechnicalAssistanceReport();
     if (sectionId === 'ta-records') renderTechnicalAssistanceRecords();
+    if (sectionId === 'consolidated-report') prepareConsolidatedReportSection();
     
     // Scroll to top
     document.querySelector('.content')?.scrollTo({ top: 0, behavior: 'smooth' });
@@ -6354,15 +6444,29 @@ $('ta-form')?.addEventListener('submit', async event => {
 
 $('ta-cancel-btn')?.addEventListener('click', resetTechnicalAssistanceForm);
 
+function getTechnicalAssistanceReportSelection() {
+  const semester = $('ta-report-semester')?.value || 'all';
+  const searchText = normalizeText($('ta-report-search')?.value || '');
+  const search = safeLower(searchText);
+  const firstSemesterCount = technicalAssistanceData.filter(record => technicalAssistanceSemester(record) === '1').length;
+  const secondSemesterCount = technicalAssistanceData.filter(record => technicalAssistanceSemester(record) === '2').length;
+  const semesterRecords = technicalAssistanceData.filter(record => semester === 'all' || technicalAssistanceSemester(record) === semester);
+  const filtered = semesterRecords
+    .filter(record => {
+      if (!search) return true;
+      const haystack = [record.controlNo, record.officeUnit, technicalAssistanceServiceLabel(record), record.serviceCategory, record.otherService, record.requestDate].map(safeLower).join(' ');
+      return haystack.includes(search);
+    })
+    .sort((a, b) => (parseDate(b.requestDate)?.getTime() || 0) - (parseDate(a.requestDate)?.getTime() || 0));
+
+  return { semester, searchText, firstSemesterCount, secondSemesterCount, semesterRecords, filtered };
+}
+
 function renderTechnicalAssistanceReport() {
   const tbody = document.querySelector('#ta-report-table tbody');
   if (!tbody) return;
 
-  const semester = $('ta-report-semester')?.value || 'all';
-  const search = safeLower($('ta-report-search')?.value || '');
-  const firstSemesterCount = technicalAssistanceData.filter(record => technicalAssistanceSemester(record) === '1').length;
-  const secondSemesterCount = technicalAssistanceData.filter(record => technicalAssistanceSemester(record) === '2').length;
-  const semesterRecords = technicalAssistanceData.filter(record => semester === 'all' || technicalAssistanceSemester(record) === semester);
+  const { semester, firstSemesterCount, secondSemesterCount, semesterRecords, filtered } = getTechnicalAssistanceReportSelection();
 
   if ($('ta-first-semester-count')) $('ta-first-semester-count').textContent = firstSemesterCount.toLocaleString('en-PH');
   if ($('ta-second-semester-count')) $('ta-second-semester-count').textContent = secondSemesterCount.toLocaleString('en-PH');
@@ -6374,14 +6478,6 @@ function renderTechnicalAssistanceReport() {
         ? '2nd Semester Technical Assistance Requests'
         : 'Total Technical Assistance Requests';
   }
-
-  const filtered = semesterRecords
-    .filter(record => {
-      if (!search) return true;
-      const haystack = [record.controlNo, record.officeUnit, technicalAssistanceServiceLabel(record), record.serviceCategory, record.otherService, record.requestDate].map(safeLower).join(' ');
-      return haystack.includes(search);
-    })
-    .sort((a, b) => (parseDate(b.requestDate)?.getTime() || 0) - (parseDate(a.requestDate)?.getTime() || 0));
 
   tbody.replaceChildren();
   if (!filtered.length) {
@@ -6403,6 +6499,101 @@ function renderTechnicalAssistanceReport() {
     `;
     tbody.appendChild(row);
   });
+}
+
+function technicalAssistanceReportPeriodLabel(semester) {
+  if (semester === '1') return '1st Semester (January–June)';
+  if (semester === '2') return '2nd Semester (July–December)';
+  return 'All Semesters';
+}
+
+function generateTechnicalAssistanceReport() {
+  if (!can('print')) return showToast('Your role is not authorized to generate reports.', 'error');
+
+  const { semester, searchText, firstSemesterCount, secondSemesterCount, semesterRecords, filtered } = getTechnicalAssistanceReportSelection();
+  if (!filtered.length) return showToast('There are no Technical Assistance Request records matching the current filters.', 'warning');
+
+  const periodLabel = technicalAssistanceReportPeriodLabel(semester);
+  const generatedAt = new Intl.DateTimeFormat('en-PH', {
+    year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit'
+  }).format(new Date());
+  const generatedBy = currentDisplayName();
+
+  const rows = filtered.map((record, index) => `
+    <tr>
+      <td class="center">${index + 1}</td>
+      <td>${escapeHTML(formatDisplayDate(record.requestDate))}</td>
+      <td class="strong">${escapeHTML(record.controlNo || '-')}</td>
+      <td>${escapeHTML(record.officeUnit || '-')}</td>
+      <td>${escapeHTML(technicalAssistanceServiceLabel(record))}</td>
+    </tr>`).join('');
+
+  const searchNote = searchText
+    ? `<div class="meta-line"><strong>Search filter:</strong> ${escapeHTML(searchText)}</div>`
+    : '';
+
+  const reportHtml = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Technical Assistance Request Report</title>
+<style>
+  *{box-sizing:border-box} body{margin:0;background:#eef2f7;color:#111827;font-family:Arial,Helvetica,sans-serif} 
+  .toolbar{position:sticky;top:0;z-index:2;display:flex;justify-content:flex-end;gap:8px;padding:12px 18px;background:#0b2f5b}
+  .toolbar button{border:0;border-radius:7px;padding:10px 14px;font-weight:700;cursor:pointer}.print{background:#d7a326;color:#111827}.close{background:#fff;color:#0b2f5b}
+  .sheet{width:min(1100px,calc(100% - 32px));margin:22px auto;background:#fff;padding:32px 38px;box-shadow:0 4px 20px rgba(15,23,42,.12);border-radius:10px}
+  .heading{text-align:center;margin-bottom:22px}.heading .unit{font-size:13px;font-weight:700;letter-spacing:.11em;color:#475569;text-transform:uppercase}.heading h1{font-size:24px;margin:7px 0 4px;color:#0b2f5b}.heading .period{font-size:14px;color:#475569}
+  .meta{display:grid;grid-template-columns:1fr 1fr;gap:6px 24px;margin:0 0 18px;font-size:12px}.meta-line{line-height:1.5}
+  .summary{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:18px 0 22px}.summary-card{border:1px solid #dbe3ee;border-radius:9px;padding:16px;text-align:center}.summary-card .value{font-size:27px;font-weight:800;color:#0b2f5b}.summary-card .label{font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:.04em;margin-top:4px}
+  table{width:100%;border-collapse:collapse;font-size:11.5px}th,td{border:1px solid #9ca3af;padding:7px 8px;vertical-align:top;overflow-wrap:anywhere}th{background:#e8eef6;color:#0b2f5b;text-align:center;font-weight:700}.center{text-align:center}.strong{font-weight:700}
+  .footer{display:flex;justify-content:space-between;gap:20px;margin-top:22px;font-size:11px;color:#475569;border-top:1px solid #dbe3ee;padding-top:12px}.record-count{font-weight:700;color:#0b2f5b}
+  @page{size:A4 landscape;margin:12mm}
+  @media print{body{background:#fff}.toolbar{display:none!important}.sheet{width:auto;margin:0;padding:0;box-shadow:none;border-radius:0}.summary-card{break-inside:avoid}thead{display:table-header-group}tr{break-inside:avoid}}
+  @media(max-width:700px){.sheet{width:calc(100% - 16px);padding:20px 16px}.summary{grid-template-columns:1fr}.meta{grid-template-columns:1fr;overflow-x:auto}}
+</style>
+</head>
+<body>
+<div class="toolbar">
+  <button class="print" onclick="window.print()">Print / Save as PDF</button>
+  <button class="close" onclick="window.close()">Close</button>
+</div>
+<main class="sheet">
+  <div class="heading">
+    <div class="unit">Public Affairs Unit</div>
+    <h1>Request for Technical Assistance Report</h1>
+    <div class="period">${escapeHTML(periodLabel)}</div>
+  </div>
+  <div class="meta">
+    <div class="meta-line"><strong>Reporting period:</strong> ${escapeHTML(periodLabel)}</div>
+    <div class="meta-line"><strong>Generated:</strong> ${escapeHTML(generatedAt)}</div>
+    <div class="meta-line"><strong>Generated by:</strong> ${escapeHTML(generatedBy)}</div>
+    <div class="meta-line"><strong>Records in selected semester:</strong> ${semesterRecords.length.toLocaleString('en-PH')}</div>
+    ${searchNote}
+  </div>
+  <div class="summary">
+    <div class="summary-card"><div class="value">${semesterRecords.length.toLocaleString('en-PH')}</div><div class="label">${escapeHTML(periodLabel)} Count</div></div>
+    <div class="summary-card"><div class="value">${firstSemesterCount.toLocaleString('en-PH')}</div><div class="label">1st Semester (Jan–Jun)</div></div>
+    <div class="summary-card"><div class="value">${secondSemesterCount.toLocaleString('en-PH')}</div><div class="label">2nd Semester (Jul–Dec)</div></div>
+  </div>
+  <table>
+    <thead><tr><th style="width:5%">No.</th><th style="width:14%">Request Date</th><th style="width:16%">Control No.</th><th style="width:25%">Office/Unit</th><th>Type of Service</th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table>
+  <div class="footer">
+    <div class="record-count">Generated records: ${filtered.length.toLocaleString('en-PH')}</div>
+    <div>PAUMOVision • Technical Assistance Request Report</div>
+  </div>
+</main>
+</body>
+</html>`;
+
+  const reportWindow = window.open('', '_blank');
+  if (!reportWindow) return showToast('The report window was blocked by the browser. Please allow pop-ups for this site and try again.', 'error', 7000);
+  reportWindow.opener = null;
+  reportWindow.document.open();
+  reportWindow.document.write(reportHtml);
+  reportWindow.document.close();
 }
 
 function renderTechnicalAssistanceRecords() {
@@ -6481,6 +6672,7 @@ window.deleteTechnicalAssistanceRequest = async function(id) {
 
 $('ta-report-semester')?.addEventListener('change', renderTechnicalAssistanceReport);
 $('ta-report-search')?.addEventListener('input', renderTechnicalAssistanceReport);
+$('ta-generate-report-btn')?.addEventListener('click', () => switchSection('consolidated-report'));
 
 	 // =============================================================================
 // MEDIA INTERVIEWS MODULE
@@ -6734,9 +6926,304 @@ $('media-report-search').addEventListener('input', renderMediaReport);
 
 
 // =============================================================================
+// CONSOLIDATED PAU QUARTERLY REPORT
+// =============================================================================
+let currentConsolidatedReport = null;
+let consolidatedFeedbackCache = [];
+
+function consolidatedQuarterOf(date) {
+  return date ? Math.floor(date.getMonth() / 3) + 1 : null;
+}
+
+function consolidatedPeriodMatch(value, year, quarter) {
+  const date = parseDate(value);
+  if (!date || date.getFullYear() !== Number(year)) return false;
+  return quarter === 'all' || consolidatedQuarterOf(date) === Number(quarter);
+}
+
+function consolidatedPeriodLabel(year, quarter) {
+  const labels = {
+    '1': '1st Quarter (January–March)',
+    '2': '2nd Quarter (April–June)',
+    '3': '3rd Quarter (July–September)',
+    '4': '4th Quarter (October–December)'
+  };
+  return quarter === 'all' ? `Annual Report — ${year}` : `${labels[quarter]} ${year}`;
+}
+
+function consolidatedMonths(quarter) {
+  if (quarter === 'all') return Array.from({ length: 12 }, (_, i) => i);
+  const start = (Number(quarter) - 1) * 3;
+  return [start, start + 1, start + 2];
+}
+
+async function loadConsolidatedFeedback() {
+  const snapshot = await feedbackColl.get();
+  consolidatedFeedbackCache = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  return consolidatedFeedbackCache;
+}
+
+function populateConsolidatedYearFilter(feedbackRecords = consolidatedFeedbackCache) {
+  const select = $('consolidated-report-year');
+  if (!select) return;
+  const previous = select.value;
+  const years = new Set([new Date().getFullYear()]);
+  movsData.forEach(r => { const d = getRecordDate(r); if (d) years.add(d.getFullYear()); });
+  (feedbackRecords || []).forEach(r => { const d = parseDate(r.date); if (d) years.add(d.getFullYear()); });
+  omrmData.forEach(r => { const d = parseDate(r.date); if (d) years.add(d.getFullYear()); });
+  mediaData.forEach(r => { const d = parseDate(r.date); if (d) years.add(d.getFullYear()); });
+  technicalAssistanceData.forEach(r => { const d = parseDate(r.requestDate); if (d) years.add(d.getFullYear()); });
+  const sorted = [...years].sort((a,b) => b-a);
+  select.innerHTML = sorted.map(y => `<option value="${y}">${y}</option>`).join('');
+  select.value = sorted.includes(Number(previous)) ? previous : String(new Date().getFullYear());
+}
+
+async function prepareConsolidatedReportSection() {
+  try {
+    const feedback = consolidatedFeedbackCache.length ? consolidatedFeedbackCache : await loadConsolidatedFeedback();
+    populateConsolidatedYearFilter(feedback);
+    const quarterSelect = $('consolidated-report-quarter');
+    if (quarterSelect && !quarterSelect.dataset.initialized) {
+      quarterSelect.value = 'all';
+      quarterSelect.dataset.initialized = 'true';
+    }
+  } catch (error) {
+    console.error('Unable to prepare consolidated report:', error);
+    populateConsolidatedYearFilter([]);
+    showToast('IECA feedback could not be preloaded. Generate Report will retry.', 'warning', 6000);
+  }
+}
+
+function consolidatedNumber(value, digits = 0) {
+  const number = Number(value || 0);
+  return number.toLocaleString('en-PH', { minimumFractionDigits: digits, maximumFractionDigits: digits });
+}
+
+function buildConsolidatedReportBody({ year, quarter, feedbackRecords }) {
+  const periodLabel = consolidatedPeriodLabel(year, quarter);
+  const generatedAt = new Intl.DateTimeFormat('en-PH', { dateStyle: 'long', timeStyle: 'short' }).format(new Date());
+  const generatedBy = currentDisplayName();
+
+  const movRecords = movsData.filter(r => {
+    const d = getRecordDate(r);
+    return d && consolidatedPeriodMatch(d, year, quarter);
+  });
+  const yearMovRecords = movsData.filter(r => {
+    const d = getRecordDate(r);
+    return d && d.getFullYear() === Number(year);
+  });
+  const iecaRecords = feedbackRecords.filter(r => consolidatedPeriodMatch(r.date, year, quarter));
+  const omrmRecords = omrmData.filter(r => consolidatedPeriodMatch(r.date, year, quarter));
+  const mediaRecords = mediaData.filter(r => consolidatedPeriodMatch(r.date, year, quarter));
+  const taRecords = technicalAssistanceData.filter(r => consolidatedPeriodMatch(r.requestDate, year, quarter));
+
+  const movTotals = calculateEngagementTotals(movRecords);
+  const typeCounts = Object.fromEntries(TYPES.map(type => [type, 0]));
+  movRecords.forEach(r => { if (Object.hasOwn(typeCounts, r.type)) typeCounts[r.type] += 1; });
+  const maxTypeCount = Math.max(1, ...Object.values(typeCounts));
+
+  const months = consolidatedMonths(quarter);
+  const monthly = Array.from({ length: 12 }, () => ({ total:0, reach:0, reactions:0, shares:0, byType:Object.fromEntries(TYPES.map(t => [t,0])) }));
+  movRecords.forEach(r => {
+    const d = getRecordDate(r); if (!d) return;
+    const m = monthly[d.getMonth()];
+    m.total += 1;
+    m.reach += getMetric(r,'reach');
+    m.reactions += getMetric(r,'reactions');
+    m.shares += getMetric(r,'shares');
+    if (Object.hasOwn(m.byType, r.type)) m.byType[r.type] += 1;
+  });
+
+  const top5 = [...movRecords].sort((a,b) => {
+    const reachDiff = getMetric(b,'reach') - getMetric(a,'reach');
+    return reachDiff || (getMetric(b,'reactions') - getMetric(a,'reactions'));
+  }).slice(0,5);
+
+  const quarterSummary = [1,2,3,4].map(q => {
+    const records = yearMovRecords.filter(r => {
+      const d=getRecordDate(r); return d && consolidatedQuarterOf(d)===q;
+    });
+    const totals=calculateEngagementTotals(records);
+    return { q, count:records.length, ...totals };
+  });
+
+  const ratingValues = [];
+  iecaRecords.forEach(entry => {
+    (Array.isArray(entry.ratings) ? entry.ratings : []).forEach(v => {
+      const n=Number(v); if (Number.isFinite(n) && n >= 1 && n <= 5) ratingValues.push(n);
+    });
+  });
+  const iecaOverall = ratingValues.length ? ratingValues.reduce((a,b)=>a+b,0)/ratingValues.length : null;
+  const omCount = omrmRecords.filter(r => r.category === 'OM').length;
+  const rmCount = omrmRecords.filter(r => r.category === 'RM').length;
+
+  const typeRows = TYPES.map(type => {
+    const count = typeCounts[type] || 0;
+    const pct = movRecords.length ? (count / movRecords.length) * 100 : 0;
+    const typeRecords = movRecords.filter(r => r.type === type);
+    const reach = typeRecords.reduce((s,r)=>s+getMetric(r,'reach'),0);
+    const reactions = typeRecords.reduce((s,r)=>s+getMetric(r,'reactions'),0);
+    return `<tr><td>${escapeHTML(type)}</td><td class="num">${consolidatedNumber(count)}</td><td class="num">${consolidatedNumber(pct,1)}%</td><td><div class="consolidated-bar"><span style="width:${Math.max(0, Math.min(100, (count/maxTypeCount)*100))}%"></span></div></td><td class="num">${count ? consolidatedNumber(reach/count,0) : '0'}</td><td class="num">${count ? consolidatedNumber(reactions/count,1) : '0.0'}</td></tr>`;
+  }).join('');
+
+  const monthlyRows = months.map(i => {
+    const m=monthly[i];
+    const rate=m.reach ? ((m.reactions+m.shares)/m.reach)*100 : 0;
+    return `<tr><td>${MONTH_NAMES[i]}</td><td class="num">${consolidatedNumber(m.total)}</td><td class="num">${consolidatedNumber(m.reach)}</td><td class="num">${consolidatedNumber(m.reactions)}</td><td class="num">${consolidatedNumber(m.shares)}</td><td class="num">${consolidatedNumber(rate,2)}%</td></tr>`;
+  }).join('');
+
+  const topRows = top5.length ? top5.map((r,i)=>`<tr><td class="center">${i+1}</td><td>${escapeHTML(r.title || 'Untitled Record')}</td><td>${escapeHTML(r.type || '-')}</td><td>${escapeHTML(formatDisplayDate(r.date || r.sortDate))}</td><td class="num">${consolidatedNumber(getMetric(r,'reach'))}</td><td class="num">${consolidatedNumber(getMetric(r,'reactions'))}</td><td class="num">${consolidatedNumber(getMetric(r,'shares'))}</td></tr>`).join('') : '<tr><td colspan="7" class="center">No MOV records for this period.</td></tr>';
+
+  const quarterRows = quarterSummary.map(q=>`<tr><td class="center">Q${q.q}</td><td class="num">${consolidatedNumber(q.count)}</td><td class="num">${consolidatedNumber(q.reach)}</td><td class="num">${consolidatedNumber(q.reactions)}</td><td class="num">${consolidatedNumber(q.shares)}</td></tr>`).join('');
+
+  const bodyHtml = `
+  <article class="consolidated-sheet">
+    <header class="consolidated-report-header">
+      <div class="eyebrow">Department of Education • Regional Office I • Public Affairs Unit</div>
+      <h2>Consolidated PAU Performance Report</h2>
+      <div class="period">${escapeHTML(periodLabel)}</div>
+    </header>
+    <div class="consolidated-meta">
+      <div><strong>Reporting Period</strong><br>${escapeHTML(periodLabel)}</div>
+      <div><strong>Generated On</strong><br>${escapeHTML(generatedAt)}</div>
+      <div><strong>Generated By</strong><br>${escapeHTML(generatedBy)}</div>
+    </div>
+
+    <section class="consolidated-report-section">
+      <h3>1. MOV Performance Dashboard</h3>
+      <p class="section-note">Dashboard-equivalent summary for the selected reporting period.</p>
+      <div class="consolidated-summary-grid">
+        <div class="consolidated-summary-card"><div class="value">${consolidatedNumber(movRecords.length)}</div><div class="label">Total MOV Records</div></div>
+        <div class="consolidated-summary-card"><div class="value">${consolidatedNumber(movTotals.reach)}</div><div class="label">Cumulative Post Reach</div></div>
+        <div class="consolidated-summary-card"><div class="value">${consolidatedNumber(movTotals.reactions)}</div><div class="label">Total Reactions</div></div>
+        <div class="consolidated-summary-card"><div class="value">${consolidatedNumber(movTotals.shares)}</div><div class="label">Total Shares</div></div>
+      </div>
+      <div class="consolidated-table-wrap">
+        <table class="consolidated-table">
+          <thead><tr><th>Output Type</th><th>Count</th><th>Share of MOVs</th><th>Distribution</th><th>Avg. Reach/Post</th><th>Avg. Reactions/Post</th></tr></thead>
+          <tbody>${typeRows}</tbody>
+        </table>
+      </div>
+      <h3 style="margin-top:1rem">Monthly Production & Facebook Performance</h3>
+      <div class="consolidated-table-wrap"><table class="consolidated-table"><thead><tr><th>Month</th><th>MOVs</th><th>Reach</th><th>Reactions</th><th>Shares</th><th>Engagement Rate</th></tr></thead><tbody>${monthlyRows}</tbody></table></div>
+      <h3 style="margin-top:1rem">Top 5 Performing Posts</h3>
+      <div class="consolidated-table-wrap"><table class="consolidated-table"><thead><tr><th>No.</th><th>Title / Details</th><th>Type</th><th>Date</th><th>Reach</th><th>Reactions</th><th>Shares</th></tr></thead><tbody>${topRows}</tbody></table></div>
+      <h3 style="margin-top:1rem">Quarterly Summary — ${year}</h3>
+      <div class="consolidated-table-wrap"><table class="consolidated-table"><thead><tr><th>Quarter</th><th>MOV Count</th><th>Reach</th><th>Reactions</th><th>Shares</th></tr></thead><tbody>${quarterRows}</tbody></table></div>
+      <p class="section-note" style="margin-top:.65rem">Cumulative Post Reach is the sum of the reach recorded for individual Facebook posts and is not a unique count of people reached across the entire Page.</p>
+    </section>
+
+    <section class="consolidated-report-section">
+      <h3>2. IECA Material Monitoring & Evaluation</h3>
+      <div class="consolidated-mini-grid" style="grid-template-columns:repeat(2,minmax(0,1fr))">
+        <div class="consolidated-mini-card"><div class="value">${consolidatedNumber(iecaRecords.length)}</div><div class="label">Number of Respondents</div></div>
+        <div class="consolidated-mini-card"><div class="value">${iecaOverall === null ? '—' : consolidatedNumber(iecaOverall,2)}</div><div class="label">Overall Rating Average${iecaOverall === null ? '' : ` • ${escapeHTML(getInterpretation(iecaOverall))}`}</div></div>
+      </div>
+    </section>
+
+    <section class="consolidated-report-section">
+      <h3>3. Office / Regional Memoranda</h3>
+      <div class="consolidated-mini-grid" style="grid-template-columns:repeat(2,minmax(0,1fr))">
+        <div class="consolidated-mini-card"><div class="value">${consolidatedNumber(omCount)}</div><div class="label">Created Office Memoranda</div></div>
+        <div class="consolidated-mini-card"><div class="value">${consolidatedNumber(rmCount)}</div><div class="label">Created Regional Memoranda</div></div>
+      </div>
+    </section>
+
+    <section class="consolidated-report-section">
+      <h3>4. Media Interviews</h3>
+      <div class="consolidated-mini-grid" style="grid-template-columns:1fr">
+        <div class="consolidated-mini-card"><div class="value">${consolidatedNumber(mediaRecords.length)}</div><div class="label">Number of Media Interviews</div></div>
+      </div>
+    </section>
+
+    <section class="consolidated-report-section">
+      <h3>5. Technical Assistance Requests</h3>
+      <div class="consolidated-mini-grid" style="grid-template-columns:1fr">
+        <div class="consolidated-mini-card"><div class="value">${consolidatedNumber(taRecords.length)}</div><div class="label">Number of Technical Assistance Requests</div></div>
+      </div>
+    </section>
+
+    <footer class="consolidated-footer">
+      <div>PAUMOVision • Consolidated PAU Performance Report</div>
+      <div>${escapeHTML(periodLabel)}</div>
+    </footer>
+  </article>`;
+
+  return { bodyHtml, periodLabel, generatedAt, generatedBy, year, quarter };
+}
+
+function consolidatedStandaloneStyles() {
+  return `
+  *{box-sizing:border-box}body{margin:0;background:#eef2f7;color:#111827;font-family:Arial,Helvetica,sans-serif}.consolidated-sheet{width:min(1120px,calc(100% - 30px));margin:18px auto;background:#fff;padding:28px 34px;border-radius:12px;box-shadow:0 3px 18px rgba(15,23,42,.12)}.consolidated-report-header{text-align:center;padding-bottom:16px;margin-bottom:16px;border-bottom:2px solid #0b2f5b}.eyebrow{color:#64748b;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.11em}.consolidated-report-header h2{margin:5px 0 3px;color:#0b2f5b;font-size:23px}.period{color:#64748b;font-size:13px}.consolidated-meta{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:16px;font-size:11px}.consolidated-meta>div{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:8px 10px}.consolidated-summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:15px}.consolidated-summary-card{border:1px solid #dbe3ee;border-radius:9px;padding:12px;background:#fff}.consolidated-summary-card .value{color:#0b2f5b;font-size:23px;font-weight:800}.consolidated-summary-card .label{color:#64748b;font-size:9px;font-weight:700;text-transform:uppercase;margin-top:4px}.consolidated-report-section{margin-top:18px;page-break-inside:auto}.consolidated-report-section h3{color:#0b2f5b;font-size:14px;margin:0 0 9px;padding-bottom:5px;border-bottom:1px solid #dbe3ee}.section-note{color:#64748b;font-size:9.5px;margin:-4px 0 8px}.consolidated-mini-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:12px}.consolidated-mini-card{border:1px solid #dbe3ee;border-radius:8px;padding:10px;text-align:center}.consolidated-mini-card .value{font-weight:800;color:#0b2f5b;font-size:20px}.consolidated-mini-card .label{color:#64748b;font-size:9px;text-transform:uppercase;font-weight:700;margin-top:3px}.consolidated-table-wrap{overflow:visible}.consolidated-table{width:100%;border-collapse:collapse;font-size:9.5px}.consolidated-table th,.consolidated-table td{border:1px solid #aeb8c5;padding:5px 6px;vertical-align:top;overflow-wrap:anywhere}.consolidated-table th{background:#e8eef6;color:#0b2f5b;text-align:center;font-weight:700}.num{text-align:right}.center{text-align:center}.consolidated-bar{height:6px;border-radius:999px;background:#e2e8f0;overflow:hidden;margin-top:3px}.consolidated-bar>span{display:block;height:100%;background:#0b2f5b}.consolidated-footer{margin-top:18px;padding-top:8px;border-top:1px solid #dbe3ee;display:flex;justify-content:space-between;color:#64748b;font-size:9px}@page{size:A4 landscape;margin:10mm}@media print{body{background:#fff}.consolidated-sheet{width:auto;margin:0;padding:0;box-shadow:none;border-radius:0}.consolidated-summary-card,.consolidated-mini-card,tr{break-inside:avoid}thead{display:table-header-group}}`;
+}
+
+async function generateConsolidatedReport() {
+  if (!can('print') && !can('export')) return showToast('Your role is not authorized to generate reports.', 'error');
+  try {
+    setLoading(true, 'Generating consolidated quarterly report...');
+    const feedbackRecords = await loadConsolidatedFeedback();
+    populateConsolidatedYearFilter(feedbackRecords);
+    const year = Number($('consolidated-report-year')?.value) || new Date().getFullYear();
+    const quarter = $('consolidated-report-quarter')?.value || 'all';
+    currentConsolidatedReport = buildConsolidatedReportBody({ year, quarter, feedbackRecords });
+    $('consolidated-report-output').innerHTML = currentConsolidatedReport.bodyHtml;
+    if ($('consolidated-print-btn')) $('consolidated-print-btn').disabled = false;
+    if ($('consolidated-word-btn')) $('consolidated-word-btn').disabled = false;
+    showToast(`Consolidated report generated for ${currentConsolidatedReport.periodLabel}.`);
+  } catch (error) {
+    console.error('Consolidated report error:', error);
+    showToast('Unable to generate consolidated report: ' + error.message, 'error', 8000);
+  } finally {
+    setLoading(false);
+  }
+}
+
+function printConsolidatedReport() {
+  if (!currentConsolidatedReport) return showToast('Generate the consolidated report first.', 'warning');
+  if (!can('print')) return showToast('Your role is not authorized to print reports.', 'error');
+  const win = window.open('', '_blank');
+  if (!win) return showToast('The print window was blocked. Please allow pop-ups for this site.', 'error', 7000);
+  win.opener = null;
+  win.document.open();
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${escapeHTML(currentConsolidatedReport.periodLabel)} - PAUMOVision</title><style>${consolidatedStandaloneStyles()}</style></head><body>${currentConsolidatedReport.bodyHtml}<script>window.addEventListener('load',()=>setTimeout(()=>window.print(),250));<\/script></body></html>`);
+  win.document.close();
+}
+
+function downloadConsolidatedWord() {
+  if (!currentConsolidatedReport) return showToast('Generate the consolidated report first.', 'warning');
+  if (!can('export')) return showToast('Your role is not authorized to download reports.', 'error');
+  const wordStyles = consolidatedStandaloneStyles().replace('@page{size:A4 landscape;margin:10mm}', '@page Section1{size:841.9pt 595.3pt;margin:28.35pt 28.35pt 28.35pt 28.35pt;mso-page-orientation:landscape}div.Section1{page:Section1}');
+  const html = `<!DOCTYPE html><html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="UTF-8"><meta name="ProgId" content="Word.Document"><meta name="Generator" content="PAUMOVision"><style>${wordStyles}</style></head><body><div class="Section1">${currentConsolidatedReport.bodyHtml}</div></body></html>`;
+  const blob = new Blob(['\ufeff', html], { type: 'application/msword;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  const quarterPart = currentConsolidatedReport.quarter === 'all' ? 'Annual' : `Q${currentConsolidatedReport.quarter}`;
+  link.href = url;
+  link.download = `PAUMOVision_Consolidated_Report_${currentConsolidatedReport.year}_${quarterPart}.doc`;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1500);
+  logAudit('EXPORT_CONSOLIDATED_REPORT_WORD', '', { year: currentConsolidatedReport.year, quarter: currentConsolidatedReport.quarter });
+  showToast('MS Word report downloaded successfully.');
+}
+
+$('consolidated-generate-btn')?.addEventListener('click', generateConsolidatedReport);
+$('consolidated-print-btn')?.addEventListener('click', printConsolidatedReport);
+$('consolidated-word-btn')?.addEventListener('click', downloadConsolidatedWord);
+['consolidated-report-year','consolidated-report-quarter'].forEach(id => {
+  $(id)?.addEventListener('change', () => {
+    currentConsolidatedReport = null;
+    if ($('consolidated-print-btn')) $('consolidated-print-btn').disabled = true;
+    if ($('consolidated-word-btn')) $('consolidated-word-btn').disabled = true;
+    if ($('consolidated-report-output')) $('consolidated-report-output').innerHTML = '<div class="card empty-state">Filter changed. Click <strong>Generate Report</strong> to refresh the consolidated report.</div>';
+  });
+});
+
+// =============================================================================
 // PAUMOVISION V2 — ZERO-BUDGET BACKUP, RESTORE & STORAGE STATUS
 // =============================================================================
-const PAUMOVISION_VERSION = '2.6.3-ta-service-dropdown';
+const PAUMOVISION_VERSION = '2.7.0-consolidated-quarterly-report';
 const BACKUP_COLLECTIONS = [
   'movs', 'ieca_feedback', 'ieca_settings', 'omrm', 'media_interviews', 'technical_assistance_requests',
   'users', 'auditLogs', 'loginActivities'
