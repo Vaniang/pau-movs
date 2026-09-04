@@ -2200,7 +2200,7 @@ tbody tr:last-child td { border-bottom: none; }
             <div id="system-missing-links" class="value">—</div>
           </div>
           <div class="system-stat">
-            <div class="label">Last Database Backup</div>
+            <div class="label">Last JSON Backup</div>
             <div id="system-last-backup" class="value">Never on this device</div>
           </div>
           <div class="system-stat">
@@ -2266,7 +2266,7 @@ tbody tr:last-child td { border-bottom: none; }
           <h3><i class="fas fa-database" aria-hidden="true"></i> PAUMOVision Database Backup</h3>
           <p class="text-muted" style="margin-top:.5rem;">
             These backups protect the searchable PAUMOVision records stored in Firestore. They do not contain the large MOV evidence files themselves.
-            JSON preserves document IDs and Firestore timestamps for restoration; Excel is a human-readable archival copy.
+            JSON preserves document IDs and Firestore timestamps and is the restorable backup format. Excel is a human-readable archival copy only and cannot be restored by PAUMOVision.
           </p>
 
           <div class="system-actions">
@@ -2291,8 +2291,8 @@ tbody tr:last-child td { border-bottom: none; }
           </div>
 
           <div class="system-note" style="margin-top:1rem;">
-            Restore is intentionally <strong>non-destructive</strong>: it merges operational records by their original document IDs and does not erase newer records.
-            User accounts, audit logs, and login activity are backed up but are not restored automatically.
+            Restore uses a <strong>merge</strong>: records that are not present in the backup are not deleted. If the same document ID already exists, fields contained in the backup will update the matching fields in Firestore.
+            For safety, create a fresh JSON backup before restoring. User accounts, audit logs, and login activity are backed up but are not restored automatically.
           </div>
         </div>
 
@@ -2323,16 +2323,6 @@ tbody tr:last-child td { border-bottom: none; }
           </div>
         </div>
 
-        <div class="card">
-          <h3><i class="fas fa-shield-halved" aria-hidden="true"></i> Zero-budget storage policy</h3>
-          <div class="system-note" style="margin-top:1rem;">
-            <strong>Firestore:</strong> lightweight records, metrics, metadata, links, and reports.<br />
-            <strong>SharePoint / OneDrive / Drive:</strong> actual large MOV evidence files.<br />
-            <strong>Cloudinary:</strong> remains supported for the current small PDF/photo modules.<br />
-            <strong>Database protection:</strong> JSON + Excel backups, with JSON recommended for restoration.
-            This build does not depend on Firebase Storage.
-          </div>
-        </div>
       </section>
 
       <section id="diagnostics" class="section">
@@ -7709,7 +7699,7 @@ function clearDiagnosticErrorLog() {
   showToast('Browser error log cleared.');
 }
 
-const PAUMOVISION_VERSION = '2.8.1-debug-diagnostics-ieca-full-comments';
+const PAUMOVISION_VERSION = '2.8.2-archive-backup-reviewed';
 const BACKUP_COLLECTIONS = [
   'movs', 'ieca_feedback', 'ieca_settings', 'omrm', 'media_interviews', 'technical_assistance_requests',
   'users', 'auditLogs', 'loginActivities'
@@ -7797,9 +7787,21 @@ function backupDateStamp(date = new Date()) {
 
 function recordSuccessfulBackup(kind) {
   const now = new Date();
-  localStorage.setItem(LAST_BACKUP_KEY, now.toISOString());
-  refreshSystemStatus();
-  logAudit('BACKUP_EXPORT', '', { kind, exportedAt: now.toISOString() });
+  const isRestorableJSON = kind === 'json' || kind === 'json-synced-folder';
+
+  // Only JSON backups can be restored by PAUMOVision, so only they should
+  // satisfy the backup-freshness indicator/reminder. Excel remains an
+  // archival/export copy and is still recorded in the audit log.
+  if (isRestorableJSON) {
+    localStorage.setItem(LAST_BACKUP_KEY, now.toISOString());
+    refreshSystemStatus();
+  }
+
+  logAudit('BACKUP_EXPORT', '', {
+    kind,
+    restorable: isRestorableJSON,
+    exportedAt: now.toISOString()
+  });
 }
 
 async function downloadJSONBackup() {
@@ -7892,7 +7894,7 @@ async function downloadExcelBackup() {
     XLSX.utils.book_append_sheet(workbook, metaSheet, 'Backup Info');
     XLSX.writeFile(workbook, `PAUMOVision_Backup_${backupDateStamp()}.xlsx`);
     recordSuccessfulBackup('excel');
-    showToast('Excel archival backup downloaded.', 'success', 6000);
+    showToast('Excel archival backup downloaded. Use a JSON backup if you need restoration.', 'success', 7000);
   } catch (error) {
     console.error('Excel backup failed:', error);
     showToast(`Excel backup failed: ${error.message}`, 'error', 7000);
@@ -8004,7 +8006,7 @@ async function refreshSystemStatus() {
   }
 
   const lastBackup = getLastBackupDate();
-  if ($('system-last-backup')) $('system-last-backup').textContent = lastBackup ? formatDateTime(lastBackup) : 'Never on this device';
+  if ($('system-last-backup')) $('system-last-backup').textContent = lastBackup ? `${formatDateTime(lastBackup)} · this device` : 'Never on this device';
 
   const savedArchiveUrl = localStorage.getItem(MOV_ARCHIVE_URL_KEY) || '';
   const archiveInput = $('mov-archive-url');
